@@ -1,0 +1,42 @@
+[
+  {
+    "id": "130b3c4d-f460-4fca-a16a-6330365e3447",
+    "word": "Abase",
+    "partOfSpeech": "verb",
+    "definition": "To humiliate, degrade",
+    "exampleSentence": "After being overthrown and abased, the deposed leader offered to bow down to his conqueror.",
+    "etymology": "Old French abaissier, from Latin ad- ('to') + bassus ('low')",
+    "synonyms": ["belittle", "demean", "debase", "degrade"],
+    "difficulty": 3,
+    "frequencyRank": 5,
+    "category": "social-behavior",
+    "easeFactor": 2.5,
+    "interval": 1,
+    "status": "new",
+    "nextReviewDate": "2026-03-30T00:00:00Z",
+    "lastReviewDate": null,
+    "successfulRecalls": 0,
+    "consecutiveCorrect": 0,
+    "totalAttempts": 0
+  },
+  {
+    "id": "0334f604-e9d5-462e-93a8-e15a3f050eee",
+    "word": "Abate",
+    "partOfSpeech": "verb",
+    "definition": "To reduce, lessen",
+    "exampleSentence": "The rain poured down for a while, then abated.",
+    "etymology": "Old French abatre, from Latin ad- + battuere ('to beat down')",
+    "synonyms": ["diminish", "subside", "wane", "decrease"],
+    "difficulty": 2,
+    "frequencyRank": 4,
+    "category": "academic",
+    "easeFactor": 2.5,
+    "interval": 1,
+    "status": "new",
+    "nextReviewDate": "2026-03-30T00:00:00Z",
+    "lastReviewDate": null,
+    "successfulRecalls": 0,
+    "consecutiveCorrect": 0,
+    "totalAttempts": 0
+  }
+]
