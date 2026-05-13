@@ -12,6 +12,7 @@ struct DailyQuizCompletion {
     let correctCount: Int
     let rememberedWordIDs: Set<UUID>
     let missedWordIDs: Set<UUID>
+    let isSupplementalRound: Bool
 }
 
 struct DailyQuizView: View {
@@ -19,6 +20,10 @@ struct DailyQuizView: View {
     @Environment(\.dismiss) private var dismiss
 
     let questions: [QuizQuestion]
+    /// When non-nil, restores in-progress state once on first appear.
+    var resume: PersistedDailyQuiz? = nil
+    /// Written into saved progress and completion payload so the hub can treat practice rounds separately.
+    var isSupplementalPersistence: Bool = false
     var onComplete: ((DailyQuizCompletion) -> Void)? = nil
 
     @State private var currentQuestionIndex = 0
@@ -31,6 +36,14 @@ struct DailyQuizView: View {
     @State private var quizStartedAt = Date.now
     @State private var rememberedWordIDs: Set<UUID> = []
     @State private var missedWordIDs: Set<UUID> = []
+    @State private var didApplyResume = false
+
+    /// Matches `answerOptions` row spacing so the footer sits the same distance below the last answer.
+    private static let answerOptionVerticalSpacing: CGFloat = 12
+    private static let answerCapsuleVerticalPadding: CGFloat = 16
+    private static let answerCapsuleHorizontalPadding: CGFloat = 18
+    /// Matches one answer row so the footer slot does not shift when Next/Finish appears.
+    private static let answerCapsuleRowSlotHeight: CGFloat = answerCapsuleVerticalPadding * 2 + 24
 
     private var totalQuestions: Int { max(questions.count, 1) }
     private var currentQuestion: QuizQuestion? {
@@ -54,13 +67,14 @@ struct DailyQuizView: View {
             }
         }
         .animation(.spring(response: 0.45, dampingFraction: 0.88), value: currentQuestionIndex)
-        .animation(.easeOut(duration: 0.22), value: isAnswerRevealed)
         .onDisappear {
             pendingAdvanceWorkItem?.cancel()
             pendingAdvanceWorkItem = nil
+            persistInProgressIfNeeded()
         }
         .onAppear {
-            if currentQuestionIndex == 0, !quizComplete {
+            applyResumeIfNeeded()
+            if resume == nil, currentQuestionIndex == 0, !quizComplete {
                 quizStartedAt = Date.now
             }
         }
@@ -73,21 +87,28 @@ struct DailyQuizView: View {
             quizHeader
 
             if let question = currentQuestion {
-                questionBlock(for: question)
-                    .id(question.id)
-                    .transition(
-                        .asymmetric(
-                            insertion: .move(edge: .trailing).combined(with: .opacity),
-                            removal: .move(edge: .leading).combined(with: .opacity)
-                        )
-                    )
-
-                Spacer(minLength: 20)
+                GeometryReader { _ in
+                    VStack(spacing: 0) {
+                        Spacer(minLength: 0)
+                        questionBlock(for: question)
+                            .id(question.id)
+                            .transition(
+                                .asymmetric(
+                                    insertion: .move(edge: .trailing).combined(with: .opacity),
+                                    removal: .move(edge: .leading).combined(with: .opacity)
+                                )
+                            )
+                        Spacer(minLength: 0)
+                    }
+                    .frame(maxWidth: .infinity, maxHeight: .infinity)
+                }
+                .frame(maxHeight: .infinity)
 
                 answerOptions(for: question)
+                    .padding(.top, -14)
 
                 nextQuestionFooter
-                    .padding(.top, 12)
+                    .padding(.top, Self.answerOptionVerticalSpacing)
                     .padding(.bottom, 8)
             }
         }
@@ -162,7 +183,7 @@ struct DailyQuizView: View {
     }
 
     private func answerOptions(for question: QuizQuestion) -> some View {
-        VStack(spacing: 12) {
+        VStack(spacing: Self.answerOptionVerticalSpacing) {
             ForEach(Array(question.allOptions.enumerated()), id: \.offset) { _, option in
                 answerCapsule(
                     title: option,
@@ -182,10 +203,10 @@ struct DailyQuizView: View {
             Text(title)
                 .font(.body.weight(.semibold))
                 .multilineTextAlignment(.center)
-                .foregroundStyle(foregroundForOption(isCorrect: isCorrect, isSelected: isSelected))
+                .foregroundStyle(optionLabelForeground())
                 .frame(maxWidth: .infinity)
-                .padding(.vertical, 16)
-                .padding(.horizontal, 18)
+                .padding(.vertical, Self.answerCapsuleVerticalPadding)
+                .padding(.horizontal, Self.answerCapsuleHorizontalPadding)
                 .background { capsuleBackground(isCorrect: isCorrect, isSelected: isSelected) }
         }
         .buttonStyle(.plain)
@@ -217,56 +238,82 @@ struct DailyQuizView: View {
                     )
             } else {
                 Capsule(style: .continuous)
-                    .fill(.ultraThinMaterial)
+                    .fill(answerCapsuleIdleFill)
+                    .overlay(
+                        Capsule(style: .continuous)
+                            .strokeBorder(answerCapsuleIdleStroke, lineWidth: 1)
+                    )
             }
         } else {
             Capsule(style: .continuous)
-                .fill(.ultraThinMaterial)
+                .fill(answerCapsuleIdleFill)
+                .overlay(
+                    Capsule(style: .continuous)
+                        .strokeBorder(answerCapsuleIdleStroke, lineWidth: 1)
+                )
         }
+    }
+
+    /// Matches the back chip on the quiz navigation bar (white, not gray).
+    private var answerCapsuleIdleFill: Color {
+        DailyQuizChrome.capsuleFill
+    }
+
+    private var answerCapsuleIdleStroke: Color {
+        DailyQuizChrome.capsuleStroke
     }
 
     private var incorrectAnswerRed: Color {
-        Color(red: 0.96, green: 0.72, blue: 0.70).opacity(0.42)
+        Color(red: 0.52, green: 0.11, blue: 0.09).opacity(0.52)
     }
 
     private var correctAnswerGreen: Color {
-        HubPalette.ember.opacity(0.22)
+        HubPalette.ember.opacity(0.38)
     }
 
-    private func foregroundForOption(isCorrect: Bool, isSelected: Bool) -> Color {
-        guard isAnswerRevealed else { return .primary }
-        if isCorrect {
-            return HubPalette.ember
-        }
-        if isSelected {
-            return Color(red: 0.72, green: 0.18, blue: 0.16)
-        }
-        return .primary
+    private func optionLabelForeground() -> Color {
+        Color.primary
     }
 
-    private func optionOpacity(isCorrect: Bool, isSelected: Bool) -> Double {
-        return 1
+    private var quizFooterButtonTint: Color {
+        DailyQuizChrome.nextButtonTint
+    }
+
+    /// Same fill as `Start Daily Quiz` on the Today hub.
+    private var quizReturnButtonTint: Color {
+        HubPalette.plantPot.opacity(0.86)
     }
 
     @ViewBuilder
     private var nextQuestionFooter: some View {
-        if isAnswerRevealed,
-           let selected = selectedAnswer,
-           Self.normalized(selected) != Self.normalized(currentQuestion?.correctAnswer ?? "") {
-            let isFinalQuestion = currentQuestionIndex >= questions.count - 1
-            Button {
-                advanceToNextQuestion()
-            } label: {
-                Text(isFinalQuestion ? "Finish" : "Next Question")
-                    .font(.headline.bold())
-                    .frame(maxWidth: .infinity)
-                    .padding(.vertical, 14)
+        ZStack {
+            if isAnswerRevealed,
+               let selected = selectedAnswer,
+               Self.normalized(selected) != Self.normalized(currentQuestion?.correctAnswer ?? "") {
+                let isFinalQuestion = currentQuestionIndex >= questions.count - 1
+                Button {
+                    advanceToNextQuestion()
+                } label: {
+                    Text(isFinalQuestion ? "Finish" : "Next Question")
+                        .font(.body.weight(.semibold))
+                        .multilineTextAlignment(.center)
+                        .foregroundStyle(HubPalette.linen)
+                        .frame(maxWidth: .infinity)
+                        .padding(.vertical, Self.answerCapsuleVerticalPadding)
+                        .padding(.horizontal, Self.answerCapsuleHorizontalPadding)
+                        .background {
+                            Capsule(style: .continuous)
+                                .fill(quizFooterButtonTint)
+                                .overlay(
+                                    Capsule(style: .continuous)
+                                        .strokeBorder(Color.white.opacity(0.22), lineWidth: 1)
+                                )
+                        }
+                }
+                .buttonStyle(.plain)
             }
-            .buttonStyle(.borderedProminent)
-            .tint(isFinalQuestion ? HubPalette.plantPot.opacity(0.86) : HubPalette.espresso)
-        } else {
-            Color.clear.frame(height: 50)
         }
+        .frame(maxWidth: .infinity, minHeight: Self.answerCapsuleRowSlotHeight, alignment: .center)
     }
 
     // MARK: - Summary
@@ -278,7 +325,7 @@ struct DailyQuizView: View {
             Image(systemName: "checkmark.seal.fill")
                 .font(.system(size: 56))
                 .symbolRenderingMode(.palette)
-                .foregroundStyle(HubPalette.espresso, HubPalette.oatmealDeep)
+                .foregroundStyle(HubPalette.plantDeep, HubPalette.oatmealDeep)
                 .accessibilityHidden(true)
 
             VStack(spacing: 8) {
@@ -306,11 +353,12 @@ struct DailyQuizView: View {
             } label: {
                 Text("Return to Today's Words")
                     .font(.headline.bold())
+                    .foregroundStyle(HubPalette.oatmeal)
                     .frame(maxWidth: .infinity)
                     .padding(.vertical, 16)
             }
             .buttonStyle(.borderedProminent)
-            .tint(HubPalette.plantPot.opacity(0.86))
+            .tint(quizReturnButtonTint)
             .padding(.horizontal, 20)
             .padding(.bottom, 24)
         }
@@ -319,7 +367,6 @@ struct DailyQuizView: View {
         .onAppear {
             guard !summaryAppeared else { return }
             summaryAppeared = true
-            persistQuizSession()
             UINotificationFeedbackGenerator().notificationOccurred(.success)
         }
     }
@@ -364,6 +411,7 @@ struct DailyQuizView: View {
 
         let nextIndex = currentQuestionIndex + 1
         if nextIndex >= questions.count {
+            persistQuizSessionAndNotifyCompletion()
             withAnimation(.spring(response: 0.5, dampingFraction: 0.85)) {
                 quizComplete = true
             }
@@ -390,7 +438,37 @@ struct DailyQuizView: View {
         s.trimmingCharacters(in: .whitespacesAndNewlines).lowercased()
     }
 
-    private func persistQuizSession() {
+    private func applyResumeIfNeeded() {
+        guard !didApplyResume, let snapshot = resume, !questions.isEmpty else { return }
+        didApplyResume = true
+        let maxIndex = max(0, questions.count - 1)
+        currentQuestionIndex = min(max(0, snapshot.currentQuestionIndex), maxIndex)
+        correctCount = snapshot.correctCount
+        rememberedWordIDs = Set(snapshot.rememberedWordIDs)
+        missedWordIDs = Set(snapshot.missedWordIDs)
+        quizStartedAt = snapshot.quizStartedAt
+        selectedAnswer = snapshot.selectedAnswer
+        isAnswerRevealed = snapshot.isAnswerRevealed
+    }
+
+    private func persistInProgressIfNeeded() {
+        guard !quizComplete, !questions.isEmpty else { return }
+        let snapshot = PersistedDailyQuiz(
+            questions: questions.map { PersistedQuizQuestion(from: $0) },
+            currentQuestionIndex: currentQuestionIndex,
+            correctCount: correctCount,
+            rememberedWordIDs: Array(rememberedWordIDs),
+            missedWordIDs: Array(missedWordIDs),
+            quizStartedAt: quizStartedAt,
+            selectedAnswer: selectedAnswer,
+            isAnswerRevealed: isAnswerRevealed,
+            isSupplementalRound: isSupplementalPersistence
+        )
+        DailyQuizPersistence.save(snapshot)
+    }
+
+    private func persistQuizSessionAndNotifyCompletion() {
+        DailyQuizPersistence.clear()
         guard !questions.isEmpty else { return }
         let elapsed = max(1, Int(Date.now.timeIntervalSince(quizStartedAt)))
         let session = QuizSession(
@@ -406,7 +484,8 @@ struct DailyQuizView: View {
                 totalQuestions: questions.count,
                 correctCount: correctCount,
                 rememberedWordIDs: rememberedWordIDs,
-                missedWordIDs: missedWordIDs
+                missedWordIDs: missedWordIDs,
+                isSupplementalRound: isSupplementalPersistence
             )
         )
     }
@@ -471,7 +550,7 @@ struct DailyQuizView: View {
 
     return NavigationStack {
         DailyQuizView(questions: questions)
-            .navigationTitle("Quiz")
+            .navigationTitle("Glance")
             .modelContainer(container)
     }
 }

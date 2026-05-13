@@ -201,9 +201,9 @@ private struct RootTabBar: View {
                         } label: {
                             VStack(spacing: 3) {
                                 Image(systemName: tab.systemImage)
-                                    .font(.system(size: 16, weight: .semibold))
+                                    .font(.system(size: 16, weight: .semibold, design: .rounded))
                                 Text(tab.title)
-                                    .font(.system(.caption2, design: .default, weight: .semibold))
+                                    .font(GlanceHubFont.semibold(10))
                             }
                             .foregroundStyle(selectedTab == tab ? HubPalette.linen : HubPalette.espresso.opacity(0.68))
                             .frame(width: itemWidth, height: 52)

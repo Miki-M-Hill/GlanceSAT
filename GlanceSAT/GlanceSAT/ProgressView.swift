@@ -17,35 +17,13 @@ extension Color {
     static let positiveGreen = HubPalette.ember
 }
 
-// MARK: - Fonts (bundle PostScript names — register .ttf files + Info.plist)
-
-private enum ProgressFonts {
-    // UI — Jost
-    static func jostRegular(size: CGFloat) -> Font {
-        Font.custom("Jost-Regular", size: size, relativeTo: .body)
-    }
-
-    static func jostMedium(size: CGFloat) -> Font {
-        Font.custom("Jost-Medium", size: size, relativeTo: .caption)
-    }
-
-    // Data — DM Mono
-    static func dmMonoLight(size: CGFloat) -> Font {
-        Font.custom("DMMono-Light", size: size, relativeTo: .caption2)
-    }
-
-    static func dmMonoRegular(size: CGFloat) -> Font {
-        Font.custom("DMMono-Regular", size: size, relativeTo: .title2)
-    }
-}
-
 private enum ProgressScreenMetrics {
-    static let horizontalPadding: CGFloat = 16
+    static let horizontalPadding: CGFloat = 22
     static let sectionTopPadding: CGFloat = 20
     static let sectionLabelToContent: CGFloat = 8
     static let cardSpacing: CGFloat = 8
-    static let cardPadding: CGFloat = 14
-    static let cornerRadiusStat: CGFloat = 14
+    static let cardPadding: CGFloat = 16
+    static let cornerRadiusStat: CGFloat = 22
     static let bottomSafePadding: CGFloat = 24
 }
 
@@ -119,6 +97,7 @@ private enum InsightsPresentation {
 
 /// Analytics / Progress tab. Named distinctly from `SwiftUI.ProgressView` (linear spinner / gauge).
 struct GlanceSATProgressScreen: View {
+    @Environment(\.colorScheme) private var colorScheme
     @Query private var words: [Word]
     @Query(sort: \QuizSession.startedAt, order: .reverse) private var sessions: [QuizSession]
     @StateObject private var viewModel = ProgressViewModel()
@@ -160,46 +139,93 @@ struct GlanceSATProgressScreen: View {
         return "\(words.count)-\(sessions.count)-\(totalAttempts)-\(totalRecalls)-\(totalCorrect)"
     }
 
+    private var insightsGlassFill: LinearGradient {
+        LinearGradient(
+            colors: [
+                Color.white.opacity(0.72),
+                HubPalette.oatmeal.opacity(0.28),
+                HubPalette.amberAccent.opacity(0.11),
+            ],
+            startPoint: .topLeading,
+            endPoint: .bottomTrailing
+        )
+    }
+
+    private var insightsGlassStroke: LinearGradient {
+        LinearGradient(
+            colors: [
+                Color.white.opacity(0.78),
+                HubPalette.ember.opacity(0.14),
+                Color.black.opacity(0.035),
+            ],
+            startPoint: .topLeading,
+            endPoint: .bottomTrailing
+        )
+    }
+
+    @ViewBuilder
+    private func insightsFrostedCard(cornerRadius: CGFloat) -> some View {
+        RoundedRectangle(cornerRadius: cornerRadius, style: .continuous)
+            .fill(.ultraThinMaterial)
+            .overlay(
+                RoundedRectangle(cornerRadius: cornerRadius, style: .continuous)
+                    .fill(insightsGlassFill)
+            )
+            .overlay(
+                RoundedRectangle(cornerRadius: cornerRadius, style: .continuous)
+                    .strokeBorder(insightsGlassStroke, lineWidth: 1)
+            )
+            .shadow(color: Color.black.opacity(0.065), radius: 18, y: 10)
+    }
+
     var body: some View {
-        ScrollView(.vertical, showsIndicators: false) {
-            VStack(alignment: .leading, spacing: 0) {
-                sectionLabel("Quiet Learning")
-                    .padding(.top, 10)
+        NavigationStack {
+            ScrollView(.vertical, showsIndicators: false) {
+                VStack(alignment: .leading, spacing: 0) {
+                    sectionLabel("Quiet Learning")
+                        .padding(.top, 10)
 
-                quietLearningGrid
+                    quietLearningGrid
 
-                sectionLabel("Progress")
-                    .padding(.top, ProgressScreenMetrics.sectionTopPadding)
+                    sectionLabel("Progress")
+                        .padding(.top, ProgressScreenMetrics.sectionTopPadding)
 
-                progressGrid
+                    progressGrid
 
-                sectionLabel("Strengths by Category")
-                    .padding(.top, ProgressScreenMetrics.sectionTopPadding)
+                    sectionLabel("Strengths by Category")
+                        .padding(.top, ProgressScreenMetrics.sectionTopPadding)
 
-                strengthsByCategoryCard
+                    strengthsByCategoryCard
 
-                sectionLabel("Recent Quizzes")
-                    .padding(.top, ProgressScreenMetrics.sectionTopPadding)
+                    sectionLabel("Recent Quizzes")
+                        .padding(.top, ProgressScreenMetrics.sectionTopPadding)
 
-                recentQuizzesTrendCard
-                    .opacity(appeared ? 1 : 0)
-                    .offset(y: appeared ? 0 : 12)
-                    .animation(.easeOut(duration: 0.25).delay(0.1), value: appeared)
+                    recentQuizzesTrendCard
+                        .opacity(appeared ? 1 : 0)
+                        .offset(y: appeared ? 0 : 12)
+                        .animation(.easeOut(duration: 0.25).delay(0.1), value: appeared)
 
-                sectionLabel("This Week")
-                    .padding(.top, ProgressScreenMetrics.sectionTopPadding)
+                    sectionLabel("This Week")
+                        .padding(.top, ProgressScreenMetrics.sectionTopPadding)
 
-                weeklyRecapCard
+                    weeklyRecapCard
 
-                sectionLabel("Tomorrow")
-                    .padding(.top, ProgressScreenMetrics.sectionTopPadding)
+                    sectionLabel("Tomorrow")
+                        .padding(.top, ProgressScreenMetrics.sectionTopPadding)
 
-                tomorrowCard
+                    tomorrowCard
+                }
+                .padding(.horizontal, ProgressScreenMetrics.horizontalPadding)
+                .padding(.bottom, ProgressScreenMetrics.bottomSafePadding)
             }
-            .padding(.horizontal, ProgressScreenMetrics.horizontalPadding)
-            .padding(.bottom, ProgressScreenMetrics.bottomSafePadding)
+            .background(Color.linen)
+            .navigationTitle("Glance")
+            .navigationBarTitleDisplayMode(.inline)
+            .toolbarBackground(HubPalette.linen, for: .navigationBar)
+            .toolbarBackground(.visible, for: .navigationBar)
+            .toolbarColorScheme(colorScheme, for: .navigationBar)
+            .tint(HubPalette.espresso)
         }
-        .background(Color.linen)
         .onAppear {
             viewModel.refresh(words: words, sessions: sessions)
             categoryBarFractions = Array(repeating: 0, count: displayData.categories.count)
@@ -227,10 +253,10 @@ struct GlanceSATProgressScreen: View {
 
     private func sectionLabel(_ title: String) -> some View {
         Text(title)
-            .font(ProgressFonts.jostMedium(size: 10))
-            .tracking(0.12 * 10)
+            .font(GlanceHubFont.semibold(11))
+            .tracking(0.6)
             .textCase(.uppercase)
-            .foregroundStyle(Color.warmFaint)
+            .foregroundStyle(HubPalette.espressoMuted)
             .padding(.bottom, ProgressScreenMetrics.sectionLabelToContent)
     }
 
@@ -327,22 +353,25 @@ struct GlanceSATProgressScreen: View {
     ) -> some View {
         VStack(alignment: .leading, spacing: 0) {
             Text(valueText)
-                .font(ProgressFonts.dmMonoRegular(size: 28))
+                .font(GlanceHubFont.semibold(28))
+                .monospacedDigit()
                 .foregroundStyle(Color.charcoal)
 
             Text(label)
-                .font(ProgressFonts.jostRegular(size: 10))
+                .font(GlanceHubFont.medium(11))
                 .foregroundStyle(Color.warmMid)
                 .padding(.top, 4)
 
             Text(delta)
-                .font(ProgressFonts.dmMonoLight(size: 10))
+                .font(GlanceHubFont.regular(11))
                 .foregroundStyle(deltaColor)
                 .padding(.top, 2)
         }
         .padding(ProgressScreenMetrics.cardPadding)
         .frame(maxWidth: .infinity, alignment: .leading)
-        .background(Color.linenDeep)
+        .background {
+            insightsFrostedCard(cornerRadius: ProgressScreenMetrics.cornerRadiusStat)
+        }
         .clipShape(RoundedRectangle(cornerRadius: ProgressScreenMetrics.cornerRadiusStat, style: .continuous))
         .opacity(appeared ? 1 : 0)
         .offset(y: appeared ? 0 : 12)
@@ -371,11 +400,9 @@ struct GlanceSATProgressScreen: View {
             }
         }
         .padding(ProgressScreenMetrics.cardPadding)
-        .background(Color.linen)
-        .overlay(
-            RoundedRectangle(cornerRadius: ProgressScreenMetrics.cornerRadiusStat, style: .continuous)
-                .stroke(Color.charcoal.opacity(0.15), lineWidth: 0.5)
-        )
+        .background {
+            insightsFrostedCard(cornerRadius: ProgressScreenMetrics.cornerRadiusStat)
+        }
         .clipShape(RoundedRectangle(cornerRadius: ProgressScreenMetrics.cornerRadiusStat, style: .continuous))
         .opacity(appeared ? 1 : 0)
         .offset(y: appeared ? 0 : 12)
@@ -390,18 +417,18 @@ struct GlanceSATProgressScreen: View {
     ) -> some View {
         HStack(alignment: .center, spacing: 8) {
             Text(category.name)
-                .font(ProgressFonts.jostRegular(size: 12))
+                .font(GlanceHubFont.semibold(13))
                 .foregroundStyle(Color.charcoal)
                 .frame(minWidth: 80, alignment: .leading)
 
             GeometryReader { geo in
                 ZStack(alignment: .leading) {
                     Capsule()
-                        .fill(Color.charcoal.opacity(0.10))
+                        .fill(HubPalette.espresso.opacity(0.10))
                         .frame(height: 4)
 
                     Capsule()
-                        .fill(Color.charcoal)
+                        .fill(HubPalette.plantDeep)
                         .frame(width: max(0, geo.size.width * (isReady ? fillFraction : 0)), height: 4)
                 }
             }
@@ -409,7 +436,8 @@ struct GlanceSATProgressScreen: View {
 
             HStack(spacing: 6) {
                 Text(isReady ? "\(Int(category.accuracy * 100))%" : "—")
-                    .font(ProgressFonts.dmMonoRegular(size: 10))
+                    .font(GlanceHubFont.semibold(11))
+                    .monospacedDigit()
                     .foregroundStyle(Color.warmMid)
                     .frame(minWidth: 32, alignment: .trailing)
             }
@@ -422,7 +450,7 @@ struct GlanceSATProgressScreen: View {
     private var recentQuizzesTrendCard: some View {
         VStack(alignment: .leading, spacing: 0) {
             Text(displayData.trendUnlocked ? "Previous 10 days · score out of 10" : "Quiz trend unlocks after 3 active quiz days")
-                .font(ProgressFonts.jostRegular(size: 11))
+                .font(GlanceHubFont.regular(13))
                 .foregroundStyle(Color.warmMid)
 
             GeometryReader { geo in
@@ -438,12 +466,14 @@ struct GlanceSATProgressScreen: View {
                 ZStack(alignment: .topLeading) {
                     // y-axis labels
                     Text("10")
-                        .font(ProgressFonts.dmMonoLight(size: 9))
+                        .font(GlanceHubFont.regular(9))
+                        .monospacedDigit()
                         .foregroundStyle(Color.warmFaint)
                         .position(x: 8, y: 6)
 
                     Text("0")
-                        .font(ProgressFonts.dmMonoLight(size: 9))
+                        .font(GlanceHubFont.regular(9))
+                        .monospacedDigit()
                         .foregroundStyle(Color.warmFaint)
                         .position(x: 6, y: plotH)
 
@@ -456,7 +486,7 @@ struct GlanceSATProgressScreen: View {
                         p.move(to: CGPoint(x: leftPad, y: plotH))
                         p.addLine(to: CGPoint(x: width, y: plotH))
                     }
-                    .stroke(Color.charcoal.opacity(0.10), lineWidth: 0.5)
+                    .stroke(HubPalette.espresso.opacity(0.10), lineWidth: 0.5)
 
                     // line
                     Path { path in
@@ -471,7 +501,7 @@ struct GlanceSATProgressScreen: View {
                         }
                     }
                     .trim(from: 0, to: (appeared && displayData.trendUnlocked) ? 1 : 0)
-                    .stroke(Color.charcoal, style: StrokeStyle(lineWidth: 1.5, lineCap: .round, lineJoin: .round))
+                    .stroke(HubPalette.plantDeep, style: StrokeStyle(lineWidth: 2, lineCap: .round, lineJoin: .round))
                     .animation(.easeOut(duration: 0.8).delay(0.1), value: appeared)
 
                     // points
@@ -479,8 +509,8 @@ struct GlanceSATProgressScreen: View {
                         let x = leftPad + CGFloat(idx) * stepX
                         let y = (1 - CGFloat(point.score) / 10) * plotH
                         Circle()
-                            .fill(Color.charcoal)
-                            .frame(width: 4, height: 4)
+                            .fill(HubPalette.ember)
+                            .frame(width: 5, height: 5)
                             .opacity(displayData.trendUnlocked ? 1 : 0)
                             .position(x: x, y: y)
                     }
@@ -493,7 +523,8 @@ struct GlanceSATProgressScreen: View {
                         Spacer()
                         Text(points.last?.dayLabel ?? "")
                     }
-                    .font(ProgressFonts.dmMonoLight(size: 9))
+                    .font(GlanceHubFont.regular(9))
+                    .monospacedDigit()
                     .foregroundStyle(Color.warmFaint)
                     .frame(maxWidth: .infinity)
                     .padding(.leading, leftPad)
@@ -505,17 +536,15 @@ struct GlanceSATProgressScreen: View {
 
             if !displayData.trendUnlocked {
                 Text("Keep going. Your line appears once you have activity on 3 different days.")
-                    .font(ProgressFonts.jostRegular(size: 10))
+                    .font(GlanceHubFont.regular(12))
                     .foregroundStyle(Color.warmMid)
                     .padding(.top, 8)
             }
         }
         .padding(ProgressScreenMetrics.cardPadding)
-        .background(Color.linen)
-        .overlay(
-            RoundedRectangle(cornerRadius: ProgressScreenMetrics.cornerRadiusStat, style: .continuous)
-                .stroke(Color.charcoal.opacity(0.15), lineWidth: 0.5)
-        )
+        .background {
+            insightsFrostedCard(cornerRadius: ProgressScreenMetrics.cornerRadiusStat)
+        }
         .clipShape(RoundedRectangle(cornerRadius: ProgressScreenMetrics.cornerRadiusStat, style: .continuous))
     }
 
@@ -527,19 +556,22 @@ struct GlanceSATProgressScreen: View {
             recapRow(value: "\(displayData.weeklyStabilized)", label: "stabilized")
         }
         .padding(ProgressScreenMetrics.cardPadding)
-        .background(Color.linenDeep)
+        .background {
+            insightsFrostedCard(cornerRadius: ProgressScreenMetrics.cornerRadiusStat)
+        }
         .clipShape(RoundedRectangle(cornerRadius: ProgressScreenMetrics.cornerRadiusStat, style: .continuous))
     }
 
     private func recapRow(value: String, label: String) -> some View {
         HStack(alignment: .firstTextBaseline) {
             Text(value)
-                .font(ProgressFonts.dmMonoRegular(size: 18))
+                .font(GlanceHubFont.semibold(18))
+                .monospacedDigit()
                 .foregroundStyle(Color.charcoal)
                 .frame(width: 42, alignment: .leading)
 
             Text(label)
-                .font(ProgressFonts.jostRegular(size: 12))
+                .font(GlanceHubFont.regular(13))
                 .foregroundStyle(Color.warmMid)
 
             Spacer(minLength: 0)
@@ -550,34 +582,34 @@ struct GlanceSATProgressScreen: View {
         VStack(alignment: .leading, spacing: 8) {
             HStack(alignment: .firstTextBaseline, spacing: 6) {
                 Text("\(displayData.tomorrowReview)")
-                    .font(ProgressFonts.dmMonoRegular(size: 28))
+                    .font(GlanceHubFont.semibold(28))
+                    .monospacedDigit()
                     .foregroundStyle(Color.charcoal)
                 Text("review")
-                    .font(ProgressFonts.jostRegular(size: 12))
+                    .font(GlanceHubFont.regular(13))
                     .foregroundStyle(Color.warmMid)
 
                 Text("·")
-                    .font(ProgressFonts.jostRegular(size: 12))
+                    .font(GlanceHubFont.regular(13))
                     .foregroundStyle(Color.warmFaint)
 
                 Text("\(displayData.tomorrowNew)")
-                    .font(ProgressFonts.dmMonoRegular(size: 28))
+                    .font(GlanceHubFont.semibold(28))
+                    .monospacedDigit()
                     .foregroundStyle(Color.charcoal)
                 Text("new")
-                    .font(ProgressFonts.jostRegular(size: 12))
+                    .font(GlanceHubFont.regular(13))
                     .foregroundStyle(Color.warmMid)
             }
 
             Text("Missed words return sooner. Stable words move forward.")
-                .font(ProgressFonts.jostRegular(size: 11))
+                .font(GlanceHubFont.regular(13))
                 .foregroundStyle(Color.warmMid)
         }
         .padding(ProgressScreenMetrics.cardPadding)
-        .background(Color.linen)
-        .overlay(
-            RoundedRectangle(cornerRadius: ProgressScreenMetrics.cornerRadiusStat, style: .continuous)
-                .stroke(Color.charcoal.opacity(0.15), lineWidth: 0.5)
-        )
+        .background {
+            insightsFrostedCard(cornerRadius: ProgressScreenMetrics.cornerRadiusStat)
+        }
         .clipShape(RoundedRectangle(cornerRadius: ProgressScreenMetrics.cornerRadiusStat, style: .continuous))
     }
 }

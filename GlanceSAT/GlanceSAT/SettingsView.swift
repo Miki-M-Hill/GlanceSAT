@@ -132,7 +132,7 @@ struct SettingsView: View {
                 .padding(.top, 8)
             }
             .background(HubPalette.linen.ignoresSafeArea())
-            .navigationTitle("Settings")
+            .navigationTitle("Glance")
             .navigationBarTitleDisplayMode(.large)
             .toolbarBackground(HubPalette.linen, for: .navigationBar)
             .toolbarBackground(.visible, for: .navigationBar)
@@ -173,7 +173,7 @@ struct SettingsView: View {
                 Spacer(minLength: 0)
             }
             .background(HubPalette.linen)
-            .navigationTitle("SAT date")
+            .navigationTitle("Glance")
             .navigationBarTitleDisplayMode(.inline)
             .toolbarBackground(HubPalette.linen, for: .navigationBar)
             .toolbar {
