@@ -75,7 +75,7 @@ struct WidgetStudioView: View {
                 .presentationDragIndicator(.visible)
         }
         .task {
-            WidgetSnapshotWriter.refresh(modelContext: modelContext)
+            await WidgetSnapshotWriter.refresh(modelContext: modelContext)
         }
     }
 
@@ -199,7 +199,7 @@ struct WidgetStudioView: View {
                         .foregroundStyle(Color.wsCharcoalPrimary)
                         .lineLimit(1)
                         .minimumScaleFactor(0.75)
-                    Text(viewModel.previewWord.partOfSpeech)
+                    Text(PartOfSpeechAbbreviation.abbreviated(viewModel.previewWord.partOfSpeech))
                         .font(.system(size: 10, weight: .medium, design: .rounded))
                         .foregroundStyle(Color.wsCharcoalMid)
                         .lineLimit(1)

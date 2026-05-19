@@ -52,7 +52,7 @@ struct WidgetPalette: Sendable {
             )
         default:
             return WidgetPalette(
-                background: Color(hex: "F5F3E9"),
+                background: WidgetAppearance.linenBackground,
                 primary: Color(hex: "1C1C1E"),
                 secondary: Color(hex: "6E6E73"),
                 accent: Color(hex: "7EA3A0")

@@ -10,5 +10,6 @@ import WidgetKit
 struct GlanceSATWidgetsBundle: WidgetBundle {
     var body: some Widget {
         GlanceSATVocabularyWidget()
+        GlanceSATQuizWidget()
     }
 }

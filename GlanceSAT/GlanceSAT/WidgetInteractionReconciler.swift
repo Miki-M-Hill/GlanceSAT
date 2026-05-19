@@ -7,56 +7,40 @@ import Foundation
 import SwiftData
 
 enum WidgetInteractionReconciler {
-    private enum Action: String, Codable {
-        case know
-        case review
-        case revealExample
-    }
-
-    private struct Event: Codable {
-        let wordID: String
-        let action: Action
-        let date: Date
-    }
+    static let dismissedWordIDsKey = "widget.interactions.dismissedWordIDs"
 
     private enum Keys {
-        static let dismissedWordIDs = "widget.interactions.dismissedWordIDs"
-        static let pendingEvents = "widget.interactions.pendingEvents"
+        static let appliedEventKeys = "widget.interactions.appliedEventKeys"
     }
 
-    @MainActor
-    static func applyPendingEvents(modelContext: ModelContext) {
-        guard let defaults = WidgetAppGroup.defaults,
-              let data = defaults.data(forKey: Keys.pendingEvents),
-              let events = try? JSONDecoder().decode([Event].self, from: data),
-              !events.isEmpty else {
-            return
+    private static let maxAppliedEventKeys = 500
+
+    /// Drains the file queue off the main actor, then applies SRS on a `@ModelActor`.
+    static func reconcile(modelContainer: ModelContainer) async {
+        let events = await Task.detached(priority: .userInitiated) {
+            WidgetPendingEventsStore.drain()
+        }.value
+
+        guard !events.isEmpty else { return }
+
+        let actor = WidgetReconcileActor(modelContainer: modelContainer)
+        try? await actor.apply(events: events)
+    }
+
+    static func loadAppliedEventKeys(from defaults: UserDefaults) -> Set<String> {
+        guard let keys = defaults.array(forKey: Keys.appliedEventKeys) as? [String] else {
+            return []
         }
+        return Set(keys)
+    }
 
-        for event in events {
-            guard let id = UUID(uuidString: event.wordID) else { continue }
-
-            var descriptor = FetchDescriptor<Word>(
-                predicate: #Predicate { word in
-                    word.id == id
-                }
-            )
-            descriptor.fetchLimit = 1
-
-            guard let word = try? modelContext.fetch(descriptor).first else { continue }
-
-            switch event.action {
-            case .know:
-                _ = SRSEngine.calculateNextReview(word: word, quality: 5)
-            case .review:
-                _ = SRSEngine.calculateNextReview(word: word, quality: 1)
-            case .revealExample:
-                continue
-            }
+    static func saveAppliedEventKeys(_ keys: Set<String>, to defaults: UserDefaults) {
+        let trimmed: [String]
+        if keys.count > maxAppliedEventKeys {
+            trimmed = Array(keys.sorted().suffix(maxAppliedEventKeys))
+        } else {
+            trimmed = Array(keys)
         }
-
-        try? modelContext.save()
-        defaults.removeObject(forKey: Keys.pendingEvents)
-        defaults.removeObject(forKey: Keys.dismissedWordIDs)
+        defaults.set(trimmed, forKey: Keys.appliedEventKeys)
     }
 }

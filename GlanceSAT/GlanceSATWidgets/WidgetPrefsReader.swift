@@ -10,6 +10,8 @@ enum WidgetPrefsReader {
         static let style = "widget.prefs.style"
         static let theme = "widget.prefs.theme"
         static let typography = "widget.prefs.typography"
+        static let primaryQuizCompletedDayKey = "widget.primaryQuizCompletedDayKey"
+        static let streakDays = "widget.streakDays"
     }
 
     private static let appGroup = "group.com.mikihill.GlanceSAT"
@@ -36,5 +38,13 @@ enum WidgetPrefsReader {
         case "large": return 1.08
         default: return 1.0
         }
+    }
+
+    static func isPrimaryQuizCompleted(for dayKey: String) -> Bool {
+        defaults?.string(forKey: Keys.primaryQuizCompletedDayKey) == dayKey
+    }
+
+    static func streakDays() -> Int {
+        defaults?.integer(forKey: Keys.streakDays) ?? 0
     }
 }

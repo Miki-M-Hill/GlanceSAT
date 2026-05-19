@@ -1,0 +1,502 @@
+[
+  {
+    "word": "Elucidate",
+    "count": 20,
+    "sentence": "I didn\u2019t understand why my friend was so angry with me, so I asked Janine to elucidate her feelings."
+  },
+  {
+    "word": "Eminent",
+    "count": 18,
+    "sentence": "Mr. Phillips is such an eminent scholar that every professor on campus has come to hear him lecture."
+  },
+  {
+    "word": "Emote",
+    "count": 23,
+    "sentence": "The director told the actor he had to emote, or else the audience would have no idea what his character was going through."
+  },
+  {
+    "word": "Empirical",
+    "count": 18,
+    "sentence": "The scientist gathered empirical data on the growth rate of dandelions by studying the dandelions behind his house."
+  },
+  {
+    "word": "Emulate",
+    "count": 27,
+    "sentence": "I idolize Britney Spears so much that I emulate everything she does: I wear her outfits, sing along to her songs, and date a boy named Justin."
+  },
+  {
+    "word": "Encore",
+    "count": 22,
+    "sentence": "At the end of the concert, all the fans yelled, \u201cEncore! Encore!\u201d but the band did not come out to play again."
+  },
+  {
+    "word": "Encumber",
+    "count": 19,
+    "sentence": "At the airport, my friend was encumbered by her luggage, so I offered to carry two of her bags."
+  },
+  {
+    "word": "Enervate",
+    "count": 18,
+    "sentence": "Writing these sentences enervates me so much that I will have to take a nap after I finish."
+  },
+  {
+    "word": "Enigmatic",
+    "count": 19,
+    "sentence": "That man wearing the dark suit and dark glasses is so enigmatic that no one even knows his name."
+  },
+  {
+    "word": "Enmity",
+    "count": 21,
+    "sentence": "Mark and Andy have clearly not forgiven each other, because the enmity between them is obvious to anyone in their presence."
+  },
+  {
+    "word": "Ennui",
+    "count": 17,
+    "sentence": "I feel such ennui that I don\u2019t look forward to anything, not even my birthday party."
+  },
+  {
+    "word": "Ephemeral",
+    "count": 19,
+    "sentence": "She promised she\u2019d love me forever, but her \u201cforever\u201d was only ephemeral: she left me after one week."
+  },
+  {
+    "word": "Epistolary",
+    "count": 25,
+    "sentence": "Some people call me \u201cAuntie\u2019s boy,\u201d because my aunt and I have such a close epistolary relationship that we write each other every day."
+  },
+  {
+    "word": "Equanimity",
+    "count": 25,
+    "sentence": "Even though he had just been fired, Mr. Simms showed great equanimity by neatly packing up his desk and wishing everyone in the office well."
+  },
+  {
+    "word": "Equivocal",
+    "count": 17,
+    "sentence": "His intentions were so equivocal that I didn\u2019t know whether he was being chivalrous or sleazy."
+  },
+  {
+    "word": "Erudite",
+    "count": 21,
+    "sentence": "My Latin teacher is such an erudite scholar that he has translated some of the most difficult and abstruse ancient poetry."
+  },
+  {
+    "word": "Etymology",
+    "count": 25,
+    "sentence": "From the study of etymology, I know that the word \u201cquixotic\u201d derives from Don Quixote and the word \u201cgaudy\u201d refers to the Spanish architect Gaud\u00ed."
+  },
+  {
+    "word": "Evanescent",
+    "count": 24,
+    "sentence": "My joy at getting promoted was evanescent because I discovered that I would have to work much longer hours in a less friendly office."
+  },
+  {
+    "word": "Evince",
+    "count": 17,
+    "sentence": "Christopher\u2019s hand-wringing and nail-biting evince how nervous he is about the upcoming English test."
+  },
+  {
+    "word": "Exculpate",
+    "count": 17,
+    "sentence": "My discovery of the ring behind the dresser exculpated me from the charge of having stolen it."
+  },
+  {
+    "word": "Exonerate",
+    "count": 17,
+    "sentence": "The true thief\u2019s confession exonerated the man who had been held in custody for the crime."
+  },
+  {
+    "word": "Extricate",
+    "count": 25,
+    "sentence": "Instead of trying to mediate between my brother and sister, I extricated myself from the family tension entirely and left the house for the day."
+  },
+  {
+    "word": "Exult",
+    "count": 20,
+    "sentence": "When she found out she won the literature prize, Mary exulted by dancing and singing through the school\u2019s halls."
+  },
+  {
+    "word": "Fastidious",
+    "count": 20,
+    "sentence": "Mark is so fastidious that he is never able to finish a project because it always seems imperfect to him."
+  },
+  {
+    "word": "Flabbergasted",
+    "count": 20,
+    "sentence": "Whenever I read an Agatha Christie mystery novel, I am always flabbergasted when I learn the identity of the murderer."
+  },
+  {
+    "word": "Flagrant",
+    "count": 22,
+    "sentence": "The judge\u2019s decision to set the man free simply because that man was his brother was a flagrant abuse of power."
+  },
+  {
+    "word": "Flout",
+    "count": 21,
+    "sentence": "I flouted the school\u2019s dress code by wearing a tie-dyed tank top and a pair of cut-off jeans."
+  },
+  {
+    "word": "Forage",
+    "count": 18,
+    "sentence": "When we got lost on our hiking trip, we foraged for berries and nuts in order to survive."
+  },
+  {
+    "word": "Forestall",
+    "count": 18,
+    "sentence": "I forestalled the cold I was getting by taking plenty of vitamin C pills and wearing a scarf."
+  },
+  {
+    "word": "Forlorn",
+    "count": 24,
+    "sentence": "Even though I had the flu, my family decided to go skiing for the weekend and leave me home alone, feeling feverish and forlorn."
+  },
+  {
+    "word": "Fortuitous",
+    "count": 21,
+    "sentence": "After looking for Manuel and not finding him at home, Harriet had a fortuitous encounter with him at the post office."
+  },
+  {
+    "word": "Fractious",
+    "count": 36,
+    "sentence": "Although the child insisted he wasn\u2019t tired, his fractious behavior\u2014especially his decision to crush his cheese and crackers all over the floor\u2014convinced everyone present that it was time to put him to bed."
+  },
+  {
+    "word": "Frenetic",
+    "count": 17,
+    "sentence": "In the hours between night and morning, the frenetic pace of city life slows to a lull."
+  },
+  {
+    "word": "Frivolous",
+    "count": 17,
+    "sentence": "Someday, all that anxiety about whether your zit will disappear before the prom will seem totally frivolous."
+  },
+  {
+    "word": "Frugal",
+    "count": 23,
+    "sentence": "Richard is so frugal that his diet consists almost exclusively of catfish and chicken liver\u2014the two most inexpensive foods in the store."
+  },
+  {
+    "word": "Furtive",
+    "count": 28,
+    "sentence": "Jane\u2019s placement of her drugs in her sock drawer was not as furtive as she thought, as the sock drawer is the first place most parents look."
+  },
+  {
+    "word": "Garish",
+    "count": 17,
+    "sentence": "Mrs. Watson has poor taste and covers every object in her house with a garish gold lam\u00e9."
+  },
+  {
+    "word": "Garrulous",
+    "count": 17,
+    "sentence": "Some talk show hosts are so garrulous that their guests can\u2019t get a word in edgewise."
+  },
+  {
+    "word": "Genial",
+    "count": 22,
+    "sentence": "Although he\u2019s been known to behave like a real jerk, I would say that my brother is an overall genial guy."
+  },
+  {
+    "word": "Gluttony",
+    "count": 18,
+    "sentence": "Ada\u2019s fried chicken tastes so divine, I don\u2019t know how anyone can call gluttony a sin."
+  },
+  {
+    "word": "Goad",
+    "count": 23,
+    "sentence": "Jim may think he\u2019s not going to fight Billy, but Billy will goad Jim on with insults until he throws a punch."
+  },
+  {
+    "word": "Gourmand",
+    "count": 20,
+    "sentence": "My parents, who used to eat little more than crackers and salad, have become real gourmands in their old age."
+  },
+  {
+    "word": "Grandiloquence",
+    "count": 19,
+    "sentence": "The student thought her grandiloquence would make her sound smart, but neither the class nor the teacher bought it."
+  },
+  {
+    "word": "Gregarious",
+    "count": 20,
+    "sentence": "Well, if you\u2019re not gregarious, I don\u2019t know why you would want to go to a singles party!"
+  },
+  {
+    "word": "Hackneyed",
+    "count": 19,
+    "sentence": "A girl can only hear \u201cI love you\u201d so many times before it begins to sound hackneyed and meaningless."
+  },
+  {
+    "word": "Hardy",
+    "count": 19,
+    "sentence": "I too would have expected the plants to be dead by mid-November, but apparently they\u2019re very hardy."
+  },
+  {
+    "word": "Harrowing",
+    "count": 24,
+    "sentence": "The car crash was a harrowing experience, but I have a feeling that the increase in my insurance premiums will be even more upsetting."
+  },
+  {
+    "word": "Hedonist",
+    "count": 22,
+    "sentence": "Because he\u2019s such a hedonist, I knew Murray would appreciate the 11 cases of wine I bought him for his birthday."
+  },
+  {
+    "word": "Hegemony",
+    "count": 17,
+    "sentence": "Britain\u2019s hegemony over its colonies was threatened once nationalist sentiment began to spread around the world."
+  },
+  {
+    "word": "Heinous",
+    "count": 21,
+    "sentence": "The killings were made all the more heinous by the fact that the murderer first tortured his victims for three days."
+  },
+  {
+    "word": "Heterogeneous",
+    "count": 21,
+    "sentence": "I hate having only one flavor so I always buy the swirled, or should I say heterogeneous, type of ice cream."
+  },
+  {
+    "word": "Hypothetical",
+    "count": 24,
+    "sentence": "Even though it has been celebrated by seven major newspapers, that the drug will be a success when tested in humans is still hypothetical."
+  },
+  {
+    "word": "Iconoclast",
+    "count": 22,
+    "sentence": "Jane goes to one protest after another, but she seems to be an iconoclast rather than an activist with a progressive agenda."
+  },
+  {
+    "word": "Idiosyncratic",
+    "count": 31,
+    "sentence": "I know you had trouble with the last test, but because your mistakes were highly idiosyncratic, I\u2019m going to deny your request that the class be given a new test."
+  },
+  {
+    "word": "Idolatrous",
+    "count": 26,
+    "sentence": "Xena\u2019s idolatrous fawning over the band\u2014following them on tour, starting their fan club, filming their documentary\u2014is really beginning to get on my nerves."
+  },
+  {
+    "word": "Ignominious",
+    "count": 20,
+    "sentence": "It was really ignominious to be kicked out of the dorm for having an illegal gas stove in my room."
+  },
+  {
+    "word": "Immerse",
+    "count": 19,
+    "sentence": "After breaking up with her boyfriend, Nancy decided to immerse herself in her work in order to avoid crying."
+  },
+  {
+    "word": "Impeccable",
+    "count": 21,
+    "sentence": "If your grades were as impeccable as your sister\u2019s, then you too would receive a car for a graduation present."
+  },
+  {
+    "word": "Impertinent",
+    "count": 18,
+    "sentence": "Most of your comments are so impertinent that I don\u2019t wish to dignify them with an answer."
+  },
+  {
+    "word": "Implement",
+    "count": 23,
+    "sentence": "Do you have a knife or some other sort of implement that I could use to pry the lid off of this jar?"
+  },
+  {
+    "word": "Implicate",
+    "count": 27,
+    "sentence": "Even though Tom wasn\u2019t present at the time of the shooting, he was implicated by the evidence suggesting that he had supplied the shooters with guns."
+  },
+  {
+    "word": "Implicit",
+    "count": 29,
+    "sentence": "I know Professor Smith didn\u2019t actually say not to write from personal experience, but I think such a message was implicit in her instruction to use scholarly sources."
+  },
+  {
+    "word": "Impregnable",
+    "count": 18,
+    "sentence": "Though the invaders used battering rams, catapults, and rain dances, the fortress proved impregnable and resisted all attacks."
+  },
+  {
+    "word": "Impudent",
+    "count": 23,
+    "sentence": "The impudent young man looked the princess up and down and told her she was hot even though she hadn\u2019t asked him."
+  },
+  {
+    "word": "Inarticulate",
+    "count": 23,
+    "sentence": "Though he spoke for over an hour, the lecturer was completely inarticulate and the students had no idea what he was talking about."
+  },
+  {
+    "word": "Incendiary",
+    "count": 23,
+    "sentence": "If we catch the incendiary who screamed \u201cbomb\u201d in the middle of the soccer match, we\u2019re going to put him in jail."
+  },
+  {
+    "word": "Incisive",
+    "count": 19,
+    "sentence": "The discussion wasn\u2019t going anywhere until her incisive comment allowed everyone to see what the true issues were."
+  },
+  {
+    "word": "Inclination",
+    "count": 23,
+    "sentence": "Sarah has an inclination to see every foreign film she hears about, even when she\u2019s sure that she won\u2019t like it."
+  },
+  {
+    "word": "Incorrigible",
+    "count": 22,
+    "sentence": "You can buy Grandma nicotine gum all you want, but I think that after sixty-five years of smoking she\u2019s incorrigible."
+  },
+  {
+    "word": "Indigenous",
+    "count": 23,
+    "sentence": "Some fear that these plants, which are not indigenous to the region, may choke out the vegetation that is native to the area."
+  },
+  {
+    "word": "Indolent",
+    "count": 28,
+    "sentence": "Why should my indolent children, who can\u2019t even pick themselves up off the couch to pour their own juice, be rewarded with a trip to the mall?"
+  },
+  {
+    "word": "Indomitable",
+    "count": 23,
+    "sentence": "To be honest, Jim, my indomitable nature means I could never take orders from anyone, and especially not from a jerk like you."
+  },
+  {
+    "word": "Ineffable",
+    "count": 21,
+    "sentence": "It is said that the experience of playing with a dolphin is ineffable and can only be understood through direct encounter."
+  },
+  {
+    "word": "Inept",
+    "count": 20,
+    "sentence": "She proved how inept she was when she forgot three orders and spilled a beer in a customer\u2019s lap."
+  },
+  {
+    "word": "Inexorable",
+    "count": 20,
+    "sentence": "Although I begged for hours, Mom was inexorable and refused to let me stay out all night after the prom."
+  },
+  {
+    "word": "Ingenious",
+    "count": 27,
+    "sentence": "Her ingenious use of walnuts instead of the peanuts called for by the recipe was lauded by the other garden club members who found her cake delicious."
+  },
+  {
+    "word": "Ingenuous",
+    "count": 23,
+    "sentence": "He must have writers, but his speeches seem so ingenuous it\u2019s hard to believe he\u2019s not speaking from his own heart."
+  },
+  {
+    "word": "Inhibit",
+    "count": 20,
+    "sentence": "When I told you I needed the car last night, I certainly never meant to inhibit you from going out."
+  },
+  {
+    "word": "Inimical",
+    "count": 23,
+    "sentence": "I don\u2019t see how I could ever work for a company that was so cold and inimical to me during my interviews."
+  },
+  {
+    "word": "Injunction",
+    "count": 23,
+    "sentence": "After his house was toilet-papered for the fifth time, the mayor issued an injunction against anyone younger than 21 buying toilet paper."
+  },
+  {
+    "word": "Innovate",
+    "count": 22,
+    "sentence": "Because of the stiff competition, the company knew it needed to pour a lot of energy into innovating new and better products."
+  },
+  {
+    "word": "Inoculate",
+    "count": 22,
+    "sentence": "I\u2019ve feared needles ever since I was inoculated against 37 diseases at age one; but I have also never been sick."
+  },
+  {
+    "word": "Inquisitor",
+    "count": 17,
+    "sentence": "The inquisitor was instructed to knock on every door in town in order to find the fugitive."
+  },
+  {
+    "word": "Insinuate",
+    "count": 27,
+    "sentence": "I wish Luke and Spencer would stop insinuating that my perfect report card is the result of anything other than my superior intelligence and good work habits."
+  },
+  {
+    "word": "Instigate",
+    "count": 20,
+    "sentence": "The demagogue instigated the crowd into a fury by telling them that they had been cheated by the federal government."
+  },
+  {
+    "word": "Insular",
+    "count": 25,
+    "sentence": "Because of the sensitive nature of their jobs, those who work for the CIA must remain insular and generally only spend time with each other."
+  },
+  {
+    "word": "Insurgent",
+    "count": 19,
+    "sentence": "The insurgent snuck into and defaced a different classroom each night until the administration agreed to meet his demands."
+  },
+  {
+    "word": "Interlocutor",
+    "count": 23,
+    "sentence": "When the officials could not come to an agreement over the correct cover of the flags, the prime minister acted as an interlocutor."
+  },
+  {
+    "word": "Intimation",
+    "count": 24,
+    "sentence": "Mr. Brinford\u2019s intimation that he would soon pass away occurred when he began to discuss how to distribute his belongings among his children."
+  },
+  {
+    "word": "Intransigent",
+    "count": 27,
+    "sentence": "The intransigent child said he would have 12 scoops of ice cream, or he would bang his head against the wall until his mother fainted from fear."
+  },
+  {
+    "word": "Intrepid",
+    "count": 17,
+    "sentence": "After scaling a live volcano prior to its eruption, the explorer was praised for his intrepid attitude."
+  },
+  {
+    "word": "Inundate",
+    "count": 21,
+    "sentence": "Because I am the star of a new sitcom, my fans are sure to inundate me with fan mail and praise."
+  },
+  {
+    "word": "Invective",
+    "count": 19,
+    "sentence": "My mother\u2019s irrational invective against the way I dress only made me decide to dye my hair green."
+  },
+  {
+    "word": "Inveterate",
+    "count": 19,
+    "sentence": "I\u2019m the first to admit that I\u2019m an inveterate coffee drinker\u2014I drink four cups a day."
+  },
+  {
+    "word": "Judicious",
+    "count": 19,
+    "sentence": "When the judicious king decided to compromise rather than send his army to its certain death, he was applauded."
+  },
+  {
+    "word": "Laceration",
+    "count": 17,
+    "sentence": "Because he fell off his bike into a rosebush, the paperboy\u2019s skin was covered with lacerations."
+  },
+  {
+    "word": "Larceny",
+    "count": 19,
+    "sentence": "When my car was not where I had left it, I realized that I was a victim of larceny."
+  },
+  {
+    "word": "Legerdemain",
+    "count": 18,
+    "sentence": "Smuggling the French plants through customs by claiming that they were fake was a remarkable bit of legerdemain."
+  },
+  {
+    "word": "Lenient",
+    "count": 20,
+    "sentence": "Because Professor Oglethorpe allowed his students to choose their final grades, the other teachers believed that he was excessively lenient."
+  },
+  {
+    "word": "Lethargic",
+    "count": 23,
+    "sentence": "When Jean Claude explained to his boss that he was lethargic and didn\u2019t feel like working that day, the boss fired him."
+  }
+]

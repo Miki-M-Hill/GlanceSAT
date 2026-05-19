@@ -13,6 +13,7 @@ struct DailyQuizCompletion {
     let rememberedWordIDs: Set<UUID>
     let missedWordIDs: Set<UUID>
     let isSupplementalRound: Bool
+    let questionSlotKeys: Set<String>
 }
 
 struct DailyQuizView: View {
@@ -34,6 +35,8 @@ struct DailyQuizView: View {
     @State private var summaryAppeared = false
     @State private var pendingAdvanceWorkItem: DispatchWorkItem?
     @State private var quizStartedAt = Date.now
+    @State private var quizCalendarDayKey = DailyWordBatchService.calendarDayKey()
+    @State private var questionShownAt = Date.now
     @State private var rememberedWordIDs: Set<UUID> = []
     @State private var missedWordIDs: Set<UUID> = []
     @State private var didApplyResume = false
@@ -49,6 +52,15 @@ struct DailyQuizView: View {
     private var currentQuestion: QuizQuestion? {
         guard questions.indices.contains(currentQuestionIndex) else { return nil }
         return questions[currentQuestionIndex]
+    }
+
+    /// Changes when the quiz deck is replaced (e.g. supplemental round 2 at index 0 again).
+    private var questionDeckToken: String {
+        questions.map(\.id.uuidString).joined(separator: "|")
+    }
+
+    private var activeQuestionID: UUID? {
+        currentQuestion?.id
     }
 
     private var progressValue: Double {
@@ -76,8 +88,22 @@ struct DailyQuizView: View {
             applyResumeIfNeeded()
             if resume == nil, currentQuestionIndex == 0, !quizComplete {
                 quizStartedAt = Date.now
+                quizCalendarDayKey = DailyWordBatchService.clampedCalendarDayKey(
+                    DailyWordBatchService.calendarDayKey(for: quizStartedAt)
+                )
             }
+            resetQuestionTimer()
         }
+        .onChange(of: activeQuestionID, initial: true) { _, _ in
+            resetQuestionTimer()
+        }
+        .onChange(of: questionDeckToken, initial: true) { _, _ in
+            resetQuestionTimer()
+        }
+    }
+
+    private func resetQuestionTimer() {
+        questionShownAt = Date.now
     }
 
     // MARK: - Active quiz
@@ -87,25 +113,31 @@ struct DailyQuizView: View {
             quizHeader
 
             if let question = currentQuestion {
-                GeometryReader { _ in
-                    VStack(spacing: 0) {
-                        Spacer(minLength: 0)
-                        questionBlock(for: question)
-                            .id(question.id)
-                            .transition(
-                                .asymmetric(
-                                    insertion: .move(edge: .trailing).combined(with: .opacity),
-                                    removal: .move(edge: .leading).combined(with: .opacity)
-                                )
-                            )
-                        Spacer(minLength: 0)
-                    }
-                    .frame(maxWidth: .infinity, maxHeight: .infinity)
-                }
-                .frame(maxHeight: .infinity)
+                Group {
+                    if question.questionType == .connotationFoil {
+                        connotationFoilBlock(for: question)
+                    } else {
+                        GeometryReader { _ in
+                            VStack(spacing: 0) {
+                                Spacer(minLength: 0)
+                                questionBlock(for: question)
+                                Spacer(minLength: 0)
+                            }
+                            .frame(maxWidth: .infinity, maxHeight: .infinity)
+                        }
+                        .frame(maxHeight: .infinity)
 
-                answerOptions(for: question)
-                    .padding(.top, -14)
+                        answerOptions(for: question)
+                            .padding(.top, -14)
+                    }
+                }
+                .id(question.id)
+                .transition(
+                    .asymmetric(
+                        insertion: .move(edge: .trailing).combined(with: .opacity),
+                        removal: .move(edge: .leading).combined(with: .opacity)
+                    )
+                )
 
                 nextQuestionFooter
                     .padding(.top, Self.answerOptionVerticalSpacing)
@@ -137,6 +169,22 @@ struct DailyQuizView: View {
     }
 
     @ViewBuilder
+    private func connotationFoilBlock(for question: QuizQuestion) -> some View {
+        ConnotationFoilView(
+            promptText: question.promptText,
+            optionLabels: question.allOptions,
+            correctAnswer: question.correctAnswer,
+            selectedAnswer: selectedAnswer,
+            isAnswerRevealed: isAnswerRevealed,
+            onSelect: { choice in
+                handleOptionTap(option: choice, question: question)
+            }
+        )
+        .id(question.id)
+        .frame(maxHeight: .infinity)
+    }
+
+    @ViewBuilder
     private func questionBlock(for question: QuizQuestion) -> some View {
         VStack(spacing: 0) {
             Spacer(minLength: 8)
@@ -159,6 +207,9 @@ struct DailyQuizView: View {
                 .fontWeight(.regular)
                 .multilineTextAlignment(.center)
                 .foregroundStyle(.primary)
+
+            case .connotationFoil:
+                EmptyView()
             }
 
             Spacer(minLength: 8)
@@ -168,13 +219,13 @@ struct DailyQuizView: View {
     }
 
     private func sentencePromptView(_ prompt: String) -> Text {
-        let segments = prompt.components(separatedBy: "_________")
+        let segments = prompt.components(separatedBy: SentenceBlank.token)
         guard segments.count > 1 else {
             return Text(prompt)
         }
         var combined = Text(segments[0])
         for index in 1 ..< segments.count {
-            let blank = Text("_________")
+            let blank = Text(SentenceBlank.token)
                 .fontWeight(.heavy)
                 .foregroundStyle(HubPalette.ember)
             combined = Text("\(combined)\(blank)\(Text(segments[index]))")
@@ -340,7 +391,7 @@ struct DailyQuizView: View {
             }
             .multilineTextAlignment(.center)
 
-            Text("Nice work — keep the streak alive tomorrow.")
+            Text("Nice work - keep the streak alive tomorrow")
                 .font(.subheadline)
                 .foregroundStyle(.secondary)
                 .multilineTextAlignment(.center)
@@ -383,18 +434,19 @@ struct DailyQuizView: View {
         selectedAnswer = option
         isAnswerRevealed = true
 
+        let responseSeconds = Date().timeIntervalSince(questionShownAt)
+        let quality = Self.srsQuality(correct: correct, responseSeconds: responseSeconds)
+
         if correct {
             UINotificationFeedbackGenerator().notificationOccurred(.success)
             correctCount += 1
             rememberedWordIDs.insert(question.targetWord.id)
-            _ = SRSEngine.calculateNextReview(word: question.targetWord, quality: 5)
+            applySRSUpdate(for: question, quality: quality)
         } else {
             UINotificationFeedbackGenerator().notificationOccurred(.error)
             missedWordIDs.insert(question.targetWord.id)
-            _ = SRSEngine.calculateNextReview(word: question.targetWord, quality: 1)
+            applySRSUpdate(for: question, quality: quality)
         }
-
-        try? modelContext.save()
 
         if correct {
             let work = DispatchWorkItem {
@@ -423,6 +475,7 @@ struct DailyQuizView: View {
             selectedAnswer = nil
             isAnswerRevealed = false
         }
+        resetQuestionTimer()
     }
 
     private func questionTypeTitle(for type: QuestionType) -> String {
@@ -431,11 +484,27 @@ struct DailyQuizView: View {
             return "Synonym match"
         case .sentenceCompletion:
             return "Complete the sentence"
+        case .connotationFoil:
+            return "Connotation distinction"
         }
     }
 
     private static func normalized(_ s: String) -> String {
         s.trimmingCharacters(in: .whitespacesAndNewlines).lowercased()
+    }
+
+    /// Maps correct/incorrect plus response latency to SM-2 quality (1, 3–5).
+    private static func srsQuality(correct: Bool, responseSeconds: TimeInterval) -> Int {
+        guard correct else { return 1 }
+        if responseSeconds <= 2.5 { return 5 }
+        if responseSeconds <= 5.0 { return 4 }
+        return 3
+    }
+
+    private func applySRSUpdate(for question: QuizQuestion, quality: Int) {
+        guard question.appliesSRS else { return }
+        _ = SRSEngine.calculateNextReview(word: question.targetWord, quality: quality)
+        try? modelContext.save()
     }
 
     private func applyResumeIfNeeded() {
@@ -447,6 +516,7 @@ struct DailyQuizView: View {
         rememberedWordIDs = Set(snapshot.rememberedWordIDs)
         missedWordIDs = Set(snapshot.missedWordIDs)
         quizStartedAt = snapshot.quizStartedAt
+        quizCalendarDayKey = DailyWordBatchService.clampedCalendarDayKey(snapshot.calendarDayKey)
         selectedAnswer = snapshot.selectedAnswer
         isAnswerRevealed = snapshot.isAnswerRevealed
     }
@@ -462,7 +532,8 @@ struct DailyQuizView: View {
             quizStartedAt: quizStartedAt,
             selectedAnswer: selectedAnswer,
             isAnswerRevealed: isAnswerRevealed,
-            isSupplementalRound: isSupplementalPersistence
+            isSupplementalRound: isSupplementalPersistence,
+            calendarDayKey: quizCalendarDayKey
         )
         DailyQuizPersistence.save(snapshot)
     }
@@ -473,6 +544,7 @@ struct DailyQuizView: View {
         let elapsed = max(1, Int(Date.now.timeIntervalSince(quizStartedAt)))
         let session = QuizSession(
             startedAt: quizStartedAt,
+            calendarDayKey: quizCalendarDayKey,
             durationSeconds: elapsed,
             totalQuestions: questions.count,
             correctAnswers: correctCount
@@ -485,7 +557,10 @@ struct DailyQuizView: View {
                 correctCount: correctCount,
                 rememberedWordIDs: rememberedWordIDs,
                 missedWordIDs: missedWordIDs,
-                isSupplementalRound: isSupplementalPersistence
+                isSupplementalRound: isSupplementalPersistence,
+                questionSlotKeys: Set(questions.map {
+                    QuizGenerator.questionSlotKey(targetID: $0.targetWord.id, type: $0.questionType)
+                })
             )
         )
     }
@@ -536,7 +611,10 @@ struct DailyQuizView: View {
             questionType: .synonym,
             promptText: w1.word,
             correctAnswer: "subside",
-            allOptions: ["subside", "equivocal", "mitigate", "pragmatic"].shuffled()
+            allOptions: ["subside", "lessen", "diminish", "ease"].shuffled(),
+            foilWord: nil,
+            sentenceDistractorHeadwords: [],
+            appliesSRS: true
         ),
         QuizQuestion(
             id: UUID(),
@@ -544,7 +622,10 @@ struct DailyQuizView: View {
             questionType: .sentenceCompletion,
             promptText: QuizGenerator.blankExampleSentence(w2.exampleSentence, word: w2.word),
             correctAnswer: "Candid",
-            allOptions: ["Candid", "Opaque", "Tenuous", "Vapid"].shuffled()
+            allOptions: ["Candid", "Frank", "Direct", "Open"].shuffled(),
+            foilWord: nil,
+            sentenceDistractorHeadwords: ["Frank", "Direct", "Open"],
+            appliesSRS: true
         ),
     ]
 

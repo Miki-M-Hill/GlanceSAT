@@ -13,207 +13,365 @@ struct GlanceSATWidgetRootView: View {
     @Environment(\.widgetFamily) private var family
 
     var body: some View {
+        Group {
+            if entry.isStaleSnapshot {
+                GlanceSATWidgetStaleView(family: family)
+            } else if entry.isResting {
+                GlanceSATWidgetRestView(entry: entry, family: family)
+            } else {
+                switch family {
+                case .accessoryInline, .accessoryRectangular, .accessoryCircular:
+                    GlanceSATLockFamiliesView(entry: entry, family: family)
+                default:
+                    GlanceSATHomeFamiliesView(entry: entry, family: family)
+                }
+            }
+        }
+        .widgetURL(WidgetDeepLink.todayURL())
+    }
+}
+
+// MARK: - Stale snapshot (midnight / timezone; host refreshes on open)
+
+struct GlanceSATWidgetStaleView: View {
+    let family: WidgetFamily
+
+    var body: some View {
+        switch family {
+        case .accessoryInline:
+            Text("Open GlanceSAT")
+        case .accessoryRectangular, .accessoryCircular:
+            VStack(spacing: 2) {
+                Image(systemName: "arrow.clockwise")
+                    .font(.system(size: family == .accessoryCircular ? 18 : 16, weight: .semibold))
+                if family == .accessoryRectangular {
+                    Text("Updating…")
+                        .font(.system(size: 12, weight: .medium))
+                        .lineLimit(1)
+                }
+            }
+            .frame(maxWidth: .infinity, maxHeight: .infinity)
+        default:
+            VStack(spacing: 6) {
+                Image(systemName: "arrow.clockwise")
+                    .font(.system(size: 22, weight: .semibold))
+                Text("Updating today's words…")
+                    .font(.system(size: 14, weight: .medium))
+                    .multilineTextAlignment(.center)
+                    .lineLimit(2)
+                    .minimumScaleFactor(0.85)
+                Text("Open the app to refresh.")
+                    .font(.system(size: 11, weight: .regular))
+                    .foregroundStyle(.secondary)
+                    .multilineTextAlignment(.center)
+            }
+            .frame(maxWidth: .infinity, maxHeight: .infinity)
+            .padding(12)
+        }
+    }
+}
+
+// MARK: - Rest (primary quiz completed for today)
+
+struct GlanceSATWidgetRestView: View {
+    let entry: GlanceSATEntry
+    let family: WidgetFamily
+
+    private var plantStage: WidgetStreakPlantStage {
+        WidgetStreakPlantStage(days: entry.streakDays)
+    }
+
+    private var palette: WidgetPalette { WidgetPalette.named(WidgetPrefsReader.themeName()) }
+
+    var body: some View {
         switch family {
         case .accessoryInline, .accessoryRectangular, .accessoryCircular:
-            GlanceSATLockFamiliesView(entry: entry, family: family)
+            lockRestBody
         default:
-            GlanceSATHomeFamiliesView(entry: entry, family: family)
+            homeRestBody
+        }
+    }
+
+    @ViewBuilder
+    private var lockRestBody: some View {
+        switch family {
+        case .accessoryCircular:
+            ZStack {
+                AccessoryWidgetBackground()
+                Image(systemName: "leaf.fill")
+                    .font(.system(size: 20, weight: .semibold, design: .default))
+                    .widgetAccentable()
+            }
+
+        case .accessoryRectangular:
+            HStack(alignment: .center, spacing: 8) {
+                Image(systemName: "leaf.fill")
+                    .font(.system(size: 22, weight: .semibold, design: .default))
+                    .widgetAccentable()
+
+                VStack(alignment: .leading, spacing: 1) {
+                    Text("Rest.")
+                        .font(.system(size: 15, weight: .semibold, design: .default))
+                        .lineLimit(1)
+                    Text("See you tomorrow.")
+                        .font(.system(size: 12, weight: .regular, design: .default))
+                        .foregroundStyle(.secondary)
+                        .lineLimit(1)
+                        .minimumScaleFactor(0.8)
+                }
+            }
+            .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .leading)
+
+        case .accessoryInline:
+            Label("Rest. See you tomorrow.", systemImage: "leaf.fill")
+                .font(.system(.footnote, design: .default, weight: .medium))
+                .lineLimit(1)
+                .minimumScaleFactor(0.72)
+                .widgetAccentable()
+
+        default:
+            EmptyView()
+        }
+    }
+
+    @ViewBuilder
+    private var homeRestBody: some View {
+        VStack(spacing: family == .systemSmall ? 4 : 8) {
+            Spacer(minLength: 0)
+
+            Image(plantStage.assetName)
+                .resizable()
+                .scaledToFit()
+                .frame(width: plantSize, height: plantSize)
+                .accessibilityHidden(true)
+
+            VStack(spacing: 2) {
+                Text("Rest.")
+                    .font(.system(size: titleSize, weight: .semibold, design: .default))
+                    .foregroundStyle(palette.primary)
+                    .lineLimit(1)
+                    .minimumScaleFactor(0.8)
+
+                Text("See you tomorrow")
+                    .font(.system(size: subtitleSize, weight: .regular, design: .rounded))
+                    .foregroundStyle(palette.secondary)
+                    .lineLimit(family == .systemSmall ? 1 : 2)
+                    .minimumScaleFactor(0.75)
+                    .multilineTextAlignment(.center)
+            }
+
+            Spacer(minLength: 0)
+        }
+        .frame(maxWidth: .infinity, maxHeight: .infinity)
+        .padding(homeRestInsets)
+    }
+
+    private var plantSize: CGFloat {
+        switch family {
+        case .systemSmall: return 52
+        case .systemMedium: return 64
+        default: return 78
+        }
+    }
+
+    private var titleSize: CGFloat {
+        switch family {
+        case .systemSmall: return 17
+        case .systemMedium: return 19
+        default: return 22
+        }
+    }
+
+    private var subtitleSize: CGFloat {
+        switch family {
+        case .systemSmall: return 12
+        case .systemMedium: return 13
+        default: return 15
+        }
+    }
+
+    private var homeRestInsets: EdgeInsets {
+        switch family {
+        case .systemSmall:
+            return EdgeInsets(top: 10, leading: 12, bottom: 10, trailing: 12)
+        case .systemMedium:
+            return EdgeInsets(top: 12, leading: 14, bottom: 12, trailing: 14)
+        default:
+            return EdgeInsets(top: 16, leading: 16, bottom: 16, trailing: 16)
         }
     }
 }
 
 // MARK: - Home Screen
 
-private struct GlanceSATHomeFamiliesView: View {
+struct GlanceSATHomeFamiliesView: View {
     let entry: GlanceSATEntry
     let family: WidgetFamily
 
     private var palette: WidgetPalette { WidgetPalette.named(WidgetPrefsReader.themeName()) }
     private var scale: CGFloat { WidgetPrefsReader.typographyScale() }
-    private var style: String { WidgetPrefsReader.styleRaw() }
     private var isExampleRevealed: Bool { WidgetInteractionStore.isExampleRevealed(wordID: entry.word.id) }
+    private var isHookRevealed: Bool { WidgetInteractionStore.isHookRevealed(wordID: entry.word.id) }
+    private var isSmallFamily: Bool { family == .systemSmall }
+
+    private var hasExample: Bool { !entry.word.exampleSentence.isEmpty }
+    private var hookOrOriginText: String? { entry.word.widgetHookOrOriginText }
+
+    private var activeDetailText: String? {
+        if isHookRevealed, let hook = hookOrOriginText {
+            return hook
+        }
+        if isExampleRevealed, hasExample {
+            return entry.word.exampleSentence
+        }
+        return nil
+    }
+
+    private var showsHookDetail: Bool {
+        !isSmallFamily && isHookRevealed && hookOrOriginText != nil
+    }
+
+    private var showsExampleDetail: Bool {
+        !isSmallFamily && isExampleRevealed && hasExample && !showsHookDetail
+    }
+
+    private var isAnyDetailRevealed: Bool {
+        activeDetailText != nil
+    }
 
     var body: some View {
-        Group {
-            switch style {
-            case "minimal":
-                homeMinimal
-            case "etymology":
-                homeEtymology
-            case "rich":
-                homeRich
-            default:
-                homeDefinition
+        GeometryReader { proxy in
+            let contentSize = CGSize(
+                width: proxy.size.width - insets.leading - insets.trailing,
+                height: proxy.size.height - insets.top - insets.bottom
+            )
+            let metrics = WidgetHomeCardMetrics.compute(
+                contentSize: contentSize,
+                scale: scale,
+                word: entry.word.word,
+                definitionWithPartOfSpeech: entry.word.widgetDefinitionWithPartOfSpeech,
+                detailText: activeDetailText,
+                isDetailRevealed: isAnyDetailRevealed,
+                includeAction: true,
+                isSmallFamily: isSmallFamily
+            )
+
+            VStack(alignment: .center, spacing: 0) {
+                Spacer(minLength: 0)
+
+                VStack(alignment: .center, spacing: metrics.clusterSpacing) {
+                    Text(entry.word.word)
+                        .font(.system(size: metrics.wordSize, weight: .semibold, design: .default))
+                        .foregroundStyle(palette.primary)
+                        .multilineTextAlignment(.center)
+                        .lineLimit(1)
+                        .minimumScaleFactor(0.72)
+                        .frame(maxWidth: .infinity)
+                        .widgetAccentable()
+
+                    Text(entry.word.widgetDefinitionWithPartOfSpeech)
+                        .font(.system(size: metrics.bodySize, weight: .regular, design: .rounded))
+                        .foregroundStyle(palette.secondary)
+                        .multilineTextAlignment(.center)
+                        .lineLimit(metrics.definitionLineLimit)
+                        .minimumScaleFactor(0.82)
+                        .fixedSize(horizontal: false, vertical: true)
+                        .frame(maxWidth: .infinity)
+                }
+
+                if showsHookDetail, let hook = hookOrOriginText {
+                    revealedHookBlock(hook: hook, metrics: metrics)
+                        .padding(.top, metrics.sectionSpacing)
+                } else if showsExampleDetail {
+                    revealedExampleBlock(metrics: metrics)
+                        .padding(.top, metrics.sectionSpacing)
+                }
+
+                Spacer(minLength: 0)
+
+                homeActionTray
+                    .padding(.top, metrics.sectionSpacing)
             }
+            .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .center)
+            .padding(insets)
         }
-    }
-
-    private var homeMinimal: some View {
-        VStack(spacing: 4 * scale) {
-            Spacer(minLength: 0)
-            Text(entry.word.word)
-                .font(.system(size: fontSize(18), weight: .semibold, design: .default))
-                .foregroundStyle(palette.primary)
-                .minimumScaleFactor(0.6)
-                .lineLimit(family == .systemSmall ? 1 : 2)
-                .widgetAccentable()
-            Text(entry.word.partOfSpeech)
-                .font(.system(size: 10 * scale, weight: .medium, design: .rounded))
-                .foregroundStyle(palette.secondary)
-                .textCase(.uppercase)
-                .tracking(1.2)
-            revealedExampleBlock
-            Spacer(minLength: 0)
-            homeActionTray
-        }
-        .frame(maxWidth: .infinity, maxHeight: .infinity)
-        .padding(insets)
-    }
-
-    private var homeDefinition: some View {
-        VStack(alignment: .leading, spacing: 6 * scale) {
-            if family == .systemLarge {
-                Text("SAT")
-                    .font(.system(size: 9 * scale, weight: .regular, design: .rounded))
-                    .tracking(2)
-                    .foregroundStyle(palette.secondary.opacity(0.55))
-            }
-            HStack(alignment: .firstTextBaseline, spacing: 6) {
-                Text(entry.word.word)
-                    .font(.system(size: fontSize(16), weight: .semibold, design: .default))
-                    .foregroundStyle(palette.primary)
-                    .lineLimit(1)
-                    .minimumScaleFactor(0.65)
-                    .widgetAccentable()
-                Text(entry.word.partOfSpeech)
-                    .font(.system(size: 10 * scale, weight: .regular, design: .rounded))
-                    .foregroundStyle(palette.secondary)
-                    .lineLimit(1)
-            }
-            Text(entry.word.definition)
-                .font(.system(size: bodySize, weight: .regular, design: .rounded))
-                .foregroundStyle(palette.secondary)
-                .lineLimit(nil)
-                .minimumScaleFactor(0.68)
-                .fixedSize(horizontal: false, vertical: true)
-            revealedExampleBlock
-            Spacer(minLength: 0)
-            homeActionTray
-        }
-        .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .topLeading)
-        .padding(insets)
-    }
-
-    private var homeEtymology: some View {
-        VStack(spacing: 6 * scale) {
-            Text((entry.word.etymology ?? "Latin").uppercased())
-                .font(.system(size: 11 * scale, weight: .regular, design: .rounded))
-                .tracking(1.2)
-                .foregroundStyle(palette.secondary)
-                .lineLimit(1)
-                .minimumScaleFactor(0.55)
-            Text(entry.word.word)
-                .font(.system(size: fontSize(19), weight: .semibold, design: .default))
-                .foregroundStyle(palette.primary)
-                .lineLimit(2)
-                .minimumScaleFactor(0.55)
-                .multilineTextAlignment(.center)
-                .widgetAccentable()
-            Text(entry.word.partOfSpeech)
-                .font(.system(size: 10 * scale, weight: .medium, design: .rounded))
-                .foregroundStyle(palette.accent)
-                .padding(.horizontal, 8)
-                .padding(.vertical, 4)
-                .background(palette.accent.opacity(0.12))
-                .clipShape(RoundedRectangle(cornerRadius: 4, style: .continuous))
-            revealedExampleBlock
-            Spacer(minLength: 0)
-            homeActionTray
-        }
-        .frame(maxWidth: .infinity, maxHeight: .infinity)
-        .multilineTextAlignment(.center)
-        .padding(insets)
-    }
-
-    private var homeRich: some View {
-        VStack(alignment: .leading, spacing: 7 * scale) {
-            HStack(spacing: 6) {
-                Text(entry.word.word)
-                    .font(.system(size: fontSize(17), weight: .semibold, design: .default))
-                    .foregroundStyle(palette.primary)
-                    .lineLimit(1)
-                    .minimumScaleFactor(0.55)
-                    .widgetAccentable()
-                Text(entry.word.partOfSpeech)
-                    .font(.system(size: 10 * scale, weight: .regular, design: .rounded))
-                    .foregroundStyle(palette.secondary)
-            }
-            Text(entry.word.definition)
-                .font(.system(size: bodySize, weight: .regular, design: .rounded))
-                .foregroundStyle(palette.secondary)
-                .lineLimit(nil)
-                .minimumScaleFactor(0.68)
-                .fixedSize(horizontal: false, vertical: true)
-
-            revealedExampleBlock
-
-            if family == .systemLarge, let ety = entry.word.etymology, !ety.isEmpty {
-                Text(ety)
-                    .font(.system(size: 9 * scale, weight: .regular, design: .rounded))
-                    .italic()
-                    .foregroundStyle(palette.secondary.opacity(0.88))
-                    .lineLimit(2)
-            }
-
-            Spacer(minLength: 0)
-            homeActionTray
-        }
-        .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .topLeading)
-        .padding(insets)
     }
 
     @ViewBuilder
-    private var revealedExampleBlock: some View {
-        if isExampleRevealed, !entry.word.exampleSentence.isEmpty {
-            HStack(alignment: .top, spacing: 6) {
-                Rectangle()
-                    .fill(palette.accent)
-                    .frame(width: 2)
-                    .opacity(0.9)
-                Text(entry.word.exampleSentence)
-                    .font(.system(size: exampleSize, weight: .regular, design: .default))
-                    .italic()
-                    .foregroundStyle(palette.secondary)
-                    .lineLimit(family == .systemSmall ? 3 : nil)
-                    .minimumScaleFactor(0.64)
-                    .fixedSize(horizontal: false, vertical: true)
+    private func revealedHookBlock(hook: String, metrics: WidgetHomeCardMetrics.Values) -> some View {
+        widgetDetailBlock(
+            text: hook,
+            font: .system(size: metrics.detailBodySize, weight: .regular, design: .rounded),
+            italic: false
+        )
+    }
+
+    @ViewBuilder
+    private func revealedExampleBlock(metrics: WidgetHomeCardMetrics.Values) -> some View {
+        widgetDetailBlock(
+            text: entry.word.exampleSentence,
+            font: .system(size: metrics.detailBodySize, weight: .regular, design: .default),
+            italic: true
+        )
+    }
+
+    private func widgetDetailBlock(text: String, font: Font, italic: Bool) -> some View {
+        HStack(alignment: .top, spacing: 6) {
+            Rectangle()
+                .fill(palette.accent)
+                .frame(width: 2)
+                .opacity(0.9)
+            Group {
+                if italic {
+                    Text(text)
+                        .italic()
+                } else {
+                    Text(text)
+                }
             }
-            .padding(.top, family == .systemSmall ? 1 : 2)
-            .frame(maxWidth: .infinity, alignment: .leading)
+            .font(font)
+            .foregroundStyle(palette.secondary)
+            .multilineTextAlignment(.leading)
+            .lineLimit(4)
+            .minimumScaleFactor(0.82)
+            .fixedSize(horizontal: false, vertical: true)
         }
+        .frame(maxWidth: .infinity, alignment: .leading)
     }
 
     private var homeActionTray: some View {
-        HStack(spacing: family == .systemSmall ? 8 : 10) {
+        HStack(spacing: 10) {
             widgetActionButton(
-                systemName: "checkmark.circle",
-                accessibilityLabel: "Mark as known",
-                intent: KnowWidgetWordIntent(wordID: entry.word.id.uuidString)
+                systemName: "speaker.wave.2.fill",
+                accessibilityLabel: "Pronounce \(entry.word.word)",
+                intent: SpeakWidgetWordIntent(word: entry.word.word)
             )
 
-            widgetActionButton(
-                systemName: "arrow.counterclockwise.circle",
-                accessibilityLabel: "Review again",
-                intent: ReviewWidgetWordIntent(wordID: entry.word.id.uuidString)
-            )
+            if !isSmallFamily {
+                widgetActionButton(
+                    systemName: isHookRevealed ? "lightbulb.fill" : "lightbulb",
+                    accessibilityLabel: hookActionAccessibilityLabel,
+                    intent: ToggleWidgetDetailIntent(wordID: entry.word.id.uuidString)
+                )
 
-            widgetActionButton(
-                systemName: "quote.opening",
-                accessibilityLabel: "Show example sentence",
-                intent: RevealExampleWidgetWordIntent(wordID: entry.word.id.uuidString)
-            )
+                if hasExample {
+                    widgetActionButton(
+                        systemName: "quote.opening",
+                        accessibilityLabel: isExampleRevealed ? "Hide example sentence" : "Show example sentence",
+                        intent: ToggleWidgetExampleIntent(wordID: entry.word.id.uuidString)
+                    )
+                }
+            }
         }
-        .frame(maxWidth: .infinity, alignment: family == .systemSmall ? .center : .leading)
+        .frame(maxWidth: .infinity, alignment: .center)
+    }
+
+    private var hookActionAccessibilityLabel: String {
+        let noun = entry.word.widgetHookDetailUsesOrigin ? "origin" : "hook"
+        if isHookRevealed {
+            return "Hide \(noun)"
+        }
+        return "Show \(noun)"
     }
 
     private func widgetActionButton<I: AppIntent>(
@@ -223,64 +381,22 @@ private struct GlanceSATHomeFamiliesView: View {
     ) -> some View {
         Button(intent: intent) {
             Image(systemName: systemName)
-                .font(.system(size: actionIconSize, weight: .medium, design: .default))
+                .font(.system(size: 15 * scale, weight: .medium, design: .default))
                 .foregroundStyle(palette.primary)
-                .frame(width: actionTapSize, height: actionTapSize)
-                .background(
-                    Circle()
-                        .fill(palette.primary.opacity(0.08))
-                )
-                .overlay(
-                    Circle()
-                        .strokeBorder(palette.primary.opacity(0.10), lineWidth: 0.7)
-                )
+                .frame(width: 28, height: 28)
+                .background(Circle().fill(palette.primary.opacity(0.08)))
+                .overlay(Circle().strokeBorder(palette.primary.opacity(0.10), lineWidth: 0.7))
         }
         .buttonStyle(.plain)
         .accessibilityLabel(accessibilityLabel)
     }
 
-    private func fontSize(_ base: CGFloat) -> CGFloat {
-        base * scale * familyScaleBump
-    }
-
-    private var familyScaleBump: CGFloat {
-        switch family {
-        case .systemSmall: return 0.92
-        case .systemMedium: return 0.96
-        default: return 1.0
-        }
-    }
-
-    private var bodySize: CGFloat {
-        switch family {
-        case .systemSmall: return 9.6 * scale
-        case .systemMedium: return 10.8 * scale
-        default: return 11.8 * scale
-        }
-    }
-
-    private var exampleSize: CGFloat {
-        switch family {
-        case .systemSmall: return 8.6 * scale
-        case .systemMedium: return 9.8 * scale
-        default: return 10.8 * scale
-        }
-    }
-
-    private var actionIconSize: CGFloat {
-        family == .systemSmall ? 14 * scale : 15 * scale
-    }
-
-    private var actionTapSize: CGFloat {
-        family == .systemSmall ? 26 : 28
-    }
-
     private var insets: EdgeInsets {
         switch family {
         case .systemSmall:
-            return EdgeInsets(top: 12, leading: 12, bottom: 12, trailing: 12)
+            return EdgeInsets(top: 11, leading: 11, bottom: 11, trailing: 11)
         case .systemMedium:
-            return EdgeInsets(top: 14, leading: 14, bottom: 14, trailing: 14)
+            return EdgeInsets(top: 13, leading: 14, bottom: 13, trailing: 14)
         default:
             return EdgeInsets(top: 16, leading: 16, bottom: 16, trailing: 16)
         }
@@ -306,35 +422,29 @@ private struct GlanceSATLockFamiliesView: View {
 
         case .accessoryRectangular:
             GeometryReader { proxy in
-                VStack(alignment: .leading, spacing: 1) {
-                    HStack(alignment: .firstTextBaseline, spacing: 4) {
-                        Text(entry.word.word)
-                            .font(.system(size: 15.5, weight: .semibold, design: .default))
-                            .widgetAccentable()
-                            .lineLimit(1)
-                            .minimumScaleFactor(0.55)
+                VStack(alignment: .center, spacing: 2) {
+                    Text(entry.word.word)
+                        .font(.system(size: 15.5, weight: .semibold, design: .default))
+                        .multilineTextAlignment(.center)
+                        .widgetAccentable()
+                        .lineLimit(1)
+                        .minimumScaleFactor(0.55)
+                        .frame(maxWidth: .infinity)
 
-                        Text(entry.word.partOfSpeech)
-                            .font(.system(size: 9, weight: .medium, design: .default))
-                            .foregroundStyle(.secondary)
-                            .textCase(.uppercase)
-                            .tracking(0.6)
-                            .lineLimit(1)
-                            .minimumScaleFactor(0.62)
-                    }
-
-                    Text(entry.word.definition)
+                    Text(entry.word.widgetDefinitionWithPartOfSpeech)
                         .font(.system(size: lockDefinitionSize(for: proxy.size), weight: .regular, design: .default))
                         .foregroundStyle(.secondary)
+                        .multilineTextAlignment(.center)
                         .lineLimit(nil)
                         .minimumScaleFactor(0.44)
                         .fixedSize(horizontal: false, vertical: true)
+                        .frame(maxWidth: .infinity)
                 }
-                .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .leading)
+                .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .center)
             }
 
         case .accessoryInline:
-            Text("\(entry.word.word), \(entry.word.partOfSpeech)")
+            Text("\(entry.word.word) (\(entry.word.widgetPartOfSpeechLabel))")
                 .font(.system(.footnote, design: .default, weight: .medium))
                 .minimumScaleFactor(0.7)
                 .lineLimit(1)
@@ -352,7 +462,7 @@ private struct GlanceSATLockFamiliesView: View {
     }
 
     private func lockDefinitionSize(for size: CGSize) -> CGFloat {
-        let definitionCount = entry.word.definition.count
+        let definitionCount = entry.word.widgetDefinitionWithPartOfSpeech.count
         let base: CGFloat
         switch definitionCount {
         case 0...54:
@@ -371,9 +481,14 @@ private struct GlanceSATLockFamiliesView: View {
 
 // MARK: - Previews
 
-#Preview {
+#Preview("Active") {
     GlanceSATWidgetRootView(entry: GlanceSATEntry(date: .now, word: .placeholder))
-        .containerBackground(for: .widget) {
-            WidgetPalette.named("linen").background
-        }
+        .glanceWidgetBackground(themeName: "linen")
+}
+
+#Preview("Rest") {
+    GlanceSATWidgetRootView(
+        entry: GlanceSATEntry(date: .now, word: .placeholder, isResting: true, streakDays: 3)
+    )
+    .glanceWidgetBackground(themeName: "linen")
 }

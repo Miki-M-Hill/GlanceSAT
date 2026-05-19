@@ -1,0 +1,602 @@
+[
+  {
+    "word": "Aberration",
+    "original": "In 1918, the Boston Red Sox won the World Series, but the success turned out to be an aberration.",
+    "revised": "The 1918 Red Sox championship proved to be an aberration in the team's history.",
+    "revisedWordCount": 14
+  },
+  {
+    "word": "Abhor",
+    "original": "Because he always wound up kicking himself in the head when he tried to play soccer, Oswald began to abhor the sport.",
+    "revised": "After repeatedly injuring himself, Oswald began to abhor playing soccer.",
+    "revisedWordCount": 10
+  },
+  {
+    "word": "Abnegation",
+    "original": "The holy man slept on the floor, took only cold showers, and generally followed other practices of abnegation.",
+    "revised": "The holy man followed practices of abnegation such as cold showers and sleeping on the floor.",
+    "revisedWordCount": 16
+  },
+  {
+    "word": "Abort",
+    "original": "After they ran out of food, the men attempting to jump rope around the world had to abort and go home.",
+    "revised": "When they ran out of food, the jump-rope team had to abort the attempt.",
+    "revisedWordCount": 15
+  },
+  {
+    "word": "Absolution",
+    "original": "Once all the facts were known, the jury gave Angela absolution by giving a verdict of not guilty.",
+    "revised": "Once the facts were known, the jury granted Angela absolution with a not-guilty verdict.",
+    "revisedWordCount": 15
+  },
+  {
+    "word": "Abstain",
+    "original": "Everyone demanded that Angus put on the kilt, but he did not want to do it and abstained.",
+    "revised": "When everyone demanded he wear the kilt, Angus abstained and refused.",
+    "revisedWordCount": 11
+  },
+  {
+    "word": "Accede",
+    "original": "When the class asked the teacher whether they could play baseball instead of learn grammar, he acceded to their request.",
+    "revised": "When the class asked to play baseball instead, the teacher acceded to their request.",
+    "revisedWordCount": 14
+  },
+  {
+    "word": "Accessible",
+    "original": "After studying with SparkNotes and getting a great score on the SAT, Marlena realized her goal of getting into an Ivy-League college was accessible.",
+    "revised": "After a strong SAT score, Marlena realized an Ivy League school was accessible.",
+    "revisedWordCount": 13
+  },
+  {
+    "word": "Accommodating",
+    "original": "Though the apartment was not big enough for three people, Arnold, Mark, and Zebulon were all friends and were accommodating to each other.",
+    "revised": "Though the apartment was small, the three friends were accommodating to one another.",
+    "revisedWordCount": 13
+  },
+  {
+    "word": "Accost",
+    "original": "Though Antoinette was normally quite calm, when the waiter spilled soup on her for the fourth time she stood up and accosted the man.",
+    "revised": "When the waiter spilled soup on her again, she stood up and accosted him.",
+    "revisedWordCount": 14
+  },
+  {
+    "word": "Acquiesce",
+    "original": "Though Mr. Correlli wanted to stay outside and work in his garage, when his wife told him to come in to dinner, he acquiesced.",
+    "revised": "Though he wanted to work in the garage, he acquiesced and came in for dinner.",
+    "revisedWordCount": 15
+  },
+  {
+    "word": "Acrimony",
+    "original": "Though they vowed that no girl would ever come between them, Biff and Trevor could not keep acrimony from overwhelming their friendship.",
+    "revised": "Despite their vow of friendship, acrimony eventually overwhelmed Biff and Trevor.",
+    "revisedWordCount": 11
+  },
+  {
+    "word": "Acumen",
+    "original": "Because of his mathematical acumen, Larry was able to figure out in minutes problems that took other students hours.",
+    "revised": "Because of his mathematical acumen, Larry solved in minutes what took others hours.",
+    "revisedWordCount": 13
+  },
+  {
+    "word": "Advocate",
+    "original": "Arnold advocated turning left at the stop sign, even though everyone else thought we should turn right.",
+    "revised": "Arnold advocated turning left at the stop sign, though everyone else favored turning right.",
+    "revisedWordCount": 14
+  },
+  {
+    "word": "Affinity",
+    "original": "Jerry didn't know why, but he felt an incredible affinity for Kramer the first time they met.",
+    "revised": "Jerry felt an incredible affinity for Kramer the first time they met.",
+    "revisedWordCount": 12
+  },
+  {
+    "word": "Aggrandize",
+    "original": "Joseph always dropped the names of the famous people his father knew as a way to aggrandize his personal stature.",
+    "revised": "Joseph dropped famous names to aggrandize his stature whenever he met new people.",
+    "revisedWordCount": 13
+  },
+  {
+    "word": "Aggregate",
+    "original": "The three branches of the U.S. Government form an aggregate much more powerful than its individual parts.",
+    "revised": "The three branches of government form an aggregate more powerful than each part alone.",
+    "revisedWordCount": 14
+  },
+  {
+    "word": "Agriculture",
+    "original": "It was a huge step in civilization when tribes left hunting and gathering and began to develop more sustainable methods of obtaining food, such as agriculture.",
+    "revised": "Tribes left hunting and gathering to develop sustainable agriculture for obtaining food.",
+    "revisedWordCount": 12
+  },
+  {
+    "word": "Alacrity",
+    "original": "For some reason, Chuck loved to help his mother whenever he could, so when his mother asked him to set the table he did so with alacrity.",
+    "revised": "When his mother asked him to set the table, Chuck did so with alacrity.",
+    "revisedWordCount": 14
+  },
+  {
+    "word": "Allay",
+    "original": "The chairman of the Federal Reserve gave a speech to try to allay investors' fears about an economic downturn.",
+    "revised": "The Fed chairman gave a speech to allay investors' fears about an economic downturn.",
+    "revisedWordCount": 14
+  },
+  {
+    "word": "Allege",
+    "original": "The policeman had alleged that Marshall committed the crime, but after the investigation turned up no evidence, Marshall was set free.",
+    "revised": "The policeman alleged Marshall committed the crime, but investigation found no evidence.",
+    "revisedWordCount": 12
+  },
+  {
+    "word": "Aloof",
+    "original": "The scientist could sometimes seem aloof, as if he didn't care about his friends or family, but really he was just thinking about quantum mechanics.",
+    "revised": "The scientist seemed aloof at parties, though he simply preferred thinking about physics.",
+    "revisedWordCount": 13
+  },
+  {
+    "word": "Amalgamate",
+    "original": "Because of his great charisma, the presidential candidate was able to amalgamate all democrats and republicans under his banner.",
+    "revised": "Because of his charisma, the candidate amalgamated Democrats and Republicans under his banner.",
+    "revisedWordCount": 13
+  },
+  {
+    "word": "Ambiguous",
+    "original": "Some people think Caesar married Cleopatra for her power, others believe he was charmed by her beauty. His actual reasons are ambiguous.",
+    "revised": "Some say Caesar married Cleopatra for power; others cite beauty, and his reasons remain ambiguous.",
+    "revisedWordCount": 15
+  },
+  {
+    "word": "Ambivalent",
+    "original": "My feelings about Calvin are ambivalent because on one hand he is a loyal friend, but on the other, he is a cruel and vicious thief.",
+    "revised": "My feelings about Calvin are ambivalent: loyal friend, yet cruel and vicious thief.",
+    "revisedWordCount": 13
+  },
+  {
+    "word": "Amenable",
+    "original": "Our father was amenable when we asked him to drive us to the farm so we could go apple picking.",
+    "revised": "Our father was amenable when we asked him to drive us apple picking.",
+    "revisedWordCount": 13
+  },
+  {
+    "word": "Amenity",
+    "original": "Bill Gates's house is stocked with so many amenities, he never has to do anything for himself.",
+    "revised": "Bill Gates's house is stocked with amenities, so he rarely must do anything himself.",
+    "revisedWordCount": 14
+  },
+  {
+    "word": "Amorphous",
+    "original": "The effort was doomed from the start, because the reasons behind it were so amorphous and hard to pin down.",
+    "revised": "The effort was doomed because its reasons were amorphous and hard to pin down.",
+    "revisedWordCount": 14
+  },
+  {
+    "word": "Anachronistic",
+    "original": "In this book you're writing, you say that the Pyramids were built after the Titanic sank, which is anachronistic.",
+    "revised": "In your book you claim the Pyramids were built after the Titanic sank\u2014anachronistic.",
+    "revisedWordCount": 14
+  },
+  {
+    "word": "Analgesic",
+    "original": "Put this analgesic on the wound so that the poor man at least feels a little better.",
+    "revised": "Apply this analgesic to the wound so the injured man feels a little better.",
+    "revisedWordCount": 14
+  },
+  {
+    "word": "Anecdote",
+    "original": "After dinner, Marlon told an anecdote about the time he got his nose stuck in a toaster.",
+    "revised": "After dinner, Marlon told an anecdote about getting his nose stuck in a toaster.",
+    "revisedWordCount": 14
+  },
+  {
+    "word": "Antediluvian",
+    "original": "The antediluvian man still believed that Eisenhower was president of the United States and that hot dogs cost a nickel.",
+    "revised": "The antediluvian man still believed Eisenhower was president and hot dogs cost a nickel.",
+    "revisedWordCount": 14
+  },
+  {
+    "word": "Anthology",
+    "original": "The new anthology of Bob Dylan songs contains all his greatest hits and a few songs you might never have heard before.",
+    "revised": "The new anthology of Dylan songs contains his greatest hits and a few rarities.",
+    "revisedWordCount": 14
+  },
+  {
+    "word": "Antipathy",
+    "original": "I know you love me, but because you are a liar and a thief, I feel nothing but antipathy for you.",
+    "revised": "Though you say you love me, I feel nothing but antipathy for a liar and thief.",
+    "revisedWordCount": 16
+  },
+  {
+    "word": "Antiquated",
+    "original": "That antiquated car has none of the features, like power windows and steering, that make modern cars so great.",
+    "revised": "That antiquated car lacks power windows and steering, features that make modern cars great.",
+    "revisedWordCount": 14
+  },
+  {
+    "word": "Antithesis",
+    "original": "Your values, which hold war and violence in the highest esteem, are the antithesis of my pacifist beliefs.",
+    "revised": "Your values, which glorify war, are the antithesis of my pacifist beliefs.",
+    "revisedWordCount": 12
+  },
+  {
+    "word": "Anxiety",
+    "original": "When he heard about the car crash, he felt anxiety because he knew that his girlfriend had been driving on that road.",
+    "revised": "When he heard about the crash, he felt anxiety because his girlfriend had been driving there.",
+    "revisedWordCount": 16
+  },
+  {
+    "word": "Apocryphal",
+    "original": "Because I am standing before you, it seems obvious that the stories circulating about my demise were apocryphal.",
+    "revised": "Because I stand before you, the stories of my demise were clearly apocryphal.",
+    "revisedWordCount": 13
+  },
+  {
+    "word": "Ascertain",
+    "original": "With a bit of research, the student ascertained that some plants can live for weeks without water.",
+    "revised": "With a bit of research, the student ascertained that some plants survive weeks without water.",
+    "revisedWordCount": 15
+  },
+  {
+    "word": "Astute",
+    "original": "Much of Roger's success in politics results from his ability to provide astute answers to reporters' questions.",
+    "revised": "Much of Roger's political success comes from astute answers to reporters' questions.",
+    "revisedWordCount": 12
+  },
+  {
+    "word": "Avenge",
+    "original": "The victims will take justice into their own hands and strive to avenge themselves against the men who robbed them.",
+    "revised": "The victims vowed to avenge themselves against the men who had robbed them.",
+    "revisedWordCount": 13
+  },
+  {
+    "word": "Behemoth",
+    "original": "The new aircraft carrier is among several behemoths that the Air Force has added to its fleet.",
+    "revised": "The new aircraft carrier is among several behemoths the Air Force added to its fleet.",
+    "revisedWordCount": 15
+  },
+  {
+    "word": "Blemish",
+    "original": "The dealer agreed to lower the price because of the many blemishes on the surface of the wooden furniture.",
+    "revised": "The dealer lowered the price because of blemishes on the wooden furniture's surface.",
+    "revisedWordCount": 13
+  },
+  {
+    "word": "Canny",
+    "original": "The canny runner hung at the back of the pack through much of the race, then sprinted past them at the end.",
+    "revised": "The canny runner hung at the back, then sprinted past the pack at the end.",
+    "revisedWordCount": 15
+  },
+  {
+    "word": "Capricious",
+    "original": "The young girl\u2019s capricious tendencies made it difficult for her to focus on achieving her goals.",
+    "revised": "The girl's capricious tendencies made it hard for her to focus on her goals.",
+    "revisedWordCount": 14
+  },
+  {
+    "word": "Cerebral",
+    "original": "The books we read in this class are too cerebral\u2014 they don\u2019t engage my emotions at all.",
+    "revised": "The books we read in class are too cerebral\u2014they never engage my emotions.",
+    "revisedWordCount": 14
+  },
+  {
+    "word": "Chastise",
+    "original": "After being chastised by her peers for mimicking Britney Spears, Miranda dyed her hair black and affected a Gothic style.",
+    "revised": "After peers chastised her for mimicking Britney Spears, Miranda dyed her hair black.",
+    "revisedWordCount": 13
+  },
+  {
+    "word": "Cherish",
+    "original": "She continued to cherish her red plaid trousers, even though they had gone out of style and no longer fit her.",
+    "revised": "She continued to cherish her red plaid trousers even after they no longer fit.",
+    "revisedWordCount": 14
+  },
+  {
+    "word": "Chronological",
+    "original": "Lionel carefully arranged the snapshots of his former girlfriends in chronological order, and then set fire to them.",
+    "revised": "Lionel arranged snapshots of his ex-girlfriends in chronological order, then set fire to them.",
+    "revisedWordCount": 15
+  },
+  {
+    "word": "Circumspect",
+    "original": "Though I promised Rachel\u2019s father I would bring her home promptly by midnight, it would have been more circumspect not to have specified a time.",
+    "revised": "Promising Rachel's father I'd return by midnight was less circumspect than staying vague.",
+    "revisedWordCount": 13
+  },
+  {
+    "word": "Circumvent",
+    "original": "The school\u2019s dress code forbidding navel-baring jeans was circumvented by the determined students, who were careful to cover up with long coats when administrators were nearby.",
+    "revised": "Students circumvented the dress code by covering navel-baring jeans with long coats near administrators.",
+    "revisedWordCount": 15
+  },
+  {
+    "word": "Clandestine",
+    "original": "Announcing to her boyfriend that she was going to the gym, Sophie actually went to meet Joseph for a clandestine liaison.",
+    "revised": "Claiming she was going to the gym, Sophie left for a clandestine meeting with Joseph.",
+    "revisedWordCount": 15
+  },
+  {
+    "word": "Clergy",
+    "original": "Though the villagers viewed the church rectory as quaint and charming, the clergy who lived there regarded it as a mildewy and dusty place that aggravated their allergies.",
+    "revised": "Though villagers found the rectory quaint, the clergy who lived there considered it dusty and mildewy.",
+    "revisedWordCount": 16
+  },
+  {
+    "word": "Coerce",
+    "original": "The court decided that Vanilla Ice did not have to honor the contract because he had been coerced into signing it.",
+    "revised": "The court ruled Vanilla Ice need not honor the contract because he had been coerced.",
+    "revisedWordCount": 15
+  },
+  {
+    "word": "Cognizant",
+    "original": "Jake avoided speaking to women in bars because he was cognizant of the fact that drinking impairs his judgment.",
+    "revised": "Jake avoided speaking to women in bars because he was cognizant that drinking impaired his judgment.",
+    "revisedWordCount": 16
+  },
+  {
+    "word": "Coherent",
+    "original": "Renee could not figure out what Monroe had seen because he was too distraught to deliver a coherent statement.",
+    "revised": "Monroe was too distraught to deliver a coherent statement about what he had seen.",
+    "revisedWordCount": 14
+  },
+  {
+    "word": "Collateral",
+    "original": "Divorcing my wife had the collateral effect of making me poor, as she was the only one of us with a job or money.",
+    "revised": "Divorcing my wife had the collateral effect of making me poor, since she held the job.",
+    "revisedWordCount": 16
+  },
+  {
+    "word": "Colloquial",
+    "original": "Adam\u2019s essay on sexual response in primates was marked down because it contained too many colloquial expressions.",
+    "revised": "Adam's essay on primate sexual response was marked down for too many colloquial expressions.",
+    "revisedWordCount": 14
+  },
+  {
+    "word": "Combustion",
+    "original": "The unexpected combustion of the prosecution\u2019s evidence forced the judge to dismiss the case against Ramirez.",
+    "revised": "The unexpected combustion of the prosecution's evidence forced the judge to dismiss the case.",
+    "revisedWordCount": 14
+  },
+  {
+    "word": "Commensurate",
+    "original": "Ahab selected a very long roll and proceeded to prepare a tuna salad sandwich commensurate with his enormous appetite.",
+    "revised": "Ahab prepared a tuna sandwich commensurate with his enormous appetite.",
+    "revisedWordCount": 10
+  },
+  {
+    "word": "Commodious",
+    "original": "Holden invited the three women to join him in the back seat of the taxicab, assuring them that the car was quite commodious.",
+    "revised": "Holden assured the three women the taxicab's back seat was quite commodious.",
+    "revisedWordCount": 12
+  },
+  {
+    "word": "Compensate",
+    "original": "Reginald bought Sharona a new dress to compensate her for the one he\u2019d spilled his ice cream on.",
+    "revised": "Reginald bought Sharona a dress to compensate her for the one he'd spilled ice cream on.",
+    "revisedWordCount": 16
+  },
+  {
+    "word": "Complacency",
+    "original": "Colin tried to shock his friends out of their complacency by painting a frightening picture of what might happen to them.",
+    "revised": "Colin tried to shock his friends out of complacency by painting a frightening future.",
+    "revisedWordCount": 14
+  },
+  {
+    "word": "Complement",
+    "original": "Ann\u2019s scarf complements her blouse beautifully, making her seem fully dressed even though she isn\u2019t wearing a coat.",
+    "revised": "Ann's scarf complements her blouse beautifully, making her look fully dressed without a coat.",
+    "revisedWordCount": 14
+  },
+  {
+    "word": "Compliant",
+    "original": "Sue had very strong opinions about what to do on a first date, and Ted was absolutely compliant.",
+    "revised": "Sue had strong opinions about first dates, and Ted was absolutely compliant.",
+    "revisedWordCount": 12
+  },
+  {
+    "word": "Compound",
+    "original": "The difficulty of finding a fire escape amid the smoke was compounded with the dangers posed by the panicking crowds.",
+    "revised": "Finding a fire escape amid smoke was compounded by dangers from panicking crowds.",
+    "revisedWordCount": 13
+  },
+  {
+    "word": "Concise",
+    "original": "Gordon did not like to waste time, and his instructions to Brenda were nothing if not concise.",
+    "revised": "Gordon hated wasting time, and his instructions to Brenda were nothing if not concise.",
+    "revisedWordCount": 14
+  },
+  {
+    "word": "Concord",
+    "original": "Julie and Harold began the evening with a disagreement, but ended it in a state of perfect concord.",
+    "revised": "Julie and Harold began the evening disagreeing but ended it in perfect concord.",
+    "revisedWordCount": 13
+  },
+  {
+    "word": "Conformist",
+    "original": "Julian was such a conformist that he had to wait and see if his friends would do something before he would commit.",
+    "revised": "Julian was such a conformist that he waited to see what friends did before committing.",
+    "revisedWordCount": 15
+  },
+  {
+    "word": "Construe",
+    "original": "He construed her throwing his clothes out the window as a signal that she wanted him to leave.",
+    "revised": "He construed her throwing his clothes out the window as a signal to leave.",
+    "revisedWordCount": 14
+  },
+  {
+    "word": "Contemporaneous",
+    "original": "Though her novels do not feature the themes of Romanticism, Jane Austen\u2019s work was contemporaneous with that of Wordsworth and Byron.",
+    "revised": "Jane Austen's novels were contemporaneous with the work of Wordsworth and Byron.",
+    "revisedWordCount": 12
+  },
+  {
+    "word": "Cosmopolitan",
+    "original": "Lloyd\u2019s education and upbringing were cosmopolitan, so he felt right at home among the powerful and learned.",
+    "revised": "Lloyd's cosmopolitan upbringing made him feel at home among the powerful and learned.",
+    "revisedWordCount": 13
+  },
+  {
+    "word": "Coup",
+    "original": "Alexander pulled off an amazing coup when he got a date with Cynthia by purposely getting hit by her car.",
+    "revised": "Alexander's coup was getting a date with Cynthia by letting her car hit him on purpose.",
+    "revisedWordCount": 16
+  },
+  {
+    "word": "Debacle",
+    "original": "The elaborately designed fireworks show turned into a debacle when the fireworks started firing in random directions.",
+    "revised": "The elaborate fireworks show became a debacle when rockets fired in random directions.",
+    "revisedWordCount": 13
+  },
+  {
+    "word": "Debunk",
+    "original": "He debunked her claim to be the world\u2019s greatest chess player by defeating her in 18 consecutive matches.",
+    "revised": "He debunked her claim to be the world's greatest chess player by beating her eighteen times.",
+    "revisedWordCount": 16
+  },
+  {
+    "word": "Defamatory",
+    "original": "The defamatory gossip spreading about the actor made the public less willing to see the actor\u2019s new movie.",
+    "revised": "Defamatory gossip about the actor made the public reluctant to see his new movie.",
+    "revisedWordCount": 14
+  },
+  {
+    "word": "Defer",
+    "original": "Ron deferred to Diane, the expert on musical instruments, when he was asked about buying a piano.",
+    "revised": "Ron deferred to Diane, the expert on instruments, when asked about buying a piano.",
+    "revisedWordCount": 14
+  },
+  {
+    "word": "Derelict",
+    "original": "Even though it was dangerous, the children enjoyed going to the deserted lot and playing in the derelict house.",
+    "revised": "The children enjoyed playing in the derelict house on the dangerous deserted lot.",
+    "revisedWordCount": 13
+  },
+  {
+    "word": "Derivative",
+    "original": "She was bored by his music because she felt that it was derivative and that she had heard it before.",
+    "revised": "She found his music derivative, as if she had heard every melody somewhere before.",
+    "revisedWordCount": 14
+  },
+  {
+    "word": "Desolate",
+    "original": "She found the desolate landscape quite a contrast to the hustle and bustle of the overcrowded city.",
+    "revised": "She found the desolate landscape a stark contrast to the overcrowded city's bustle.",
+    "revisedWordCount": 13
+  },
+  {
+    "word": "Despondent",
+    "original": "Having failed the first math test, the despondent child saw no use in studying for the next and failed that one too.",
+    "revised": "After failing the first math test, the despondent child refused to study for the next one.",
+    "revisedWordCount": 16
+  },
+  {
+    "word": "Dialect",
+    "original": "In the country\u2019s remote, mountainous regions, the inhabitants spoke a dialect that the country\u2019s other inhabitants had difficulty understanding.",
+    "revised": "In remote mountain regions, inhabitants spoke a dialect others in the country struggled to understand.",
+    "revisedWordCount": 15
+  },
+  {
+    "word": "Diffident",
+    "original": "While eating dinner with the adults, the diffident youth did not speak for fear of seeming presumptuous.",
+    "revised": "While eating with adults, the diffident youth stayed silent for fear of seeming presumptuous.",
+    "revisedWordCount": 14
+  },
+  {
+    "word": "Disaffected",
+    "original": "Dismayed by Bobby\u2019s poor behavior, the parents sent their disaffected son to a military academy to be disciplined.",
+    "revised": "Dismayed by Bobby's behavior, his parents sent the disaffected son to military academy.",
+    "revisedWordCount": 13
+  },
+  {
+    "word": "Discrepancy",
+    "original": "He was troubled by the discrepancy between what he remembered paying for the appliance and what his receipt showed he paid for it.",
+    "revised": "He was troubled by the discrepancy between what he remembered paying and what the receipt showed.",
+    "revisedWordCount": 16
+  },
+  {
+    "word": "Discretion",
+    "original": "Not wanting her patient to get overly anxious, the doctor used discretion in deciding how much to tell the patient about his condition.",
+    "revised": "Not wanting to alarm her patient, the doctor used discretion in explaining his condition.",
+    "revisedWordCount": 14
+  },
+  {
+    "word": "Disdain",
+    "original": "Insecure about their jobs, the older employees disdained the recently hired ones, who were young and capable.",
+    "revised": "Insecure about their jobs, older employees disdained younger hires who were capable and ambitious.",
+    "revisedWordCount": 14
+  },
+  {
+    "word": "Disparage",
+    "original": "The saleswoman disparaged the competitor\u2019s products to persuade her customers to buy what she was selling.",
+    "revised": "The saleswoman disparaged the competitor's products to persuade customers to buy her own.",
+    "revisedWordCount": 13
+  },
+  {
+    "word": "Disrepute",
+    "original": "The officer fell into disrepute after it was learned that he had disobeyed the orders he had given to his own soldiers.",
+    "revised": "The officer fell into disrepute after disobeying the orders he had given his soldiers.",
+    "revisedWordCount": 14
+  },
+  {
+    "word": "Dissemble",
+    "original": "Not wanting to appear heartlessly greedy, she dissembled and hid her intention to sell her ailing father\u2019s stamp collection.",
+    "revised": "Not wanting to seem greedy, she dissembled and hid her plan to sell her father's stamps.",
+    "revisedWordCount": 16
+  },
+  {
+    "word": "Dissonance",
+    "original": "Though the president of the company often spoke of the company as reliant solely upon its workers, her decision to increase her own salary rather than reward her employees revealed a striking dissonance between her alleged beliefs and her actions.",
+    "revised": "Her lavish pay raise revealed a dissonance between her praise for workers and her actions.",
+    "revisedWordCount": 15
+  },
+  {
+    "word": "Dissuade",
+    "original": "Worried that he would catch a cold, she tried to dissuade him from going out on winter nights.",
+    "revised": "Worried he might catch a cold, she tried to dissuade him from winter nights outdoors.",
+    "revisedWordCount": 15
+  },
+  {
+    "word": "Dither",
+    "original": "Not wanting to offend either friend, he dithered about which of the two birthday parties he should attend.",
+    "revised": "Not wanting to offend either friend, he dithered over which birthday party to attend.",
+    "revisedWordCount": 14
+  },
+  {
+    "word": "Dormant",
+    "original": "Though she pretended everything was fine, her anger lay dormant throughout the dinner party and exploded in screams of rage after everyone had left.",
+    "revised": "Though she pretended composure, her anger lay dormant through dinner and erupted afterward.",
+    "revisedWordCount": 13
+  },
+  {
+    "word": "Dour",
+    "original": "The children feared their dour neighbor because the old man would take their toys if he believed they were being too loud.",
+    "revised": "Children feared their dour neighbor, who seized their toys whenever he thought they were too loud.",
+    "revisedWordCount": 16
+  },
+  {
+    "word": "Duplicity",
+    "original": "His duplicity involved convincing his employees to let him lower their salaries and increase their stock options, and then to steal the money he saved and run the company into the ground.",
+    "revised": "His duplicity convinced employees to accept pay cuts, then he stole the savings and fled.",
+    "revisedWordCount": 15
+  },
+  {
+    "word": "Dynamic",
+    "original": "The parents found it hard to keep up with the dynamic music scene with which their children had become very familiar.",
+    "revised": "The parents struggled to keep up with the dynamic music scene their children knew so well.",
+    "revisedWordCount": 16
+  },
+  {
+    "word": "Efface",
+    "original": "The husband was so angry at his wife for leaving him that he effaced all evidence of her presence; he threw out pictures of her and gave away all her belongings.",
+    "revised": "Furious at his wife for leaving, he effaced every picture and gave away all her belongings.",
+    "revisedWordCount": 16
+  },
+  {
+    "word": "Elaborate",
+    "original": "Dan always beats me at chess because he develops such an elaborate game plan that I can never predict his next move.",
+    "revised": "Dan wins at chess because his elaborate strategies leave me unable to predict his next move.",
+    "revisedWordCount": 16
+  },
+  {
+    "word": "Elicit",
+    "original": "Although I asked several times where the exit was, I elicited no response from the stone-faced policeman.",
+    "revised": "Although I asked several times for directions, I elicited no response from the stone-faced policeman.",
+    "revisedWordCount": 16
+  }
+]

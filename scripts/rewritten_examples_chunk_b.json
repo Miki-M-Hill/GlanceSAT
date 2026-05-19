@@ -1,0 +1,602 @@
+[
+  {
+    "word": "Elucidate",
+    "original": "I didn\u2019t understand why my friend was so angry with me, so I asked Janine to elucidate her feelings.",
+    "revised": "When the chart confused everyone, the professor asked me to elucidate the main trend.",
+    "revisedWordCount": 14
+  },
+  {
+    "word": "Eminent",
+    "original": "Mr. Phillips is such an eminent scholar that every professor on campus has come to hear him lecture.",
+    "revised": "The eminent historian's lecture drew scholars from universities across the country.",
+    "revisedWordCount": 11
+  },
+  {
+    "word": "Emote",
+    "original": "The director told the actor he had to emote, or else the audience would have no idea what his character was going through.",
+    "revised": "The director urged the actor to emote so the audience would grasp his grief.",
+    "revisedWordCount": 14
+  },
+  {
+    "word": "Empirical",
+    "original": "The scientist gathered empirical data on the growth rate of dandelions by studying the dandelions behind his house.",
+    "revised": "The study rests on empirical evidence gathered from controlled field trials.",
+    "revisedWordCount": 11
+  },
+  {
+    "word": "Emulate",
+    "original": "I idolize Britney Spears so much that I emulate everything she does: I wear her outfits, sing along to her songs, and date a boy named Justin.",
+    "revised": "Young poets often emulate masters they admire, then slowly develop distinct voices.",
+    "revisedWordCount": 12
+  },
+  {
+    "word": "Encore",
+    "original": "At the end of the concert, all the fans yelled, \u201cEncore! Encore!\u201d but the band did not come out to play again.",
+    "revised": "The crowd chanted for an encore until the band returned to the stage.",
+    "revisedWordCount": 13
+  },
+  {
+    "word": "Encumber",
+    "original": "At the airport, my friend was encumbered by her luggage, so I offered to carry two of her bags.",
+    "revised": "Heavy backpacks encumber hikers on steep trails and slow their progress.",
+    "revisedWordCount": 11
+  },
+  {
+    "word": "Enervate",
+    "original": "Writing these sentences enervates me so much that I will have to take a nap after I finish.",
+    "revised": "Hours of debate in a hot room can enervate even the sharpest delegates.",
+    "revisedWordCount": 13
+  },
+  {
+    "word": "Enigmatic",
+    "original": "That man wearing the dark suit and dark glasses is so enigmatic that no one even knows his name.",
+    "revised": "The enigmatic stranger refused to explain why he arrived without invitation.",
+    "revisedWordCount": 11
+  },
+  {
+    "word": "Enmity",
+    "original": "Mark and Andy have clearly not forgiven each other, because the enmity between them is obvious to anyone in their presence.",
+    "revised": "Years of rivalry hardened into open enmity between the two leading firms.",
+    "revisedWordCount": 12
+  },
+  {
+    "word": "Ennui",
+    "original": "I feel such ennui that I don\u2019t look forward to anything, not even my birthday party.",
+    "revised": "Rainy afternoons by the window deepen her sense of idle ennui.",
+    "revisedWordCount": 11
+  },
+  {
+    "word": "Ephemeral",
+    "original": "She promised she\u2019d love me forever, but her \u201cforever\u201d was only ephemeral: she left me after one week.",
+    "revised": "Fame on social media often proves ephemeral, fading within a single news cycle.",
+    "revisedWordCount": 13
+  },
+  {
+    "word": "Epistolary",
+    "original": "Some people call me \u201cAuntie\u2019s boy,\u201d because my aunt and I have such a close epistolary relationship that we write each other every day.",
+    "revised": "Their epistolary friendship survived decades through letters exchanged each month.",
+    "revisedWordCount": 10
+  },
+  {
+    "word": "Equanimity",
+    "original": "Even though he had just been fired, Mr. Simms showed great equanimity by neatly packing up his desk and wishing everyone in the office well.",
+    "revised": "She answered hostile questions with equanimity that impressed the entire panel.",
+    "revisedWordCount": 11
+  },
+  {
+    "word": "Equivocal",
+    "original": "His intentions were so equivocal that I didn\u2019t know whether he was being chivalrous or sleazy.",
+    "revised": "His equivocal reply left us unsure whether he supported or opposed the plan.",
+    "revisedWordCount": 13
+  },
+  {
+    "word": "Erudite",
+    "original": "My Latin teacher is such an erudite scholar that he has translated some of the most difficult and abstruse ancient poetry.",
+    "revised": "The erudite critic quoted ancient texts to support her interpretation of the poem.",
+    "revisedWordCount": 13
+  },
+  {
+    "word": "Etymology",
+    "original": "From the study of etymology, I know that the word \u201cquixotic\u201d derives from Don Quixote and the word \u201cgaudy\u201d refers to the Spanish architect Gaud\u00ed.",
+    "revised": "A brief lesson in etymology clarified why the term once meant something else.",
+    "revisedWordCount": 13
+  },
+  {
+    "word": "Evanescent",
+    "original": "My joy at getting promoted was evanescent because I discovered that I would have to work much longer hours in a less friendly office.",
+    "revised": "Sunset colors seemed evanescent, melting into darkness within a few quiet minutes.",
+    "revisedWordCount": 12
+  },
+  {
+    "word": "Evince",
+    "original": "Christopher\u2019s hand-wringing and nail-biting evince how nervous he is about the upcoming English test.",
+    "revised": "Her calm tone failed to evince the anxiety she later admitted feeling.",
+    "revisedWordCount": 12
+  },
+  {
+    "word": "Exculpate",
+    "original": "My discovery of the ring behind the dresser exculpated me from the charge of having stolen it.",
+    "revised": "New surveillance footage seemed to exculpate the clerk accused of theft.",
+    "revisedWordCount": 11
+  },
+  {
+    "word": "Exonerate",
+    "original": "The true thief\u2019s confession exonerated the man who had been held in custody for the crime.",
+    "revised": "DNA evidence finally helped exonerate the suspect held for months without trial.",
+    "revisedWordCount": 12
+  },
+  {
+    "word": "Extricate",
+    "original": "Instead of trying to mediate between my brother and sister, I extricated myself from the family tension entirely and left the house for the day.",
+    "revised": "She tried to extricate herself from a contract that bound her unfairly.",
+    "revisedWordCount": 12
+  },
+  {
+    "word": "Exult",
+    "original": "When she found out she won the literature prize, Mary exulted by dancing and singing through the school\u2019s halls.",
+    "revised": "The team began to exult when the final whistle confirmed their victory.",
+    "revisedWordCount": 12
+  },
+  {
+    "word": "Fastidious",
+    "original": "Mark is so fastidious that he is never able to finish a project because it always seems imperfect to him.",
+    "revised": "His fastidious editing removed every typo before the essay reached the instructor.",
+    "revisedWordCount": 12
+  },
+  {
+    "word": "Flabbergasted",
+    "original": "Whenever I read an Agatha Christie mystery novel, I am always flabbergasted when I learn the identity of the murderer.",
+    "revised": "We were flabbergasted when the quiet student won the national debate championship.",
+    "revisedWordCount": 12
+  },
+  {
+    "word": "Flagrant",
+    "original": "The judge\u2019s decision to set the man free simply because that man was his brother was a flagrant abuse of power.",
+    "revised": "The referee called a flagrant foul after the player struck an opponent deliberately.",
+    "revisedWordCount": 13
+  },
+  {
+    "word": "Flout",
+    "original": "I flouted the school\u2019s dress code by wearing a tie-dyed tank top and a pair of cut-off jeans.",
+    "revised": "Several students flout campus rules by vaping openly outside the library entrance.",
+    "revisedWordCount": 12
+  },
+  {
+    "word": "Forage",
+    "original": "When we got lost on our hiking trip, we foraged for berries and nuts in order to survive.",
+    "revised": "Squirrels forage beneath oak trees, hoarding acorns before the first frost arrives.",
+    "revisedWordCount": 12
+  },
+  {
+    "word": "Forestall",
+    "original": "I forestalled the cold I was getting by taking plenty of vitamin C pills and wearing a scarf.",
+    "revised": "Early vaccinations forestall outbreaks that might otherwise overwhelm rural clinics.",
+    "revisedWordCount": 10
+  },
+  {
+    "word": "Forlorn",
+    "original": "Even though I had the flu, my family decided to go skiing for the weekend and leave me home alone, feeling feverish and forlorn.",
+    "revised": "A forlorn melody drifted from the piano as guests quietly left the hall.",
+    "revisedWordCount": 13
+  },
+  {
+    "word": "Fortuitous",
+    "original": "After looking for Manuel and not finding him at home, Harriet had a fortuitous encounter with him at the post office.",
+    "revised": "A fortuitous meeting at the conference led to their unlikely collaboration.",
+    "revisedWordCount": 11
+  },
+  {
+    "word": "Fractious",
+    "original": "Although the child insisted he wasn\u2019t tired, his fractious behavior\u2014especially his decision to crush his cheese and crackers all over the floor\u2014convinced everyone present that it was time to put him to bed.",
+    "revised": "Though he insisted he was not tired, his fractious tantrum convinced everyone it was bedtime.",
+    "revisedWordCount": 13
+  },
+  {
+    "word": "Frenetic",
+    "original": "In the hours between night and morning, the frenetic pace of city life slows to a lull.",
+    "revised": "Frenetic activity in the kitchen preceded the arrival of two hundred guests.",
+    "revisedWordCount": 12
+  },
+  {
+    "word": "Frivolous",
+    "original": "Someday, all that anxiety about whether your zit will disappear before the prom will seem totally frivolous.",
+    "revised": "The judge dismissed the claim as frivolous and warned against filing again.",
+    "revisedWordCount": 12
+  },
+  {
+    "word": "Frugal",
+    "original": "Richard is so frugal that his diet consists almost exclusively of catfish and chicken liver\u2014the two most inexpensive foods in the store.",
+    "revised": "Her frugal habits allowed savings to grow despite modest earnings from tutoring.",
+    "revisedWordCount": 12
+  },
+  {
+    "word": "Furtive",
+    "original": "Jane\u2019s placement of her drugs in her sock drawer was not as furtive as she thought, as the sock drawer is the first place most parents look.",
+    "revised": "He cast a furtive glance toward the door before slipping the note away.",
+    "revisedWordCount": 13
+  },
+  {
+    "word": "Garish",
+    "original": "Mrs. Watson has poor taste and covers every object in her house with a garish gold lam\u00e9.",
+    "revised": "Garish neon signs clashed with the museum's restrained stone facade.",
+    "revisedWordCount": 10
+  },
+  {
+    "word": "Garrulous",
+    "original": "Some talk show hosts are so garrulous that their guests can\u2019t get a word in edgewise.",
+    "revised": "The garrulous guide talked through the entire exhibit without pausing for questions.",
+    "revisedWordCount": 12
+  },
+  {
+    "word": "Genial",
+    "original": "Although he\u2019s been known to behave like a real jerk, I would say that my brother is an overall genial guy.",
+    "revised": "Our genial host made every guest feel welcome at the crowded reception.",
+    "revisedWordCount": 12
+  },
+  {
+    "word": "Gluttony",
+    "original": "Ada\u2019s fried chicken tastes so divine, I don\u2019t know how anyone can call gluttony a sin.",
+    "revised": "The essay condemned gluttony while praising moderation at shared meals.",
+    "revisedWordCount": 10
+  },
+  {
+    "word": "Goad",
+    "original": "Jim may think he\u2019s not going to fight Billy, but Billy will goad Jim on with insults until he throws a punch.",
+    "revised": "Critics goad reluctant leaders into action by highlighting failures in public forums.",
+    "revisedWordCount": 12
+  },
+  {
+    "word": "Gourmand",
+    "original": "My parents, who used to eat little more than crackers and salad, have become real gourmands in their old age.",
+    "revised": "As a gourmand, she travels specifically to sample regional dishes others overlook.",
+    "revisedWordCount": 12
+  },
+  {
+    "word": "Grandiloquence",
+    "original": "The student thought her grandiloquence would make her sound smart, but neither the class nor the teacher bought it.",
+    "revised": "His grandiloquence impressed few listeners who preferred precise, understated arguments.",
+    "revisedWordCount": 10
+  },
+  {
+    "word": "Gregarious",
+    "original": "Well, if you\u2019re not gregarious, I don\u2019t know why you would want to go to a singles party!",
+    "revised": "Gregarious students thrive in seminars that reward discussion rather than silent note-taking.",
+    "revisedWordCount": 13
+  },
+  {
+    "word": "Hackneyed",
+    "original": "A girl can only hear \u201cI love you\u201d so many times before it begins to sound hackneyed and meaningless.",
+    "revised": "The speech relied on hackneyed metaphors that left the audience restless.",
+    "revisedWordCount": 11
+  },
+  {
+    "word": "Hardy",
+    "original": "I too would have expected the plants to be dead by mid-November, but apparently they\u2019re very hardy.",
+    "revised": "Hardy wildflowers survived drought on the rocky slope behind the cabin.",
+    "revisedWordCount": 11
+  },
+  {
+    "word": "Harrowing",
+    "original": "The car crash was a harrowing experience, but I have a feeling that the increase in my insurance premiums will be even more upsetting.",
+    "revised": "Survivors described a harrowing escape through smoke-filled corridors during the blaze.",
+    "revisedWordCount": 12
+  },
+  {
+    "word": "Hedonist",
+    "original": "Because he\u2019s such a hedonist, I knew Murray would appreciate the 11 cases of wine I bought him for his birthday.",
+    "revised": "The self-described hedonist planned vacations around fine dining and spa retreats.",
+    "revisedWordCount": 12
+  },
+  {
+    "word": "Hegemony",
+    "original": "Britain\u2019s hegemony over its colonies was threatened once nationalist sentiment began to spread around the world.",
+    "revised": "Cultural hegemony shaped which stories appeared in textbooks for generations.",
+    "revisedWordCount": 10
+  },
+  {
+    "word": "Heinous",
+    "original": "The killings were made all the more heinous by the fact that the murderer first tortured his victims for three days.",
+    "revised": "The jury condemned the heinous crime after hearing testimony from eyewitnesses.",
+    "revisedWordCount": 11
+  },
+  {
+    "word": "Heterogeneous",
+    "original": "I hate having only one flavor so I always buy the swirled, or should I say heterogeneous, type of ice cream.",
+    "revised": "The panel assembled a heterogeneous mix of artists, scientists, and civic leaders.",
+    "revisedWordCount": 12
+  },
+  {
+    "word": "Hypothetical",
+    "original": "Even though it has been celebrated by seven major newspapers, that the drug will be a success when tested in humans is still hypothetical.",
+    "revised": "We debated a hypothetical scenario in which tuition rose without additional aid.",
+    "revisedWordCount": 12
+  },
+  {
+    "word": "Iconoclast",
+    "original": "Jane goes to one protest after another, but she seems to be an iconoclast rather than an activist with a progressive agenda.",
+    "revised": "The iconoclast challenged sacred traditions, provoking outrage among conservative alumni.",
+    "revisedWordCount": 10
+  },
+  {
+    "word": "Idiosyncratic",
+    "original": "I know you had trouble with the last test, but because your mistakes were highly idiosyncratic, I\u2019m going to deny your request that the class be given a new test.",
+    "revised": "Her idiosyncratic grading rubric confused students until she explained each category.",
+    "revisedWordCount": 11
+  },
+  {
+    "word": "Idolatrous",
+    "original": "Xena\u2019s idolatrous fawning over the band\u2014following them on tour, starting their fan club, filming their documentary\u2014is really beginning to get on my nerves.",
+    "revised": "Critics mocked his idolatrous devotion to a celebrity he had never met.",
+    "revisedWordCount": 12
+  },
+  {
+    "word": "Ignominious",
+    "original": "It was really ignominious to be kicked out of the dorm for having an illegal gas stove in my room.",
+    "revised": "The scandal ended his career in an ignominious defeat at the polls.",
+    "revisedWordCount": 12
+  },
+  {
+    "word": "Immerse",
+    "original": "After breaking up with her boyfriend, Nancy decided to immerse herself in her work in order to avoid crying.",
+    "revised": "She chose to immerse herself in archival research before drafting the thesis.",
+    "revisedWordCount": 12
+  },
+  {
+    "word": "Impeccable",
+    "original": "If your grades were as impeccable as your sister\u2019s, then you too would receive a car for a graduation present.",
+    "revised": "Her impeccable timing kept the orchestra aligned through the demanding finale.",
+    "revisedWordCount": 11
+  },
+  {
+    "word": "Impertinent",
+    "original": "Most of your comments are so impertinent that I don\u2019t wish to dignify them with an answer.",
+    "revised": "The impertinent remark during the ceremony drew disapproving stares from elders.",
+    "revisedWordCount": 11
+  },
+  {
+    "word": "Implement",
+    "original": "Do you have a knife or some other sort of implement that I could use to pry the lid off of this jar?",
+    "revised": "The council voted to implement reforms aimed at speeding permit approvals.",
+    "revisedWordCount": 11
+  },
+  {
+    "word": "Implicate",
+    "original": "Even though Tom wasn\u2019t present at the time of the shooting, he was implicated by the evidence suggesting that he had supplied the shooters with guns.",
+    "revised": "Documents released yesterday seemed to implicate officials who had denied any involvement.",
+    "revisedWordCount": 12
+  },
+  {
+    "word": "Implicit",
+    "original": "I know Professor Smith didn\u2019t actually say not to write from personal experience, but I think such a message was implicit in her instruction to use scholarly sources.",
+    "revised": "There was an implicit agreement that no one would share exam questions online.",
+    "revisedWordCount": 13
+  },
+  {
+    "word": "Impregnable",
+    "original": "Though the invaders used battering rams, catapults, and rain dances, the fortress proved impregnable and resisted all attacks.",
+    "revised": "Ancient walls once seemed impregnable, yet siege engines eventually breached them.",
+    "revisedWordCount": 11
+  },
+  {
+    "word": "Impudent",
+    "original": "The impudent young man looked the princess up and down and told her she was hot even though she hadn\u2019t asked him.",
+    "revised": "The impudent reply stunned teachers who expected greater respect from seniors.",
+    "revisedWordCount": 11
+  },
+  {
+    "word": "Inarticulate",
+    "original": "Though he spoke for over an hour, the lecturer was completely inarticulate and the students had no idea what he was talking about.",
+    "revised": "Nerves left him inarticulate when the moderator called his name first.",
+    "revisedWordCount": 11
+  },
+  {
+    "word": "Incendiary",
+    "original": "If we catch the incendiary who screamed \u201cbomb\u201d in the middle of the soccer match, we\u2019re going to put him in jail.",
+    "revised": "The incendiary editorial sparked protests across campuses within hours of publication.",
+    "revisedWordCount": 11
+  },
+  {
+    "word": "Incisive",
+    "original": "The discussion wasn\u2019t going anywhere until her incisive comment allowed everyone to see what the true issues were.",
+    "revised": "An incisive question cut through vague debate and forced a clear vote.",
+    "revisedWordCount": 12
+  },
+  {
+    "word": "Inclination",
+    "original": "Sarah has an inclination to see every foreign film she hears about, even when she\u2019s sure that she won\u2019t like it.",
+    "revised": "She felt a strong inclination to study abroad after meeting exchange students.",
+    "revisedWordCount": 12
+  },
+  {
+    "word": "Incorrigible",
+    "original": "You can buy Grandma nicotine gum all you want, but I think that after sixty-five years of smoking she\u2019s incorrigible.",
+    "revised": "Despite counseling, the incorrigible prankster continued disrupting lectures each week.",
+    "revisedWordCount": 10
+  },
+  {
+    "word": "Indigenous",
+    "original": "Some fear that these plants, which are not indigenous to the region, may choke out the vegetation that is native to the area.",
+    "revised": "Indigenous plants thrived here long before settlers introduced competitive garden species.",
+    "revisedWordCount": 11
+  },
+  {
+    "word": "Indolent",
+    "original": "Why should my indolent children, who can\u2019t even pick themselves up off the couch to pour their own juice, be rewarded with a trip to the mall?",
+    "revised": "Indolent afternoons on the porch replaced his former habit of dawn runs.",
+    "revisedWordCount": 12
+  },
+  {
+    "word": "Indomitable",
+    "original": "To be honest, Jim, my indomitable nature means I could never take orders from anyone, and especially not from a jerk like you.",
+    "revised": "Her indomitable spirit sustained the team through losses and harsh weather.",
+    "revisedWordCount": 11
+  },
+  {
+    "word": "Ineffable",
+    "original": "It is said that the experience of playing with a dolphin is ineffable and can only be understood through direct encounter.",
+    "revised": "Travelers spoke of an ineffable awe when they first glimpsed the canyon.",
+    "revisedWordCount": 12
+  },
+  {
+    "word": "Inept",
+    "original": "She proved how inept she was when she forgot three orders and spilled a beer in a customer\u2019s lap.",
+    "revised": "Inept handling of the chemicals caused a spill that closed the lab.",
+    "revisedWordCount": 12
+  },
+  {
+    "word": "Inexorable",
+    "original": "Although I begged for hours, Mom was inexorable and refused to let me stay out all night after the prom.",
+    "revised": "Time's inexorable march reminded graduates that deadlines would not bend for anyone.",
+    "revisedWordCount": 12
+  },
+  {
+    "word": "Ingenious",
+    "original": "Her ingenious use of walnuts instead of the peanuts called for by the recipe was lauded by the other garden club members who found her cake delicious.",
+    "revised": "Her ingenious workaround fixed the sensor without purchasing costly replacement parts.",
+    "revisedWordCount": 11
+  },
+  {
+    "word": "Ingenuous",
+    "original": "He must have writers, but his speeches seem so ingenuous it\u2019s hard to believe he\u2019s not speaking from his own heart.",
+    "revised": "His ingenuous smile convinced volunteers he genuinely cared about their concerns.",
+    "revisedWordCount": 11
+  },
+  {
+    "word": "Inhibit",
+    "original": "When I told you I needed the car last night, I certainly never meant to inhibit you from going out.",
+    "revised": "Fear of failure can inhibit students from volunteering answers in large lectures.",
+    "revisedWordCount": 12
+  },
+  {
+    "word": "Inimical",
+    "original": "I don\u2019t see how I could ever work for a company that was so cold and inimical to me during my interviews.",
+    "revised": "Policies inimical to free inquiry were reversed after faculty protests.",
+    "revisedWordCount": 10
+  },
+  {
+    "word": "Injunction",
+    "original": "After his house was toilet-papered for the fifth time, the mayor issued an injunction against anyone younger than 21 buying toilet paper.",
+    "revised": "The court issued an injunction halting construction until environmental reviews finished.",
+    "revisedWordCount": 11
+  },
+  {
+    "word": "Innovate",
+    "original": "Because of the stiff competition, the company knew it needed to pour a lot of energy into innovating new and better products.",
+    "revised": "Startups must innovate quickly or lose market share to larger rivals.",
+    "revisedWordCount": 11
+  },
+  {
+    "word": "Inoculate",
+    "original": "I\u2019ve feared needles ever since I was inoculated against 37 diseases at age one; but I have also never been sick.",
+    "revised": "Nurses inoculate infants against diseases that once disabled entire communities.",
+    "revisedWordCount": 10
+  },
+  {
+    "word": "Inquisitor",
+    "original": "The inquisitor was instructed to knock on every door in town in order to find the fugitive.",
+    "revised": "The relentless inquisitor pressed witnesses until contradictions emerged in their accounts.",
+    "revisedWordCount": 11
+  },
+  {
+    "word": "Insinuate",
+    "original": "I wish Luke and Spencer would stop insinuating that my perfect report card is the result of anything other than my superior intelligence and good work habits.",
+    "revised": "He tried to insinuate that the award resulted from favoritism rather than merit.",
+    "revisedWordCount": 13
+  },
+  {
+    "word": "Instigate",
+    "original": "The demagogue instigated the crowd into a fury by telling them that they had been cheated by the federal government.",
+    "revised": "Rumors on social media can instigate panic before officials confirm any threat.",
+    "revisedWordCount": 12
+  },
+  {
+    "word": "Insular",
+    "original": "Because of the sensitive nature of their jobs, those who work for the CIA must remain insular and generally only spend time with each other.",
+    "revised": "The insular community resisted outsiders, preserving customs unchanged for decades.",
+    "revisedWordCount": 10
+  },
+  {
+    "word": "Insurgent",
+    "original": "The insurgent snuck into and defaced a different classroom each night until the administration agreed to meet his demands.",
+    "revised": "Insurgent forces ambushed supply lines, forcing commanders to revise their routes.",
+    "revisedWordCount": 11
+  },
+  {
+    "word": "Interlocutor",
+    "original": "When the officials could not come to an agreement over the correct cover of the flags, the prime minister acted as an interlocutor.",
+    "revised": "She served as interlocutor between rival factions during tense contract negotiations.",
+    "revisedWordCount": 11
+  },
+  {
+    "word": "Intimation",
+    "original": "Mr. Brinford\u2019s intimation that he would soon pass away occurred when he began to discuss how to distribute his belongings among his children.",
+    "revised": "His vague intimation of resignation spread through the office before any announcement.",
+    "revisedWordCount": 12
+  },
+  {
+    "word": "Intransigent",
+    "original": "The intransigent child said he would have 12 scoops of ice cream, or he would bang his head against the wall until his mother fainted from fear.",
+    "revised": "Intransigent negotiators refused every compromise, prolonging the strike into winter.",
+    "revisedWordCount": 10
+  },
+  {
+    "word": "Intrepid",
+    "original": "After scaling a live volcano prior to its eruption, the explorer was praised for his intrepid attitude.",
+    "revised": "The intrepid reporter crossed flooded roads to reach the isolated village.",
+    "revisedWordCount": 11
+  },
+  {
+    "word": "Inundate",
+    "original": "Because I am the star of a new sitcom, my fans are sure to inundate me with fan mail and praise.",
+    "revised": "Floods inundate low farmland each spring, ruining crops before harvest begins.",
+    "revisedWordCount": 11
+  },
+  {
+    "word": "Invective",
+    "original": "My mother\u2019s irrational invective against the way I dress only made me decide to dye my hair green.",
+    "revised": "The debate dissolved into invective that embarrassed moderators and disgusted viewers.",
+    "revisedWordCount": 11
+  },
+  {
+    "word": "Inveterate",
+    "original": "I\u2019m the first to admit that I\u2019m an inveterate coffee drinker\u2014I drink four cups a day.",
+    "revised": "An inveterate reader, she finished two novels during the long train ride.",
+    "revisedWordCount": 12
+  },
+  {
+    "word": "Judicious",
+    "original": "When the judicious king decided to compromise rather than send his army to its certain death, he was applauded.",
+    "revised": "Judicious editing trimmed repetition while preserving the argument's essential clarity.",
+    "revisedWordCount": 10
+  },
+  {
+    "word": "Laceration",
+    "original": "Because he fell off his bike into a rosebush, the paperboy\u2019s skin was covered with lacerations.",
+    "revised": "The fall left a deep laceration that required stitches at urgent care.",
+    "revisedWordCount": 12
+  },
+  {
+    "word": "Larceny",
+    "original": "When my car was not where I had left it, I realized that I was a victim of larceny.",
+    "revised": "Security footage identified the suspect charged with larceny from the campus bookstore.",
+    "revisedWordCount": 12
+  },
+  {
+    "word": "Legerdemain",
+    "original": "Smuggling the French plants through customs by claiming that they were fake was a remarkable bit of legerdemain.",
+    "revised": "The accountant's legerdemain concealed losses until auditors uncovered missing funds.",
+    "revisedWordCount": 10
+  },
+  {
+    "word": "Lenient",
+    "original": "Because Professor Oglethorpe allowed his students to choose their final grades, the other teachers believed that he was excessively lenient.",
+    "revised": "Parents grew lenient about curfews once seniors received college acceptances.",
+    "revisedWordCount": 10
+  },
+  {
+    "word": "Lethargic",
+    "original": "When Jean Claude explained to his boss that he was lethargic and didn\u2019t feel like working that day, the boss fired him.",
+    "revised": "A lethargic afternoon heat slowed runners who had trained at dawn instead.",
+    "revisedWordCount": 12
+  }
+]

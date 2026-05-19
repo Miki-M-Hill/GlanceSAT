@@ -1,0 +1,816 @@
+{
+  "Abase": {
+    "kind": "sound_spelling",
+    "text": "Being brought to your base (low point) can be humiliating."
+  },
+  "Abate": {
+    "kind": "sound_spelling",
+    "text": "If you don't use bait you reduce your odds in fishing."
+  },
+  "Abdicate": {
+    "kind": "morphology",
+    "text": "\"ab-\" (away) + \"dic-\" (speak) + \"-ate\" (verb) = to formally speak away your power."
+  },
+  "Abduct": {
+    "kind": "morphology",
+    "text": "\"ab-\" (away) + \"duct\" (lead) = to lead away."
+  },
+  "Aberration": {
+    "kind": "morphology",
+    "text": "\"ab-\" (away) + \"err\" (wander) = wandering away from what is normal."
+  },
+  "Abet": {
+    "kind": "sound_spelling",
+    "text": "A bet placed on someone encourages them to succeed."
+  },
+  "Abhor": {
+    "kind": "sound_spelling",
+    "text": "A horror - you hate it and shrink away from it."
+  },
+  "Abide": {
+    "kind": "sound_spelling",
+    "text": "You bide your time, enduring or putting up with the situation."
+  },
+  "Abject": {
+    "kind": "morphology",
+    "text": "\"ab-\" (away) + \"ject\" (throw) = thrown away into a wretched state."
+  },
+  "Abjure": {
+    "kind": "morphology",
+    "text": "\"ab-\" (away) + \"jur\" (swear) = to swear away or legally renounce."
+  },
+  "Abnegation": {
+    "kind": "morphology",
+    "text": "\"ab-\" (away) + \"neg\" (deny) = the act of denying yourself something."
+  },
+  "Abort": null,
+  "Abridge": {
+    "kind": "sound_spelling",
+    "text": "A bridge connects two points, making the journey shorter."
+  },
+  "Abrogate": {
+    "kind": "sound_spelling",
+    "text": "A broken gate means the security rules have been abolished or repealed."
+  },
+  "Abscond": {
+    "kind": "sound_spelling",
+    "text": "Abscond with the scones - running away secretly with the stolen goods."
+  },
+  "Absolution": {
+    "kind": "sound_spelling",
+    "text": "The absolute solution to guilt is being forgiven completely."
+  },
+  "Abstain": {
+    "kind": "sound_spelling",
+    "text": "You abstain from wine so it doesn't stain your shirt."
+  },
+  "Abstruse": {
+    "kind": "sound_spelling",
+    "text": "Sounds like obstructs - the complex meaning obstructs your understanding."
+  },
+  "Accede": {
+    "kind": "morphology",
+    "text": "\"ac-\" (toward) + \"cede\" (yield) = to yield toward an agreement."
+  },
+  "Accentuate": null,
+  "Accessible": null,
+  "Acclaim": {
+    "kind": "morphology",
+    "text": "\"ac-\" (toward) + \"claim\" (shout) = shouting praise toward someone."
+  },
+  "Accolade": {
+    "kind": "etymology_story",
+    "text": "From Latin \"ad\" (to) + \"collum\" (neck). Originally a ceremonial embrace around the neck when conferring knighthood."
+  },
+  "Accommodating": null,
+  "Accord": {
+    "kind": "morphology",
+    "text": "\"ac-\" (toward) + \"cord\" (heart) = hearts moving toward agreement."
+  },
+  "Accost": {
+    "kind": "etymology_story",
+    "text": "From Latin \"ad costam\" (to the rib/side). To aggressively come right up to someone's side and confront them."
+  },
+  "Accretion": {
+    "kind": "sound_spelling",
+    "text": "A creation built up gradually layer by layer."
+  },
+  "Acerbic": {
+    "kind": "sound_spelling",
+    "text": "An acerbic comment is acidic and bites."
+  },
+  "Acquiesce": {
+    "kind": "sound_spelling",
+    "text": "Acquire quiet - you stay quiet and just agree to it."
+  },
+  "Acrimony": {
+    "kind": "sound_spelling",
+    "text": "A crime on me - leaves you with bitterness and ill will."
+  },
+  "Acumen": {
+    "kind": "sound_spelling",
+    "text": "IQ men - men with high IQs have great mental sharpness."
+  },
+  "Acute": {
+    "kind": "sound_spelling",
+    "text": "A cute angle is sharp and precise."
+  },
+  "Adamant": {
+    "kind": "etymology_story",
+    "text": "From Greek adamas, meaning \"uncuttable\" (the same root as diamond). Unyielding and unbreakable."
+  },
+  "Adept": {
+    "kind": "sound_spelling",
+    "text": "A depth of knowledge makes you highly skilled."
+  },
+  "Adhere": {
+    "kind": "morphology",
+    "text": "\"ad-\" (to) + \"haerere\" (stick) = to stick to."
+  },
+  "Admonish": {
+    "kind": "morphology",
+    "text": "\"ad-\" (to) + \"monere\" (warn) = to give a warning to."
+  },
+  "Adorn": null,
+  "Adroit": {
+    "kind": "etymology_story",
+    "text": "From French à droit meaning \"to the right.\" The right hand was historically considered the skilled and dexterous one."
+  },
+  "Adulation": {
+    "kind": "sound_spelling",
+    "text": "Adult infatuation - excessive flattery and worship."
+  },
+  "Adumbrate": {
+    "kind": "morphology",
+    "text": "\"ad-\" (toward) + \"umbr\" (shadow) = to cast a shadow over, or outline vaguely."
+  },
+  "Adverse": {
+    "kind": "morphology",
+    "text": "\"ad-\" (against) + \"vers\" (turn) = turned against you; hostile."
+  },
+  "Advocate": {
+    "kind": "morphology",
+    "text": "\"ad-\" (toward) + \"voc\" (voice) = to add your voice toward a cause."
+  },
+  "Aerial": null,
+  "Aesthetic": null,
+  "Affable": {
+    "kind": "sound_spelling",
+    "text": "A fable - the grandpa telling a fable is friendly and easy to talk to."
+  },
+  "Affinity": {
+    "kind": "sound_spelling",
+    "text": "Infinity - an infinite, natural connection or liking for something."
+  },
+  "Affluent": {
+    "kind": "morphology",
+    "text": "\"af-\" (toward) + \"flu\" (flow) = wealth flowing toward you."
+  },
+  "Affront": {
+    "kind": "sound_spelling",
+    "text": "In front - an insult right in front of your face."
+  },
+  "Aggrandize": {
+    "kind": "sound_spelling",
+    "text": "To make something grander."
+  },
+  "Aggregate": {
+    "kind": "morphology",
+    "text": "\"ag-\" (toward) + \"greg\" (flock) = to bring the flock together into a whole."
+  },
+  "Aggrieved": {
+    "kind": "sound_spelling",
+    "text": "You feel aggrieved when someone causes you grief."
+  },
+  "Agile": null,
+  "Agnostic": {
+    "kind": "morphology",
+    "text": "\"a-\" (without) + \"gnos\" (knowledge) = claiming to be without knowledge (usually of God)."
+  },
+  "Agriculture": null,
+  "Aisle": null,
+  "Alacrity": {
+    "kind": "sound_spelling",
+    "text": "Sounds like electricity - moving with electric speed and readiness."
+  },
+  "Alias": null,
+  "Allay": {
+    "kind": "sound_spelling",
+    "text": "To lay a baby down soothes and calms it."
+  },
+  "Allege": null,
+  "Alleviate": {
+    "kind": "morphology",
+    "text": "\"ad-\" (to) + \"lev\" (light) = to make something lighter or less severe."
+  },
+  "Allocate": null,
+  "Aloof": {
+    "kind": "sound_spelling",
+    "text": "A roof - sitting alone on a roof, emotionally detached from everyone below."
+  },
+  "Altercation": {
+    "kind": "sound_spelling",
+    "text": "When things alter (change) for the worse, a noisy argument starts."
+  },
+  "Amalgamate": {
+    "kind": "sound_spelling",
+    "text": "A mall - a mall brings many different stores together into one place."
+  },
+  "Ambiguous": {
+    "kind": "morphology",
+    "text": "\"ambi-\" (both) + \"agere\" (drive) = driven in two directions, unclear."
+  },
+  "Ambivalent": {
+    "kind": "morphology",
+    "text": "\"ambi-\" (both) + \"val\" (strength/feeling) = having strong feelings in both directions."
+  },
+  "Ameliorate": {
+    "kind": "sound_spelling",
+    "text": "A million rate - taking a bad rating and improving it to a million."
+  },
+  "Amenable": {
+    "kind": "sound_spelling",
+    "text": "Amen-able - someone who frequently says \"amen\" (yes) and is easily persuaded."
+  },
+  "Amenity": null,
+  "Amiable": {
+    "kind": "morphology",
+    "text": "\"am-\" (love/friend) = friendly and pleasant (used for people)."
+  },
+  "Amicable": {
+    "kind": "morphology",
+    "text": "\"am-\" (love/friend) = friendly and peaceful (used for agreements/situations)."
+  },
+  "Amorous": {
+    "kind": "morphology",
+    "text": "\"am-\" (love) + \"-ous\" (full of) = full of romantic love."
+  },
+  "Amorphous": {
+    "kind": "morphology",
+    "text": "\"a-\" (without) + \"morph\" (shape) = without definite shape."
+  },
+  "Anachronistic": {
+    "kind": "morphology",
+    "text": "\"ana-\" (backward/against) + \"chron\" (time) = placed in the wrong time period."
+  },
+  "Analgesic": {
+    "kind": "morphology",
+    "text": "\"an-\" (without) + \"alg\" (pain) = medicine that takes away pain."
+  },
+  "Analogous": null,
+  "Anarchist": {
+    "kind": "morphology",
+    "text": "\"an-\" (without) + \"arch\" (ruler) = one who believes in no government."
+  },
+  "Anathema": {
+    "kind": "sound_spelling",
+    "text": "A nasty asthma - something you vehemently despise and avoid."
+  },
+  "Anecdote": null,
+  "Anesthesia": {
+    "kind": "morphology",
+    "text": "\"an-\" (without) + \"esthes\" (feeling) = without physical sensation."
+  },
+  "Anguish": null,
+  "Animated": {
+    "kind": "morphology",
+    "text": "\"anima\" (soul/life) = full of life."
+  },
+  "Annex": null,
+  "Annul": {
+    "kind": "sound_spelling",
+    "text": "A null - making a contract legally null and void."
+  },
+  "Anomaly": {
+    "kind": "morphology",
+    "text": "\"an-\" (not) + \"homos\" (same) = not the same as the normal rule."
+  },
+  "Anonymous": {
+    "kind": "morphology",
+    "text": "\"an-\" (without) + \"onym\" (name) = without a name."
+  },
+  "Antagonism": null,
+  "Antecedent": {
+    "kind": "morphology",
+    "text": "\"ante-\" (before) + \"ced\" (go) = the thing that goes before."
+  },
+  "Antediluvian": {
+    "kind": "morphology",
+    "text": "\"ante-\" (before) + \"diluvium\" (flood) = literally \"before the biblical flood,\" meaning ancient."
+  },
+  "Anthology": {
+    "kind": "etymology_story",
+    "text": "Greek anthos (flower) + logia (collection): a bouquet metaphor for chosen writings."
+  },
+  "Antiquated": null,
+  "Antipathy": {
+    "kind": "morphology",
+    "text": "\"anti-\" (against) + \"path\" (feeling) = a strong feeling against someone."
+  },
+  "Antiseptic": {
+    "kind": "morphology",
+    "text": "\"anti-\" (against) + \"septic\" (infection) = against infection."
+  },
+  "Antithesis": {
+    "kind": "morphology",
+    "text": "\"anti-\" (opposite) + \"thesis\" (idea) = the exact opposite."
+  },
+  "Anxiety": null,
+  "Apathetic": {
+    "kind": "morphology",
+    "text": "\"a-\" (without) + \"path\" (feeling) = without emotion or interest."
+  },
+  "Apocryphal": {
+    "kind": "sound_spelling",
+    "text": "A pocket full of lies - a story of doubtful authenticity."
+  },
+  "Appalling": null,
+  "Appease": {
+    "kind": "sound_spelling",
+    "text": "To bring someone to a state of peace."
+  },
+  "Appraise": {
+    "kind": "sound_spelling",
+    "text": "You offer praise when you determine something has high value."
+  },
+  "Apprehend": {
+    "kind": "sound_spelling",
+    "text": "Up your hand - what cops say when they arrest you."
+  },
+  "Approbation": {
+    "kind": "sound_spelling",
+    "text": "Approve a nation - official approval or praise."
+  },
+  "Appropriate": {
+    "kind": "sound_spelling",
+    "text": "A property - to take something for your own use."
+  },
+  "Aquatic": null,
+  "Arable": {
+    "kind": "morphology",
+    "text": "\"ar-\" (plow) + \"-able\" = plowable and farmable."
+  },
+  "Arbiter": {
+    "kind": "sound_spelling",
+    "text": "An arbiter will bite down on the arguments and make the final decision."
+  },
+  "Arbitrary": null,
+  "Arbitration": null,
+  "Arboreal": {
+    "kind": "etymology_story",
+    "text": "From Latin arbor (tree). Relating to trees."
+  },
+  "Arcane": {
+    "kind": "sound_spelling",
+    "text": "Ark cane - Indiana Jones needed a cane to find the lost Ark because its location was highly mysterious and known only to a few."
+  },
+  "Archaic": {
+    "kind": "morphology",
+    "text": "\"archaios\" (ancient) = very old."
+  },
+  "Archetypal": {
+    "kind": "morphology",
+    "text": "\"arch-\" (original) + \"type\" (model) = the original model."
+  },
+  "Ardor": {
+    "kind": "sound_spelling",
+    "text": "Harder - working harder because you have intense passion."
+  },
+  "Arid": {
+    "kind": "sound_spelling",
+    "text": "A rid - you rid the desert of all its water."
+  },
+  "Arrogate": {
+    "kind": "sound_spelling",
+    "text": "Arrow gate - taking over the castle gate with arrows to claim it without justification."
+  },
+  "Artifact": null,
+  "Artisan": null,
+  "Ascertain": {
+    "kind": "sound_spelling",
+    "text": "As certain - to make yourself absolutely certain of the facts."
+  },
+  "Ascetic": {
+    "kind": "sound_spelling",
+    "text": "Acidic - a monk drinking acidic water instead of wine to practice severe self-discipline."
+  },
+  "Ascribe": {
+    "kind": "morphology",
+    "text": "\"ad-\" (to) + \"scribere\" (write) = to write someone's name to a quote, crediting them."
+  },
+  "Aspersion": {
+    "kind": "sound_spelling",
+    "text": "Ass portion - talking about the worst portion of someone to damage their reputation."
+  },
+  "Aspire": null,
+  "Assail": {
+    "kind": "sound_spelling",
+    "text": "A sail - pirate ships use a sail to suddenly attack you."
+  },
+  "Assess": null,
+  "Assiduous": {
+    "kind": "sound_spelling",
+    "text": "Ass in dust - working so hard and persistently that your donkey is leaving a dust trail."
+  },
+  "Assuage": {
+    "kind": "sound_spelling",
+    "text": "A sausage - feeding a hungry, angry dog a sausage to calm and satisfy it."
+  },
+  "Astute": {
+    "kind": "sound_spelling",
+    "text": "A student - a good student is sharp and clever."
+  },
+  "Asylum": null,
+  "Atone": {
+    "kind": "sound_spelling",
+    "text": "At one - making up for your sins so you are back \"at one\" with God."
+  },
+  "Atrophy": {
+    "kind": "sound_spelling",
+    "text": "A trophy - if you just stare at a trophy and stop training, your muscles will waste away."
+  },
+  "Attain": null,
+  "Attribute": null,
+  "Atypical": {
+    "kind": "morphology",
+    "text": "\"a-\" (not) + \"typical\" = not typical."
+  },
+  "Audacious": {
+    "kind": "sound_spelling",
+    "text": "All day shush - if you shush the teacher all day, you are boldly disrespectful."
+  },
+  "Audible": null,
+  "Augment": {
+    "kind": "sound_spelling",
+    "text": "Argument - you augment (add to) your essay to win the argument."
+  },
+  "Auspicious": {
+    "kind": "sound_spelling",
+    "text": "Awesome space - entering an awesome space is a sign of future success."
+  },
+  "Austere": {
+    "kind": "sound_spelling",
+    "text": "Out steer - steering out of the fun lane into a strict, severe, undecorated lifestyle."
+  },
+  "Avarice": {
+    "kind": "sound_spelling",
+    "text": "Have a rice - the greedy rich man wants to have every single grain of rice for himself."
+  },
+  "Avenge": null,
+  "Aversion": {
+    "kind": "morphology",
+    "text": "\"a-\" (away) + \"vers\" (turn) = turning away in disgust."
+  },
+  "Balk": {
+    "kind": "sound_spelling",
+    "text": "A dog barks when it balks (refuses to move forward)."
+  },
+  "Ballad": null,
+  "Banal": {
+    "kind": "sound_spelling",
+    "text": "Ban all - we should ban all boring, unoriginal movies."
+  },
+  "Bane": {
+    "kind": "sound_spelling",
+    "text": "Batman's enemy Bane is the cause of his great distress."
+  },
+  "Bard": null,
+  "Bashful": {
+    "kind": "sound_spelling",
+    "text": "If you are shy, you might nervously bash your toe into the ground."
+  },
+  "Beguile": {
+    "kind": "morphology",
+    "text": "\"be-\" (completely) + \"guile\" (trickery) = to charm someone in a deceptive way."
+  },
+  "Behemoth": null,
+  "Benevolent": {
+    "kind": "morphology",
+    "text": "\"bene-\" (good) + \"vol\" (wish) = wishing good upon others."
+  },
+  "Benign": {
+    "kind": "morphology",
+    "text": "\"bene-\" (good) + \"gen\" (born) = gentle and harmless."
+  },
+  "Bequeath": {
+    "kind": "sound_spelling",
+    "text": "Beneath - leaving your possessions to the generation beneath you."
+  },
+  "Berate": {
+    "kind": "sound_spelling",
+    "text": "To give someone a B rate (a bad grade) and scold them angrily for it."
+  },
+  "Bereft": {
+    "kind": "sound_spelling",
+    "text": "He left - feeling utterly deprived and sad because he left."
+  },
+  "Beseech": {
+    "kind": "sound_spelling",
+    "text": "Bee speech - begging the bees not to sting you."
+  },
+  "Bias": null,
+  "Bilk": {
+    "kind": "sound_spelling",
+    "text": "Milk - the scammer will milk you for all your money."
+  },
+  "Blandish": {
+    "kind": "sound_spelling",
+    "text": "Bland dish - flattering the chef by saying the bland dish is actually delicious."
+  },
+  "Blemish": null,
+  "Blight": {
+    "kind": "sound_spelling",
+    "text": "B-light - blocking out the light causes the crops to die."
+  },
+  "Boisterous": {
+    "kind": "sound_spelling",
+    "text": "Boys terrorize - loud, energetic boys terrorizing the playground."
+  },
+  "Bombastic": {
+    "kind": "sound_spelling",
+    "text": "Bomb - inflating your speech with explosive words that lack actual substance."
+  },
+  "Boon": {
+    "kind": "sound_spelling",
+    "text": "Boom! - an explosive stroke of good luck or benefit."
+  },
+  "Bourgeois": null,
+  "Brazen": {
+    "kind": "sound_spelling",
+    "text": "Brass - acting as bold and hard as brass without any shame."
+  },
+  "Brusque": {
+    "kind": "sound_spelling",
+    "text": "Brush - brushing someone off with a quick, rude reply."
+  },
+  "Buffet": {
+    "kind": "sound_spelling",
+    "text": "A buff guy hitting you repeatedly."
+  },
+  "Burnish": {
+    "kind": "sound_spelling",
+    "text": "Burn - rubbing the metal so fast it burns and becomes highly polished."
+  },
+  "Buttress": {
+    "kind": "sound_spelling",
+    "text": "Butt rest - a support structure that acts as a rest for the building."
+  },
+  "Cacophony": {
+    "kind": "morphology",
+    "text": "\"kakos\" (bad) + \"phon\" (sound) = a harsh, bad mixture of sounds."
+  },
+  "Cadence": null,
+  "Cajole": {
+    "kind": "sound_spelling",
+    "text": "Cage hole - coaxing the scared puppy out of the cage hole with a treat."
+  },
+  "Calamity": {
+    "kind": "sound_spelling",
+    "text": "Calm am I? T(ee) - No, I am not calm, it's a disaster!"
+  },
+  "Calibrate": null,
+  "Callous": {
+    "kind": "sound_spelling",
+    "text": "Having physical calluses on your hands makes them hard; having a callous personality means your heart is hard and unfeeling."
+  },
+  "Calumny": {
+    "kind": "sound_spelling",
+    "text": "Column - writing a gossip column full of slander to ruin someone's reputation."
+  },
+  "Camaraderie": null,
+  "Candor": {
+    "kind": "sound_spelling",
+    "text": "Can do - being completely open and honest about what you can do."
+  },
+  "Canny": {
+    "kind": "sound_spelling",
+    "text": "Can he? - Yes, he can, because he's shrewd and clever."
+  },
+  "Canvas": {
+    "kind": "etymology_story",
+    "text": "Canvas fabric was originally made from cannabis (hemp)."
+  },
+  "Capacious": {
+    "kind": "sound_spelling",
+    "text": "Capacity - having a massive capacity; very roomy."
+  },
+  "Capitulate": {
+    "kind": "morphology",
+    "text": "\"caput\" (head) = to give up your head to the enemy, to surrender."
+  },
+  "Capricious": {
+    "kind": "sound_spelling",
+    "text": "Capri Sun - a toddler's mood is capricious; one second they are happy, the next they are crying because they dropped their Capri Sun."
+  },
+  "Captivate": null,
+  "Carouse": {
+    "kind": "sound_spelling",
+    "text": "Car house - driving your car into the house because you were partying and drinking noisily."
+  },
+  "Carp": {
+    "kind": "sound_spelling",
+    "text": "A carp fish just swims around complaining and nitpicking."
+  },
+  "Catalog": null,
+  "Catalyze": null,
+  "Caucus": {
+    "kind": "sound_spelling",
+    "text": "Cactus - politicians gathering around a spiky cactus to hold a closed political meeting."
+  },
+  "Caustic": {
+    "kind": "sound_spelling",
+    "text": "Cause sick - drinking a harsh chemical will cause you to be sick."
+  },
+  "Cavort": {
+    "kind": "sound_spelling",
+    "text": "Cave fort - jumping and dancing around excitedly in your childhood cave fort."
+  },
+  "Censure": {
+    "kind": "sound_spelling",
+    "text": "Censor - the government officially criticizes and censors the journalist."
+  },
+  "Cerebral": {
+    "kind": "morphology",
+    "text": "\"cerebrum\" (brain) + \"-al\" = relating to the brain/intellect."
+  },
+  "Chaos": null,
+  "Chastise": {
+    "kind": "sound_spelling",
+    "text": "Chase ties - the boss will chase you down and scold you for not wearing a tie."
+  },
+  "Cherish": null,
+  "Chide": {
+    "kind": "sound_spelling",
+    "text": "Child - how you gently scold a child for making a mistake."
+  },
+  "Choreography": null,
+  "Chronicle": null,
+  "Chronological": {
+    "kind": "morphology",
+    "text": "\"chron\" (time) + \"log\" (order) = arranged in order of time."
+  },
+  "Circuitous": {
+    "kind": "morphology",
+    "text": "\"circum\" (around) + \"ire\" (go) = going in a circular, indirect route."
+  },
+  "Circumlocution": {
+    "kind": "morphology",
+    "text": "\"circum\" (around) + \"loc\" (speak) = talking around the subject to avoid the point."
+  },
+  "Circumscribed": {
+    "kind": "morphology",
+    "text": "\"circum\" (around) + \"scribere\" (write/draw) = drawing a line around something to restrict it."
+  },
+  "Circumspect": {
+    "kind": "morphology",
+    "text": "\"circum\" (around) + \"spect\" (look) = looking around carefully before acting; cautious."
+  },
+  "Circumvent": {
+    "kind": "morphology",
+    "text": "\"circum\" (around) + \"vent\" (go) = to find a way around an obstacle."
+  },
+  "Clairvoyant": {
+    "kind": "morphology",
+    "text": "\"clair\" (clear) + \"voyant\" (seeing) = having clear vision of the future."
+  },
+  "Clamor": {
+    "kind": "sound_spelling",
+    "text": "Claim more - the angry mob is loudly shouting to claim more rights."
+  },
+  "Clandestine": {
+    "kind": "sound_spelling",
+    "text": "Clan destiny - the secret clan held a hidden meeting to discuss their destiny."
+  },
+  "Cleave": {
+    "kind": "sound_spelling",
+    "text": "Meat cleaver - a heavy knife used to split things apart."
+  },
+  "Clemency": {
+    "kind": "sound_spelling",
+    "text": "Lemon tea - giving the sore-throated prisoner a warm lemon tea as an act of mercy."
+  },
+  "Clergy": null,
+  "Cloying": {
+    "kind": "sound_spelling",
+    "text": "Clawing - romantic words that are so overly sweet you want to claw your ears off."
+  },
+  "Coagulate": {
+    "kind": "sound_spelling",
+    "text": "Colgate - toothpaste thickens and solidifies if left out."
+  },
+  "Coalesce": {
+    "kind": "morphology",
+    "text": "Fuse into one: co- (together) + alescere (to grow)-parts grow together into a single mass."
+  },
+  "Cobbler": null,
+  "Coerce": {
+    "kind": "sound_spelling",
+    "text": "Force - using force or threats to get someone to do something."
+  },
+  "Cogent": {
+    "kind": "sound_spelling",
+    "text": "Co-agent - your FBI co-agent presents a clear, logical, and convincing argument."
+  },
+  "Cognizant": {
+    "kind": "morphology",
+    "text": "\"cogn\" (know) = having knowledge or awareness."
+  },
+  "Coherent": {
+    "kind": "morphology",
+    "text": "\"co-\" (together) + \"haerere\" (stick) = sticking together logically."
+  },
+  "Collateral": null,
+  "Colloquial": {
+    "kind": "morphology",
+    "text": "\"col-\" (together) + \"loqu\" (speak) = how people speak together in everyday conversation."
+  },
+  "Collusion": {
+    "kind": "morphology",
+    "text": "\"col-\" (together) + \"ludere\" (play/deceive) = playing together in a secret, deceitful plot."
+  },
+  "Colossus": null,
+  "Combustion": null,
+  "Commendation": {
+    "kind": "sound_spelling",
+    "text": "Recommend a nation - giving official praise."
+  },
+  "Commensurate": {
+    "kind": "morphology",
+    "text": "\"com-\" (together) + \"mensur\" (measure) = corresponding in size or degree."
+  },
+  "Commodious": {
+    "kind": "sound_spelling",
+    "text": "Commode (toilet) - a massive, spacious bathroom."
+  },
+  "Compelling": null,
+  "Compensate": null,
+  "Complacency": {
+    "kind": "sound_spelling",
+    "text": "Come play, senor - relaxing and playing instead of staying alert to danger."
+  },
+  "Complement": {
+    "kind": "morphology",
+    "text": "\"com-\" (together) + \"plere\" (fill) = to fill up together, completing the whole."
+  },
+  "Compliant": null,
+  "Complicit": {
+    "kind": "morphology",
+    "text": "\"com-\" (together) + \"plic\" (fold) = folded together into an illegal act."
+  },
+  "Compliment": {
+    "kind": "etymology_story",
+    "text": "Latin complementum (what completes); courtesy praise - remember: I like compliments."
+  },
+  "Compound": null,
+  "Comprehensive": null,
+  "Compress": null,
+  "Compunction": {
+    "kind": "morphology",
+    "text": "\"com-\" (intensive) + \"punct\" (prick) = a sharp prick of guilt."
+  },
+  "Concede": {
+    "kind": "morphology",
+    "text": "\"con-\" (completely) + \"cedere\" (yield) = to completely yield the argument."
+  },
+  "Conciliatory": {
+    "kind": "sound_spelling",
+    "text": "Council - bringing the arguing sides to the council to make peace."
+  },
+  "Concise": {
+    "kind": "morphology",
+    "text": "\"con-\" (completely) + \"caedere\" (cut) = cut down to just the essential words."
+  },
+  "Concoct": {
+    "kind": "sound_spelling",
+    "text": "Cocktail - mixing ingredients together to invent a new cocktail."
+  },
+  "Concomitant": {
+    "kind": "sound_spelling",
+    "text": "Comet tent - if a comet hits your tent, disaster is a naturally accompanying result."
+  },
+  "Concord": {
+    "kind": "morphology",
+    "text": "\"con-\" (together) + \"cord\" (heart) = hearts together in harmony."
+  },
+  "Condolence": {
+    "kind": "morphology",
+    "text": "\"con-\" (with) + \"dolere\" (grieve) = to grieve with someone."
+  },
+  "Condone": {
+    "kind": "sound_spelling",
+    "text": "Con done - the convict is done with his sentence, so you overlook his past offense."
+  },
+  "Conduit": {
+    "kind": "sound_spelling",
+    "text": "Can do it - the pipe is the channel that can do the job of moving the water."
+  },
+  "Confection": null,
+  "Confidant": {
+    "kind": "morphology",
+    "text": "\"con-\" (with) + \"fid\" (trust) = the person you completely trust with your secrets."
+  },
+  "Conflagration": {
+    "kind": "sound_spelling",
+    "text": "Flag ration - a massive fire burned through the military base, so they had to ration their remaining flags."
+  }
+}

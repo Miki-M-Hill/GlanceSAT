@@ -1,0 +1,155 @@
+{
+  "schemaVersion": 1,
+  "description": "Human-curated directed tonal foil pairs for boss-fight quiz items. Target.tonalFoilId points to Foil only (never reversed).",
+  "rules": {
+    "directedEdge": "targetId → foilId",
+    "foilNeverHasTonalFoilId": true,
+    "excludeSemanticChargeMixed": true,
+    "duplicateFoilsAllowed": true
+  },
+  "pairs": [
+    {
+      "targetId": "d5ac52d3-398c-405d-a0d4-ed26dd2fcb2d",
+      "targetWord": "Appropriate",
+      "targetCharge": "neutral",
+      "foilId": "f5034f88-e7bf-4a85-8281-5ffe01f80db7",
+      "foilWord": "Arrogate",
+      "foilCharge": "negative",
+      "onboardingRank": 3,
+      "category": "action_power",
+      "rationale": "Proper administrative use vs wrongful seizure of power."
+    },
+    {
+      "targetId": "e7edcda6-a370-42c0-a4b3-a45b7e29fe58",
+      "targetWord": "Acquiesce",
+      "targetCharge": "neutral",
+      "foilId": "c733a8c4-c2ad-47c7-a961-878e729ab4f3",
+      "foilWord": "Capitulate",
+      "foilCharge": "negative",
+      "category": "action_power",
+      "rationale": "Quiet acceptance vs surrender under crushing defeat."
+    },
+    {
+      "targetId": "c733a8c4-c2ad-47c7-a961-878e729ab4f3",
+      "targetWord": "Capitulate",
+      "targetCharge": "negative",
+      "foilId": "71800b51-0c7f-4eb0-b839-8fd27dd19ac9",
+      "foilWord": "Defer",
+      "foilCharge": "neutral",
+      "category": "action_power",
+      "rationale": "Surrender to an enemy vs polite yield to an expert."
+    },
+    {
+      "targetId": "59bc304b-00e5-407f-9b3e-6dd6be92cbf8",
+      "targetWord": "Coerce",
+      "targetCharge": "negative",
+      "foilId": "b46fc65e-0c0d-4cce-8f50-67ae83f70c20",
+      "foilWord": "Constrain",
+      "foilCharge": "neutral",
+      "category": "action_power",
+      "rationale": "Force via threats vs physical or logical limitation."
+    },
+    {
+      "targetId": "e9f35bd6-eecf-4209-977b-f743a011d63c",
+      "targetWord": "Aberration",
+      "targetCharge": "negative",
+      "foilId": "20a4e1c3-673a-4142-94cf-aa696fe8ac1c",
+      "foilWord": "Anomaly",
+      "foilCharge": "neutral",
+      "onboardingRank": 2,
+      "category": "idea_concept",
+      "rationale": "Unwelcome deviation vs neutral statistical outlier."
+    },
+    {
+      "targetId": "52e01577-0342-4c3a-baa4-a47c34bc61e5",
+      "targetWord": "Abstruse",
+      "targetCharge": "negative",
+      "foilId": "9a97d0e3-4c40-471b-84c5-493aefa53fb4",
+      "foilWord": "Esoteric",
+      "foilCharge": "neutral",
+      "category": "idea_concept",
+      "rationale": "Confusingly unclear vs niche specialist knowledge."
+    },
+    {
+      "targetId": "6ff968ac-7b00-4a44-b072-96542960cea3",
+      "targetWord": "Archaic",
+      "targetCharge": "neutral",
+      "foilId": "fff356a0-9c43-40fc-8872-9dbba0c69727",
+      "foilWord": "Obsolete",
+      "foilCharge": "negative",
+      "category": "idea_concept",
+      "rationale": "Merely old vs entirely replaced and useless."
+    },
+    {
+      "targetId": "d1ae8b0a-8d47-42e6-838c-0bf675b8d627",
+      "targetWord": "Dirge",
+      "targetCharge": "negative",
+      "foilId": "404a84c7-9b08-4441-b6b7-34c09abbf58a",
+      "foilWord": "Elegy",
+      "foilCharge": "neutral",
+      "category": "idea_concept",
+      "rationale": "Gloomy funeral march vs reflective poetic lament."
+    },
+    {
+      "targetId": "81b4f793-ffb3-427e-a10d-42e1b2332ee3",
+      "targetWord": "Plethora",
+      "targetCharge": "neutral",
+      "foilId": "fe01345f-82bd-4400-a35b-3d617e4c52c0",
+      "foilWord": "Surfeit",
+      "foilCharge": "negative",
+      "category": "idea_concept",
+      "rationale": "Abundant plenty vs sickening excess."
+    },
+    {
+      "targetId": "04c9f37b-5509-45fc-ab35-6e41acbeeaa0",
+      "targetWord": "Sinuous",
+      "targetCharge": "neutral",
+      "foilId": "aa8efb7f-4c91-45ac-bfc3-a660f8b97264",
+      "foilWord": "Tortuous",
+      "foilCharge": "negative",
+      "category": "idea_concept",
+      "rationale": "Gracefully curving vs painfully complex and twisting."
+    },
+    {
+      "targetId": "d877789b-194a-48fd-867b-257ccd22f8be",
+      "targetWord": "Brusque",
+      "targetCharge": "negative",
+      "foilId": "a7d45912-c147-487b-8d1e-14849a2ee07b",
+      "foilWord": "Laconic",
+      "foilCharge": "neutral",
+      "onboardingRank": 1,
+      "category": "speech_attitude",
+      "rationale": "Short because rude vs short because economical with words."
+    },
+    {
+      "targetId": "9678e494-071f-440e-ba9f-f8d2e748434d",
+      "targetWord": "Curt",
+      "targetCharge": "negative",
+      "foilId": "a7d45912-c147-487b-8d1e-14849a2ee07b",
+      "foilWord": "Laconic",
+      "foilCharge": "neutral",
+      "category": "speech_attitude",
+      "rationale": "Abrupt rudeness vs deliberate brevity."
+    },
+    {
+      "targetId": "01d2ba51-8a8f-4b47-8635-c4cd6609bf5f",
+      "targetWord": "Strident",
+      "targetCharge": "negative",
+      "foilId": "f4175c7f-091f-4424-9121-d3687876d915",
+      "foilWord": "Vociferous",
+      "foilCharge": "neutral",
+      "category": "speech_attitude",
+      "rationale": "Harsh and grating loudness vs energetic outspokenness."
+    },
+    {
+      "targetId": "bd17af0e-4069-49d5-9a43-1f11b5aca950",
+      "targetWord": "Raucous",
+      "targetCharge": "negative",
+      "foilId": "f4175c7f-091f-4424-9121-d3687876d915",
+      "foilWord": "Vociferous",
+      "foilCharge": "neutral",
+      "category": "speech_attitude",
+      "rationale": "Disruptive disorder vs loudly expressive."
+    }
+  ]
+}

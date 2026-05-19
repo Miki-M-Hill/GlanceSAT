@@ -7,9 +7,80 @@ import AppIntents
 import Foundation
 import WidgetKit
 
-struct KnowWidgetWordIntent: AppIntent {
-    static var title: LocalizedStringResource = "Know Word"
-    static var description = IntentDescription("Mark this vocabulary word as known from the widget.")
+struct AnswerWidgetQuizIntent: AppIntent {
+    static var title: LocalizedStringResource = "Answer Quiz"
+    static var description = IntentDescription("Answer the synonym quiz on the Glance quiz widget.")
+
+    @Parameter(title: "Word ID") var wordID: String
+    @Parameter(title: "Slot Key") var slotKey: String
+    @Parameter(title: "Selected Option") var selectedOption: String
+    @Parameter(title: "Correct Answer") var correctAnswer: String
+
+    init() {
+        wordID = ""
+        slotKey = ""
+        selectedOption = ""
+        correctAnswer = ""
+    }
+
+    init(wordID: String, slotKey: String, selectedOption: String, correctAnswer: String) {
+        self.wordID = wordID
+        self.slotKey = slotKey
+        self.selectedOption = selectedOption
+        self.correctAnswer = correctAnswer
+    }
+
+    @MainActor
+    func perform() async throws -> some IntentResult {
+        guard let id = UUID(uuidString: wordID.trimmingCharacters(in: .whitespacesAndNewlines)) else {
+            return .result()
+        }
+
+        let wasCorrect = WidgetQuizSlotStore.isCorrect(selected: selectedOption, expected: correctAnswer)
+        WidgetQuizSlotStore.recordAnswer(
+            slotKey: slotKey,
+            wordID: id,
+            selectedOption: selectedOption,
+            wasCorrect: wasCorrect
+        )
+
+        WidgetCenter.shared.reloadTimelines(ofKind: GlanceSATWidgetConstants.quizKind)
+
+        let handoffSlotKey = slotKey
+        Task {
+            try await Task.sleep(nanoseconds: UInt64(WidgetQuizSlotStore.feedbackDuration * 1_000_000_000))
+            WidgetQuizSlotStore.advanceToVocab(slotKey: handoffSlotKey, wordID: id)
+            WidgetCenter.shared.reloadTimelines(ofKind: GlanceSATWidgetConstants.quizKind)
+        }
+
+        return .result()
+    }
+}
+
+struct SpeakWidgetWordIntent: AppIntent {
+    static var title: LocalizedStringResource = "Pronounce Word"
+    static var description = IntentDescription("Hear the pronunciation of this vocabulary word.")
+
+    @Parameter(title: "Word") var word: String
+
+    init() {
+        word = ""
+    }
+
+    init(word: String) {
+        self.word = word
+    }
+
+    @MainActor
+    func perform() async throws -> some IntentResult {
+        WidgetPronunciationSpeaker.speak(word)
+        return .result()
+    }
+}
+
+struct ToggleWidgetExampleIntent: AppIntent {
+    static var title: LocalizedStringResource = "Toggle Example"
+    static var description = IntentDescription("Show or hide the example sentence on this widget word.")
 
     @Parameter(title: "Word ID") var wordID: String
 
@@ -23,15 +94,15 @@ struct KnowWidgetWordIntent: AppIntent {
 
     @MainActor
     func perform() async throws -> some IntentResult {
-        WidgetInteractionStore.record(wordID: wordID, action: .know)
+        WidgetInteractionStore.toggleExampleReveal(wordID: wordID)
         WidgetCenter.shared.reloadTimelines(ofKind: GlanceSATWidgetConstants.vocabularyKind)
         return .result()
     }
 }
 
-struct ReviewWidgetWordIntent: AppIntent {
-    static var title: LocalizedStringResource = "Review Word"
-    static var description = IntentDescription("Mark this vocabulary word for review from the widget.")
+struct ToggleWidgetDetailIntent: AppIntent {
+    static var title: LocalizedStringResource = "Toggle Hook"
+    static var description = IntentDescription("Show or hide the memory hook or word origin on this widget.")
 
     @Parameter(title: "Word ID") var wordID: String
 
@@ -45,29 +116,7 @@ struct ReviewWidgetWordIntent: AppIntent {
 
     @MainActor
     func perform() async throws -> some IntentResult {
-        WidgetInteractionStore.record(wordID: wordID, action: .review)
-        WidgetCenter.shared.reloadTimelines(ofKind: GlanceSATWidgetConstants.vocabularyKind)
-        return .result()
-    }
-}
-
-struct RevealExampleWidgetWordIntent: AppIntent {
-    static var title: LocalizedStringResource = "Reveal Example"
-    static var description = IntentDescription("Reveal the example sentence for this vocabulary word.")
-
-    @Parameter(title: "Word ID") var wordID: String
-
-    init() {
-        wordID = ""
-    }
-
-    init(wordID: String) {
-        self.wordID = wordID
-    }
-
-    @MainActor
-    func perform() async throws -> some IntentResult {
-        WidgetInteractionStore.record(wordID: wordID, action: .revealExample)
+        WidgetInteractionStore.toggleHookReveal(wordID: wordID)
         WidgetCenter.shared.reloadTimelines(ofKind: GlanceSATWidgetConstants.vocabularyKind)
         return .result()
     }
@@ -80,16 +129,10 @@ enum WidgetInteractionStore {
         case revealExample
     }
 
-    struct Event: Codable, Sendable {
-        let wordID: String
-        let action: Action
-        let date: Date
-    }
-
     private enum Keys {
         static let dismissedWordIDs = "widget.interactions.dismissedWordIDs"
         static let revealedExampleWordIDs = "widget.interactions.revealedExampleWordIDs"
-        static let pendingEvents = "widget.interactions.pendingEvents"
+        static let revealedHookWordIDs = "widget.interactions.revealedDetailWordIDs"
     }
 
     private static let appGroup = "group.com.mikihill.GlanceSAT"
@@ -98,30 +141,20 @@ enum WidgetInteractionStore {
         UserDefaults(suiteName: appGroup)
     }
 
-    static func record(wordID: String, action: Action) {
-        let trimmed = wordID.trimmingCharacters(in: .whitespacesAndNewlines)
-        guard !trimmed.isEmpty else { return }
+    static func toggleExampleReveal(wordID: String) {
+        toggleExclusiveReveal(wordID: wordID, primaryKey: Keys.revealedExampleWordIDs, otherKey: Keys.revealedHookWordIDs)
+    }
 
-        switch action {
-        case .know, .review:
-            insert(trimmed, key: Keys.dismissedWordIDs)
-        case .revealExample:
-            insert(trimmed, key: Keys.revealedExampleWordIDs)
-        }
-
-        var events = pendingEvents()
-        events.append(Event(wordID: trimmed, action: action, date: Date()))
-        if events.count > 80 {
-            events.removeFirst(events.count - 80)
-        }
-
-        if let data = try? JSONEncoder().encode(events) {
-            defaults?.set(data, forKey: Keys.pendingEvents)
-        }
+    static func toggleHookReveal(wordID: String) {
+        toggleExclusiveReveal(wordID: wordID, primaryKey: Keys.revealedHookWordIDs, otherKey: Keys.revealedExampleWordIDs)
     }
 
     static func isExampleRevealed(wordID: UUID) -> Bool {
-        stringSet(forKey: Keys.revealedExampleWordIDs).contains(wordID.uuidString)
+        exampleRevealSet().contains(wordID.uuidString)
+    }
+
+    static func isHookRevealed(wordID: UUID) -> Bool {
+        hookRevealSet().contains(wordID.uuidString)
     }
 
     static func visibleWords(from words: [WidgetWordSnapshot]) -> [WidgetWordSnapshot] {
@@ -130,18 +163,33 @@ enum WidgetInteractionStore {
         return visible.isEmpty ? words : visible
     }
 
-    private static func pendingEvents() -> [Event] {
-        guard let data = defaults?.data(forKey: Keys.pendingEvents),
-              let decoded = try? JSONDecoder().decode([Event].self, from: data) else {
-            return []
+    /// Opening one detail closes the other for the same word.
+    private static func toggleExclusiveReveal(wordID: String, primaryKey: String, otherKey: String) {
+        let trimmed = wordID.trimmingCharacters(in: .whitespacesAndNewlines)
+        guard !trimmed.isEmpty else { return }
+
+        AppGroupFileLock.withLock {
+            var primary = stringSet(forKey: primaryKey)
+            var other = stringSet(forKey: otherKey)
+
+            if primary.contains(trimmed) {
+                primary.remove(trimmed)
+            } else {
+                primary.insert(trimmed)
+                other.remove(trimmed)
+            }
+
+            defaults?.set(Array(primary), forKey: primaryKey)
+            defaults?.set(Array(other), forKey: otherKey)
         }
-        return decoded
     }
 
-    private static func insert(_ value: String, key: String) {
-        var values = stringSet(forKey: key)
-        values.insert(value)
-        defaults?.set(Array(values), forKey: key)
+    private static func exampleRevealSet() -> Set<String> {
+        stringSet(forKey: Keys.revealedExampleWordIDs)
+    }
+
+    private static func hookRevealSet() -> Set<String> {
+        stringSet(forKey: Keys.revealedHookWordIDs)
     }
 
     private static func stringSet(forKey key: String) -> Set<String> {

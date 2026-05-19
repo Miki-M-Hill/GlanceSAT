@@ -1,0 +1,502 @@
+[
+  {
+    "word": "Aberration",
+    "count": 19,
+    "sentence": "In 1918, the Boston Red Sox won the World Series, but the success turned out to be an aberration."
+  },
+  {
+    "word": "Abhor",
+    "count": 22,
+    "sentence": "Because he always wound up kicking himself in the head when he tried to play soccer, Oswald began to abhor the sport."
+  },
+  {
+    "word": "Abnegation",
+    "count": 18,
+    "sentence": "The holy man slept on the floor, took only cold showers, and generally followed other practices of abnegation."
+  },
+  {
+    "word": "Abort",
+    "count": 21,
+    "sentence": "After they ran out of food, the men attempting to jump rope around the world had to abort and go home."
+  },
+  {
+    "word": "Absolution",
+    "count": 18,
+    "sentence": "Once all the facts were known, the jury gave Angela absolution by giving a verdict of not guilty."
+  },
+  {
+    "word": "Abstain",
+    "count": 18,
+    "sentence": "Everyone demanded that Angus put on the kilt, but he did not want to do it and abstained."
+  },
+  {
+    "word": "Accede",
+    "count": 20,
+    "sentence": "When the class asked the teacher whether they could play baseball instead of learn grammar, he acceded to their request."
+  },
+  {
+    "word": "Accessible",
+    "count": 25,
+    "sentence": "After studying with SparkNotes and getting a great score on the SAT, Marlena realized her goal of getting into an Ivy-League college was accessible."
+  },
+  {
+    "word": "Accommodating",
+    "count": 23,
+    "sentence": "Though the apartment was not big enough for three people, Arnold, Mark, and Zebulon were all friends and were accommodating to each other."
+  },
+  {
+    "word": "Accost",
+    "count": 24,
+    "sentence": "Though Antoinette was normally quite calm, when the waiter spilled soup on her for the fourth time she stood up and accosted the man."
+  },
+  {
+    "word": "Acquiesce",
+    "count": 24,
+    "sentence": "Though Mr. Correlli wanted to stay outside and work in his garage, when his wife told him to come in to dinner, he acquiesced."
+  },
+  {
+    "word": "Acrimony",
+    "count": 22,
+    "sentence": "Though they vowed that no girl would ever come between them, Biff and Trevor could not keep acrimony from overwhelming their friendship."
+  },
+  {
+    "word": "Acumen",
+    "count": 19,
+    "sentence": "Because of his mathematical acumen, Larry was able to figure out in minutes problems that took other students hours."
+  },
+  {
+    "word": "Advocate",
+    "count": 17,
+    "sentence": "Arnold advocated turning left at the stop sign, even though everyone else thought we should turn right."
+  },
+  {
+    "word": "Affinity",
+    "count": 17,
+    "sentence": "Jerry didn't know why, but he felt an incredible affinity for Kramer the first time they met."
+  },
+  {
+    "word": "Aggrandize",
+    "count": 20,
+    "sentence": "Joseph always dropped the names of the famous people his father knew as a way to aggrandize his personal stature."
+  },
+  {
+    "word": "Aggregate",
+    "count": 18,
+    "sentence": "The three branches of the U.S. Government form an aggregate much more powerful than its individual parts."
+  },
+  {
+    "word": "Agriculture",
+    "count": 26,
+    "sentence": "It was a huge step in civilization when tribes left hunting and gathering and began to develop more sustainable methods of obtaining food, such as agriculture."
+  },
+  {
+    "word": "Alacrity",
+    "count": 27,
+    "sentence": "For some reason, Chuck loved to help his mother whenever he could, so when his mother asked him to set the table he did so with alacrity."
+  },
+  {
+    "word": "Allay",
+    "count": 19,
+    "sentence": "The chairman of the Federal Reserve gave a speech to try to allay investors' fears about an economic downturn."
+  },
+  {
+    "word": "Allege",
+    "count": 21,
+    "sentence": "The policeman had alleged that Marshall committed the crime, but after the investigation turned up no evidence, Marshall was set free."
+  },
+  {
+    "word": "Aloof",
+    "count": 25,
+    "sentence": "The scientist could sometimes seem aloof, as if he didn't care about his friends or family, but really he was just thinking about quantum mechanics."
+  },
+  {
+    "word": "Amalgamate",
+    "count": 19,
+    "sentence": "Because of his great charisma, the presidential candidate was able to amalgamate all democrats and republicans under his banner."
+  },
+  {
+    "word": "Ambiguous",
+    "count": 22,
+    "sentence": "Some people think Caesar married Cleopatra for her power, others believe he was charmed by her beauty. His actual reasons are ambiguous."
+  },
+  {
+    "word": "Ambivalent",
+    "count": 26,
+    "sentence": "My feelings about Calvin are ambivalent because on one hand he is a loyal friend, but on the other, he is a cruel and vicious thief."
+  },
+  {
+    "word": "Amenable",
+    "count": 20,
+    "sentence": "Our father was amenable when we asked him to drive us to the farm so we could go apple picking."
+  },
+  {
+    "word": "Amenity",
+    "count": 17,
+    "sentence": "Bill Gates's house is stocked with so many amenities, he never has to do anything for himself."
+  },
+  {
+    "word": "Amorphous",
+    "count": 20,
+    "sentence": "The effort was doomed from the start, because the reasons behind it were so amorphous and hard to pin down."
+  },
+  {
+    "word": "Anachronistic",
+    "count": 19,
+    "sentence": "In this book you're writing, you say that the Pyramids were built after the Titanic sank, which is anachronistic."
+  },
+  {
+    "word": "Analgesic",
+    "count": 17,
+    "sentence": "Put this analgesic on the wound so that the poor man at least feels a little better."
+  },
+  {
+    "word": "Anecdote",
+    "count": 17,
+    "sentence": "After dinner, Marlon told an anecdote about the time he got his nose stuck in a toaster."
+  },
+  {
+    "word": "Antediluvian",
+    "count": 20,
+    "sentence": "The antediluvian man still believed that Eisenhower was president of the United States and that hot dogs cost a nickel."
+  },
+  {
+    "word": "Anthology",
+    "count": 22,
+    "sentence": "The new anthology of Bob Dylan songs contains all his greatest hits and a few songs you might never have heard before."
+  },
+  {
+    "word": "Antipathy",
+    "count": 21,
+    "sentence": "I know you love me, but because you are a liar and a thief, I feel nothing but antipathy for you."
+  },
+  {
+    "word": "Antiquated",
+    "count": 19,
+    "sentence": "That antiquated car has none of the features, like power windows and steering, that make modern cars so great."
+  },
+  {
+    "word": "Antithesis",
+    "count": 18,
+    "sentence": "Your values, which hold war and violence in the highest esteem, are the antithesis of my pacifist beliefs."
+  },
+  {
+    "word": "Anxiety",
+    "count": 22,
+    "sentence": "When he heard about the car crash, he felt anxiety because he knew that his girlfriend had been driving on that road."
+  },
+  {
+    "word": "Apocryphal",
+    "count": 18,
+    "sentence": "Because I am standing before you, it seems obvious that the stories circulating about my demise were apocryphal."
+  },
+  {
+    "word": "Ascertain",
+    "count": 17,
+    "sentence": "With a bit of research, the student ascertained that some plants can live for weeks without water."
+  },
+  {
+    "word": "Astute",
+    "count": 17,
+    "sentence": "Much of Roger's success in politics results from his ability to provide astute answers to reporters' questions."
+  },
+  {
+    "word": "Avenge",
+    "count": 20,
+    "sentence": "The victims will take justice into their own hands and strive to avenge themselves against the men who robbed them."
+  },
+  {
+    "word": "Behemoth",
+    "count": 17,
+    "sentence": "The new aircraft carrier is among several behemoths that the Air Force has added to its fleet."
+  },
+  {
+    "word": "Blemish",
+    "count": 19,
+    "sentence": "The dealer agreed to lower the price because of the many blemishes on the surface of the wooden furniture."
+  },
+  {
+    "word": "Canny",
+    "count": 22,
+    "sentence": "The canny runner hung at the back of the pack through much of the race, then sprinted past them at the end."
+  },
+  {
+    "word": "Capricious",
+    "count": 17,
+    "sentence": "The young girl\u2019s capricious tendencies made it difficult for her to focus on achieving her goals."
+  },
+  {
+    "word": "Cerebral",
+    "count": 18,
+    "sentence": "The books we read in this class are too cerebral\u2014 they don\u2019t engage my emotions at all."
+  },
+  {
+    "word": "Chastise",
+    "count": 20,
+    "sentence": "After being chastised by her peers for mimicking Britney Spears, Miranda dyed her hair black and affected a Gothic style."
+  },
+  {
+    "word": "Cherish",
+    "count": 21,
+    "sentence": "She continued to cherish her red plaid trousers, even though they had gone out of style and no longer fit her."
+  },
+  {
+    "word": "Chronological",
+    "count": 18,
+    "sentence": "Lionel carefully arranged the snapshots of his former girlfriends in chronological order, and then set fire to them."
+  },
+  {
+    "word": "Circumspect",
+    "count": 26,
+    "sentence": "Though I promised Rachel\u2019s father I would bring her home promptly by midnight, it would have been more circumspect not to have specified a time."
+  },
+  {
+    "word": "Circumvent",
+    "count": 28,
+    "sentence": "The school\u2019s dress code forbidding navel-baring jeans was circumvented by the determined students, who were careful to cover up with long coats when administrators were nearby."
+  },
+  {
+    "word": "Clandestine",
+    "count": 21,
+    "sentence": "Announcing to her boyfriend that she was going to the gym, Sophie actually went to meet Joseph for a clandestine liaison."
+  },
+  {
+    "word": "Clergy",
+    "count": 28,
+    "sentence": "Though the villagers viewed the church rectory as quaint and charming, the clergy who lived there regarded it as a mildewy and dusty place that aggravated their allergies."
+  },
+  {
+    "word": "Coerce",
+    "count": 21,
+    "sentence": "The court decided that Vanilla Ice did not have to honor the contract because he had been coerced into signing it."
+  },
+  {
+    "word": "Cognizant",
+    "count": 19,
+    "sentence": "Jake avoided speaking to women in bars because he was cognizant of the fact that drinking impairs his judgment."
+  },
+  {
+    "word": "Coherent",
+    "count": 19,
+    "sentence": "Renee could not figure out what Monroe had seen because he was too distraught to deliver a coherent statement."
+  },
+  {
+    "word": "Collateral",
+    "count": 24,
+    "sentence": "Divorcing my wife had the collateral effect of making me poor, as she was the only one of us with a job or money."
+  },
+  {
+    "word": "Colloquial",
+    "count": 18,
+    "sentence": "Adam\u2019s essay on sexual response in primates was marked down because it contained too many colloquial expressions."
+  },
+  {
+    "word": "Combustion",
+    "count": 17,
+    "sentence": "The unexpected combustion of the prosecution\u2019s evidence forced the judge to dismiss the case against Ramirez."
+  },
+  {
+    "word": "Commensurate",
+    "count": 19,
+    "sentence": "Ahab selected a very long roll and proceeded to prepare a tuna salad sandwich commensurate with his enormous appetite."
+  },
+  {
+    "word": "Commodious",
+    "count": 23,
+    "sentence": "Holden invited the three women to join him in the back seat of the taxicab, assuring them that the car was quite commodious."
+  },
+  {
+    "word": "Compensate",
+    "count": 19,
+    "sentence": "Reginald bought Sharona a new dress to compensate her for the one he\u2019d spilled his ice cream on."
+  },
+  {
+    "word": "Complacency",
+    "count": 21,
+    "sentence": "Colin tried to shock his friends out of their complacency by painting a frightening picture of what might happen to them."
+  },
+  {
+    "word": "Complement",
+    "count": 20,
+    "sentence": "Ann\u2019s scarf complements her blouse beautifully, making her seem fully dressed even though she isn\u2019t wearing a coat."
+  },
+  {
+    "word": "Compliant",
+    "count": 18,
+    "sentence": "Sue had very strong opinions about what to do on a first date, and Ted was absolutely compliant."
+  },
+  {
+    "word": "Compound",
+    "count": 20,
+    "sentence": "The difficulty of finding a fire escape amid the smoke was compounded with the dangers posed by the panicking crowds."
+  },
+  {
+    "word": "Concise",
+    "count": 17,
+    "sentence": "Gordon did not like to waste time, and his instructions to Brenda were nothing if not concise."
+  },
+  {
+    "word": "Concord",
+    "count": 18,
+    "sentence": "Julie and Harold began the evening with a disagreement, but ended it in a state of perfect concord."
+  },
+  {
+    "word": "Conformist",
+    "count": 22,
+    "sentence": "Julian was such a conformist that he had to wait and see if his friends would do something before he would commit."
+  },
+  {
+    "word": "Construe",
+    "count": 18,
+    "sentence": "He construed her throwing his clothes out the window as a signal that she wanted him to leave."
+  },
+  {
+    "word": "Contemporaneous",
+    "count": 22,
+    "sentence": "Though her novels do not feature the themes of Romanticism, Jane Austen\u2019s work was contemporaneous with that of Wordsworth and Byron."
+  },
+  {
+    "word": "Cosmopolitan",
+    "count": 18,
+    "sentence": "Lloyd\u2019s education and upbringing were cosmopolitan, so he felt right at home among the powerful and learned."
+  },
+  {
+    "word": "Coup",
+    "count": 20,
+    "sentence": "Alexander pulled off an amazing coup when he got a date with Cynthia by purposely getting hit by her car."
+  },
+  {
+    "word": "Debacle",
+    "count": 17,
+    "sentence": "The elaborately designed fireworks show turned into a debacle when the fireworks started firing in random directions."
+  },
+  {
+    "word": "Debunk",
+    "count": 19,
+    "sentence": "He debunked her claim to be the world\u2019s greatest chess player by defeating her in 18 consecutive matches."
+  },
+  {
+    "word": "Defamatory",
+    "count": 19,
+    "sentence": "The defamatory gossip spreading about the actor made the public less willing to see the actor\u2019s new movie."
+  },
+  {
+    "word": "Defer",
+    "count": 17,
+    "sentence": "Ron deferred to Diane, the expert on musical instruments, when he was asked about buying a piano."
+  },
+  {
+    "word": "Derelict",
+    "count": 19,
+    "sentence": "Even though it was dangerous, the children enjoyed going to the deserted lot and playing in the derelict house."
+  },
+  {
+    "word": "Derivative",
+    "count": 20,
+    "sentence": "She was bored by his music because she felt that it was derivative and that she had heard it before."
+  },
+  {
+    "word": "Desolate",
+    "count": 17,
+    "sentence": "She found the desolate landscape quite a contrast to the hustle and bustle of the overcrowded city."
+  },
+  {
+    "word": "Despondent",
+    "count": 22,
+    "sentence": "Having failed the first math test, the despondent child saw no use in studying for the next and failed that one too."
+  },
+  {
+    "word": "Dialect",
+    "count": 21,
+    "sentence": "In the country\u2019s remote, mountainous regions, the inhabitants spoke a dialect that the country\u2019s other inhabitants had difficulty understanding."
+  },
+  {
+    "word": "Diffident",
+    "count": 17,
+    "sentence": "While eating dinner with the adults, the diffident youth did not speak for fear of seeming presumptuous."
+  },
+  {
+    "word": "Disaffected",
+    "count": 19,
+    "sentence": "Dismayed by Bobby\u2019s poor behavior, the parents sent their disaffected son to a military academy to be disciplined."
+  },
+  {
+    "word": "Discrepancy",
+    "count": 23,
+    "sentence": "He was troubled by the discrepancy between what he remembered paying for the appliance and what his receipt showed he paid for it."
+  },
+  {
+    "word": "Discretion",
+    "count": 23,
+    "sentence": "Not wanting her patient to get overly anxious, the doctor used discretion in deciding how much to tell the patient about his condition."
+  },
+  {
+    "word": "Disdain",
+    "count": 17,
+    "sentence": "Insecure about their jobs, the older employees disdained the recently hired ones, who were young and capable."
+  },
+  {
+    "word": "Disparage",
+    "count": 17,
+    "sentence": "The saleswoman disparaged the competitor\u2019s products to persuade her customers to buy what she was selling."
+  },
+  {
+    "word": "Disrepute",
+    "count": 22,
+    "sentence": "The officer fell into disrepute after it was learned that he had disobeyed the orders he had given to his own soldiers."
+  },
+  {
+    "word": "Dissemble",
+    "count": 20,
+    "sentence": "Not wanting to appear heartlessly greedy, she dissembled and hid her intention to sell her ailing father\u2019s stamp collection."
+  },
+  {
+    "word": "Dissonance",
+    "count": 40,
+    "sentence": "Though the president of the company often spoke of the company as reliant solely upon its workers, her decision to increase her own salary rather than reward her employees revealed a striking dissonance between her alleged beliefs and her actions."
+  },
+  {
+    "word": "Dissuade",
+    "count": 18,
+    "sentence": "Worried that he would catch a cold, she tried to dissuade him from going out on winter nights."
+  },
+  {
+    "word": "Dither",
+    "count": 18,
+    "sentence": "Not wanting to offend either friend, he dithered about which of the two birthday parties he should attend."
+  },
+  {
+    "word": "Dormant",
+    "count": 24,
+    "sentence": "Though she pretended everything was fine, her anger lay dormant throughout the dinner party and exploded in screams of rage after everyone had left."
+  },
+  {
+    "word": "Dour",
+    "count": 22,
+    "sentence": "The children feared their dour neighbor because the old man would take their toys if he believed they were being too loud."
+  },
+  {
+    "word": "Duplicity",
+    "count": 32,
+    "sentence": "His duplicity involved convincing his employees to let him lower their salaries and increase their stock options, and then to steal the money he saved and run the company into the ground."
+  },
+  {
+    "word": "Dynamic",
+    "count": 21,
+    "sentence": "The parents found it hard to keep up with the dynamic music scene with which their children had become very familiar."
+  },
+  {
+    "word": "Efface",
+    "count": 31,
+    "sentence": "The husband was so angry at his wife for leaving him that he effaced all evidence of her presence; he threw out pictures of her and gave away all her belongings."
+  },
+  {
+    "word": "Elaborate",
+    "count": 22,
+    "sentence": "Dan always beats me at chess because he develops such an elaborate game plan that I can never predict his next move."
+  },
+  {
+    "word": "Elicit",
+    "count": 18,
+    "sentence": "Although I asked several times where the exit was, I elicited no response from the stone-faced policeman."
+  }
+]

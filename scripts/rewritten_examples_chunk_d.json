@@ -1,0 +1,482 @@
+[
+  {
+    "word": "Promulgate",
+    "original": "The film professor promulgated that both in terms of sex appeal and political intrigue, Sean Connery\u2019s James Bond was superior to Roger Moore\u2019s.",
+    "revised": "The professor promulgated his view that Connery's Bond surpassed Moore's.",
+    "revisedWordCount": 10
+  },
+  {
+    "word": "Propitious",
+    "original": "The dark storm clouds visible on the horizon suggested that the weather would not be propitious for sailing.",
+    "revised": "Storm clouds on the horizon suggested weather not propitious for sailing.",
+    "revisedWordCount": 11
+  },
+  {
+    "word": "Propriety",
+    "original": "Erma\u2019s old-fashioned parents believed that her mini-skirt lacked the propriety expected of a \u201cnice\u201d girl.",
+    "revised": "Her parents felt the mini-skirt lacked the propriety expected of a nice girl.",
+    "revisedWordCount": 14
+  },
+  {
+    "word": "Protean",
+    "original": "Among Nigel\u2019s protean talents was his ability to touch the tip of his nose with his tongue.",
+    "revised": "Among Nigel's protean talents was touching his nose with his tongue.",
+    "revisedWordCount": 11
+  },
+  {
+    "word": "Prowess",
+    "original": "The musician had never taken a guitar lesson in his life, making his prowess with the instrument even more incredible.",
+    "revised": "With no lessons, his prowess on guitar seemed all the more incredible.",
+    "revisedWordCount": 12
+  },
+  {
+    "word": "Prudence",
+    "original": "After losing a fortune in a stock market crash, my father vowed to practice greater prudence in future investments.",
+    "revised": "After the crash, my father vowed to show greater prudence in investing.",
+    "revisedWordCount": 12
+  },
+  {
+    "word": "Prurient",
+    "original": "David\u2019s mother was shocked by the discovery of prurient reading material hidden beneath her son\u2019s mattress.",
+    "revised": "She was shocked to find prurient magazines hidden under her son's mattress.",
+    "revisedWordCount": 12
+  },
+  {
+    "word": "Puerile",
+    "original": "The judge demanded order after the lawyer\u2019s puerile attempt to object by stomping his feet on the courtroom floor.",
+    "revised": "The judge demanded order after the lawyer's puerile foot-stomping objection.",
+    "revisedWordCount": 11
+  },
+  {
+    "word": "Recalcitrant",
+    "original": "Even when scolded, the recalcitrant young girl simply stomped her foot and refused to finish her lima beans.",
+    "revised": "The recalcitrant child stomped her foot and refused to eat her beans.",
+    "revisedWordCount": 12
+  },
+  {
+    "word": "Reclusive",
+    "original": "Reclusive authors such as J.D. Salinger do not relish media attention and sometimes even enjoy holing up in remote cabins in the woods.",
+    "revised": "Reclusive authors like Salinger shun publicity and often retreat to remote cabins.",
+    "revisedWordCount": 12
+  },
+  {
+    "word": "Remiss",
+    "original": "The burglar gained entrance because the security guard, remiss in his duties, forgot to lock the door.",
+    "revised": "The burglar entered because the guard, remiss in duty, forgot the lock.",
+    "revisedWordCount": 12
+  },
+  {
+    "word": "Renunciation",
+    "original": "Fiona\u2019s renunciation of red meat resulted in weight loss, but confused those people who thought she\u2019d been a vegetarian for years.",
+    "revised": "Fiona's renunciation of red meat surprised friends who thought she ate fish.",
+    "revisedWordCount": 12
+  },
+  {
+    "word": "Repose",
+    "original": "The cat, after eating an entire can of tuna fish, reposed in the sun and took a long nap.",
+    "revised": "After a can of tuna, the cat reposed in the sun and napped.",
+    "revisedWordCount": 13
+  },
+  {
+    "word": "Reprehensible",
+    "original": "Jean\u2019s cruel and reprehensible attempt to dump her boyfriend on his birthday led to tears and recriminations.",
+    "revised": "Jean's reprehensible plan to dump her boyfriend on his birthday caused tears.",
+    "revisedWordCount": 12
+  },
+  {
+    "word": "Reprieve",
+    "original": "Because the governor woke up in a particularly good mood, he granted hundreds of reprieves to prisoners.",
+    "revised": "In a good mood, the governor granted hundreds of reprieves to prisoners.",
+    "revisedWordCount": 12
+  },
+  {
+    "word": "Reprove",
+    "original": "Lara reproved her son for sticking each and every one of his fingers into the strawberry pie.",
+    "revised": "Lara reproved her son for sticking every finger into the strawberry pie.",
+    "revisedWordCount": 12
+  },
+  {
+    "word": "Repudiate",
+    "original": "Kwame made a strong case for an extension of his curfew, but his mother repudiated it with a few biting words.",
+    "revised": "Though Kwame argued eloquently, his mother repudiated his plea for a later curfew.",
+    "revisedWordCount": 13
+  },
+  {
+    "word": "Reputable",
+    "original": "After the most reputable critic in the industry gave the novel a glowing review, sales took off.",
+    "revised": "After a reputable critic praised the novel, sales rose sharply.",
+    "revisedWordCount": 10
+  },
+  {
+    "word": "Rescind",
+    "original": "The company rescinded its offer of employment after discovering that Jane\u2019s resume was full of lies.",
+    "revised": "The company rescinded the job offer after discovering lies on Jane's resume.",
+    "revisedWordCount": 12
+  },
+  {
+    "word": "Reservoir",
+    "original": "Igor the Indomitable had quite a reservoir of strengh and could lift ten tons, even after running 700 miles, jumping over three mountains, and swimming across an ocean.",
+    "revised": "Even after a marathon, Igor drew on a vast reservoir of strength.",
+    "revisedWordCount": 12
+  },
+  {
+    "word": "Resolute",
+    "original": "With a resolute glint in her eye, Catherine announced that she was set on going to college in New York City even though she was a little frightened of tall buildings.",
+    "revised": "With a resolute gleam in her eye, Catherine vowed to attend college in New York.",
+    "revisedWordCount": 15
+  },
+  {
+    "word": "Retract",
+    "original": "As the media worked itself into a frenzy, the publicist hurriedly retracted his client\u2019s sexist statement.",
+    "revised": "As the press frenzy grew, the publicist retracted his client's sexist remark.",
+    "revisedWordCount": 12
+  },
+  {
+    "word": "Revoke",
+    "original": "After missing the curfew set by the court for eight nights in a row, Marcel\u2019s freedom of movement was revoked.",
+    "revised": "After Marcel missed curfew eight nights, the court revoked his freedom of movement.",
+    "revisedWordCount": 13
+  },
+  {
+    "word": "Ribald",
+    "original": "While some giggled at the ribald joke involving a parson\u2019s daughter, most sighed and rolled their eyes.",
+    "revised": "Some giggled at the ribald joke about the parson's daughter; most rolled their eyes.",
+    "revisedWordCount": 14
+  },
+  {
+    "word": "Ruminate",
+    "original": "Terry liked to ruminate while sitting on the banks of the river, staring pensively into the water.",
+    "revised": "Terry liked to ruminate on the riverbank, staring pensively into the water.",
+    "revisedWordCount": 12
+  },
+  {
+    "word": "Ruse",
+    "original": "Oliver concocted an elaborate ruse for sneaking out of the house to meet his girlfriend while simultaneously giving his mother the impression that he was asleep in bed.",
+    "revised": "Oliver devised a ruse to sneak out while convincing his mother he was asleep.",
+    "revisedWordCount": 14
+  },
+  {
+    "word": "Sagacity",
+    "original": "With remarkable sagacity, the wise old man predicted and thwarted his children\u2019s plan to ship him off to a nursing home.",
+    "revised": "With remarkable sagacity, the old man foresaw his children's plan to send him away.",
+    "revisedWordCount": 14
+  },
+  {
+    "word": "Sanctimonious",
+    "original": "The sanctimonious Bertrand delivered stern lectures on the Ten Commandments to anyone who would listen, but thought nothing of stealing cars to make some cash on the side.",
+    "revised": "The sanctimonious Bertrand lectured on commandments yet stole cars for extra cash.",
+    "revisedWordCount": 12
+  },
+  {
+    "word": "Sanguine",
+    "original": "Polly reacted to any bad news with a sanguine smile and the chirpy cry, \u201cWhen life hands you lemons, make lemonade!\u201d",
+    "revised": "Polly met bad news with a sanguine smile and her usual lemonade motto.",
+    "revisedWordCount": 13
+  },
+  {
+    "word": "Satiate",
+    "original": "Satiated after eating far too much turkey and stuffing, Liza lay on the couch watching football and suffering from stomach pains.",
+    "revised": "Satiated after too much turkey, Liza lay on the couch watching football.",
+    "revisedWordCount": 12
+  },
+  {
+    "word": "Scathing",
+    "original": "Two hours after breaking up with Russell, Suzanne thought of the perfect scathing retort to his accusations.",
+    "revised": "Hours later, Suzanne thought of a scathing retort to Russell's accusations.",
+    "revisedWordCount": 11
+  },
+  {
+    "word": "Scurrilous",
+    "original": "When Bruno heard the scurrilous accusation being made about him, he could not believe it because he always tried to be nice to everyone.",
+    "revised": "Bruno could not believe the scurrilous rumor, since he tried to be kind to everyone.",
+    "revisedWordCount": 15
+  },
+  {
+    "word": "Seminal",
+    "original": "Stephen Greenblatt\u2019s essays on Shakespeare proved to be seminal, because they initiated the critical school of New Historicism.",
+    "revised": "Greenblatt's essays on Shakespeare were seminal, launching the school of New Historicism.",
+    "revisedWordCount": 12
+  },
+  {
+    "word": "Sensual",
+    "original": "With a coy smile, the guest on the blind-date show announced that he considered himself a very sensual person.",
+    "revised": "With a coy smile, the blind-date guest said he was a sensual person.",
+    "revisedWordCount": 14
+  },
+  {
+    "word": "Sensuous",
+    "original": "Paul found drinking Coke, with all the little bubbles bursting on his tongue, a very sensuous experience.",
+    "revised": "Paul found the bubbles of Coke on his tongue a sensuous experience.",
+    "revisedWordCount": 12
+  },
+  {
+    "word": "Sobriety",
+    "original": "Jason believed that maintaining his sobriety in times of crisis was the key to success in life.",
+    "revised": "Jason believed maintaining sobriety during crises was key to success in life.",
+    "revisedWordCount": 12
+  },
+  {
+    "word": "Solicitous",
+    "original": "Jim, laid up in bed with a nasty virus, enjoyed the solicitous attentions of his mother, who brought him soup and extra blankets.",
+    "revised": "Sick in bed, Jim enjoyed his mother's solicitous attentions: soup and extra blankets.",
+    "revisedWordCount": 13
+  },
+  {
+    "word": "Spurious",
+    "original": "Using a spurious argument, John convinced the others that he had won the board game on a technicality.",
+    "revised": "John used a spurious argument to convince others he had won on a technicality.",
+    "revisedWordCount": 14
+  },
+  {
+    "word": "Stolid",
+    "original": "Charles\u2019s stolid reaction to his wife\u2019s funeral differed from the passion he showed at the time of her death.",
+    "revised": "Charles's stolid manner at his wife's funeral contrasted with his grief when she died.",
+    "revisedWordCount": 14
+  },
+  {
+    "word": "Surfeit",
+    "original": "After partaking of the surfeit of tacos and tamales at the All-You-Can-Eat Taco Tamale Lunch Special, Beth felt rather sick.",
+    "revised": "After a surfeit of tacos at the lunch special, Beth felt quite sick.",
+    "revisedWordCount": 13
+  },
+  {
+    "word": "Surmise",
+    "original": "After speaking to only one of the students, the teacher was able to surmise what had caused the fight.",
+    "revised": "After one interview, the teacher could surmise what had caused the fight.",
+    "revisedWordCount": 12
+  },
+  {
+    "word": "Surreptitious",
+    "original": "The surreptitious CIA agents were able to get in and out of the house without anyone noticing.",
+    "revised": "The surreptitious agents entered and left the house without anyone noticing.",
+    "revisedWordCount": 11
+  },
+  {
+    "word": "Sycophant",
+    "original": "Some see the people in the cabinet as the president\u2019s closest advisors, but others see them as sycophants.",
+    "revised": "Some call cabinet aides advisors; others dismiss them as mere sycophants.",
+    "revisedWordCount": 11
+  },
+  {
+    "word": "Tedious",
+    "original": "As time passed and the history professor continued to drone on and on, the lecture became increasingly tedious.",
+    "revised": "As the professor droned on, the lecture grew increasingly tedious.",
+    "revisedWordCount": 10
+  },
+  {
+    "word": "Tenable",
+    "original": "The department heads tore down the arguments in other people\u2019s theses, but Johari\u2019s work proved to be quite tenable.",
+    "revised": "While others' theses fell apart, Johari's argument proved surprisingly tenable.",
+    "revisedWordCount": 10
+  },
+  {
+    "word": "Tome",
+    "original": "In college, I used to carry around an anatomy book that was the heaviest tome in my bag.",
+    "revised": "In college I carried an anatomy book, the heaviest tome in my bag.",
+    "revisedWordCount": 13
+  },
+  {
+    "word": "Transient",
+    "original": "Because virtually everyone in Palm Beach is a tourist, the population of the town is quite transient.",
+    "revised": "Because most residents of Palm Beach are tourists, the population is quite transient.",
+    "revisedWordCount": 13
+  },
+  {
+    "word": "Travesty",
+    "original": "According to the school newspaper\u2019s merciless theater critic, Pacific Coast High\u2019s rendition of the musical Oklahoma was a travesty of the original.",
+    "revised": "The school critic called the production of Oklahoma a travesty of the original.",
+    "revisedWordCount": 13
+  },
+  {
+    "word": "Trepidation",
+    "original": "Feeling great trepidation, Anya refused to jump into the pool because she thought she saw a shark in it.",
+    "revised": "With great trepidation, Anya refused to jump into the pool with the shark.",
+    "revisedWordCount": 13
+  },
+  {
+    "word": "Trite",
+    "original": "Keith thought of himself as being very learned, but everyone else thought he was trite because his observations about the world were always the same as David Letterman\u2019s.",
+    "revised": "Keith fancied himself learned, but others found his observations trite and repetitive.",
+    "revisedWordCount": 12
+  },
+  {
+    "word": "Truculent",
+    "original": "This club doesn\u2019t really attract the dangerous types, so why was that bouncer being so truculent?",
+    "revised": "Why was the bouncer so truculent when this club rarely attracts dangerous types?",
+    "revisedWordCount": 13
+  },
+  {
+    "word": "Truncate",
+    "original": "After winning the derby, the jockey truncated the long speech he had planned and thanked only his mom and his horse.",
+    "revised": "After winning the derby, the jockey truncated his speech, thanking only his mother.",
+    "revisedWordCount": 13
+  },
+  {
+    "word": "Turpitude",
+    "original": "Sir Marcus\u2019s chivalry often contrasted with the turpitude he exhibited with the ladies at the tavern.",
+    "revised": "Sir Marcus's chivalry contrasted with the turpitude he showed toward women at the tavern.",
+    "revisedWordCount": 14
+  },
+  {
+    "word": "Uncanny",
+    "original": "Luka had an uncanny ability to know exactly what other people were thinking. She also had an uncanny ability to shoot fireballs from her hands.",
+    "revised": "Luka had an uncanny knack for knowing exactly what other people were thinking.",
+    "revisedWordCount": 13
+  },
+  {
+    "word": "Unctuous",
+    "original": "The unctuous receptionist seemed untrustworthy, as if she was only being helpful because she thought we might give her a big tip.",
+    "revised": "The unctuous receptionist seemed helpful only because she expected a large tip.",
+    "revisedWordCount": 12
+  },
+  {
+    "word": "Upbraid",
+    "original": "The last thing Lindsay wanted was for Lisa to upbraid her again about missing the rent payment.",
+    "revised": "Lindsay dreaded Lisa upbraiding her again about missing the rent payment.",
+    "revisedWordCount": 11
+  },
+  {
+    "word": "Usurp",
+    "original": "The rogue army general tried to usurp control of the government, but he failed because most of the army backed the legally elected president.",
+    "revised": "The general tried to usurp the government but failed when the army backed the president.",
+    "revisedWordCount": 15
+  },
+  {
+    "word": "Utopia",
+    "original": "Everyone in the world wants to live in a utopia, but no one can agree how to go about building one.",
+    "revised": "Everyone wants to live in a utopia, yet no one agrees how to build one.",
+    "revisedWordCount": 15
+  },
+  {
+    "word": "Vacillate",
+    "original": "I prefer a definite answer, but my boss kept vacillating between the distinct options available to us.",
+    "revised": "I prefer firm decisions, but my boss kept vacillating among the options before us.",
+    "revisedWordCount": 14
+  },
+  {
+    "word": "Vacuous",
+    "original": "Beyonce realized that the lyrics she had just penned were completely vacuous and tried to add more substance.",
+    "revised": "Beyonce saw the lyrics she had penned were vacuous and tried to add substance.",
+    "revisedWordCount": 14
+  },
+  {
+    "word": "Validate",
+    "original": "Yoko\u2019s chemistry lab partner was asleep during the experiment and could not validate the accuracy of her methods.",
+    "revised": "Yoko's lab partner slept through the experiment and could not validate her methods.",
+    "revisedWordCount": 13
+  },
+  {
+    "word": "Variegated",
+    "original": "Each wire in the engineering exam was variegated by color so that the students could figure out which one was which.",
+    "revised": "Each wire on the exam was variegated by color so students could tell them apart.",
+    "revisedWordCount": 15
+  },
+  {
+    "word": "Veneer",
+    "original": "Thanks to her Chanel makeup, Shannen was able to maintain a veneer of perfection that hid the flaws underneath.",
+    "revised": "With Chanel makeup, Shannen kept a veneer of perfection that hid her flaws.",
+    "revisedWordCount": 13
+  },
+  {
+    "word": "Verbose",
+    "original": "It took the verbose teacher two hours to explain the topic, while it should have taken only fifteen minutes.",
+    "revised": "The verbose teacher spent two hours on a topic that needed fifteen minutes.",
+    "revisedWordCount": 13
+  },
+  {
+    "word": "Vestige",
+    "original": "Do you know if the Mexican tortilla is a vestige of some form of Aztec corn-based flat bread?",
+    "revised": "Is the Mexican tortilla a vestige of some Aztec corn-based flatbread?",
+    "revisedWordCount": 12
+  },
+  {
+    "word": "Vicissitude",
+    "original": "The vicissitudes of daily life prevent me from predicting what might happen from one day to the next.",
+    "revised": "The vicissitudes of daily life keep me from predicting what tomorrow may bring.",
+    "revisedWordCount": 13
+  },
+  {
+    "word": "Vilify",
+    "original": "After the Watergate scandal, almost any story written about President Nixon sought to vilify him and criticize his behavior.",
+    "revised": "After Watergate, stories about Nixon often sought to vilify him and his conduct.",
+    "revisedWordCount": 13
+  },
+  {
+    "word": "Vindicate",
+    "original": "The attorney had no chance of vindicating the defendant with all of the strong evidence presented by the state.",
+    "revised": "With the state's strong evidence, the attorney could not vindicate the defendant.",
+    "revisedWordCount": 12
+  },
+  {
+    "word": "Vindictive",
+    "original": "The vindictive madman seeks to exact vengeance for any insult that he perceives is directed at him, no matter how small.",
+    "revised": "The vindictive madman seeks revenge for every slight, no matter how small.",
+    "revisedWordCount": 12
+  },
+  {
+    "word": "Virtuoso",
+    "original": "Even though Lydia has studied piano for many years, she\u2019s only average at it. She\u2019s no virtuoso, that\u2019s for sure.",
+    "revised": "Though Lydia studied piano for years, she remains average, no virtuoso at all.",
+    "revisedWordCount": 13
+  },
+  {
+    "word": "Vituperate",
+    "original": "Jack ran away as soon as his father found out, knowing he would be vituperated for his unseemly behavior.",
+    "revised": "Jack fled, knowing his father would vituperate him for his unseemly behavior.",
+    "revisedWordCount": 12
+  },
+  {
+    "word": "Vocation",
+    "original": "After growing tired of the superficial world of high-fashion, Edwina decided to devote herself to a new vocation: social work.",
+    "revised": "Tired of fashion, Edwina chose a new vocation: dedicated social work.",
+    "revisedWordCount": 11
+  },
+  {
+    "word": "Wallow",
+    "original": "My roommate can\u2019t get over her breakup with her boyfriend and now just wallows in self-pity.",
+    "revised": "My roommate still wallows in self-pity after her boyfriend broke up with her.",
+    "revisedWordCount": 14
+  },
+  {
+    "word": "Wane",
+    "original": "Don\u2019t be so afraid of his wrath because his influence with the president is already beginning to wane.",
+    "revised": "Do not fear his wrath; his influence with the president has begun to wane.",
+    "revisedWordCount": 14
+  },
+  {
+    "word": "Wily",
+    "original": "Though they were not the strongest of the Thundercats, wily Kit and Kat were definitely the most clever and full of tricks.",
+    "revised": "Though not the strongest Thundercats, wily Kit and Kat were the most clever tricksters.",
+    "revisedWordCount": 14
+  },
+  {
+    "word": "Winsome",
+    "original": "After such a long, frustrating day, I was grateful for Chris\u2019s winsome attitude and childish naivete.",
+    "revised": "After a frustrating day, I welcomed Chris's winsome attitude and childish naivete.",
+    "revisedWordCount": 12
+  },
+  {
+    "word": "Wrath",
+    "original": "Did you really want to incur her wrath when she is known for inflicting the worst punishments legally possible?",
+    "revised": "Did you want to incur her wrath when she imposes the harshest legal punishments?",
+    "revisedWordCount": 14
+  },
+  {
+    "word": "Zealous",
+    "original": "If he were any more zealous about getting his promotion, he\u2019d practically live at the office.",
+    "revised": "If he were more zealous about promotion, he would practically live at the office.",
+    "revisedWordCount": 14
+  },
+  {
+    "word": "Zenith",
+    "original": "I was too nice to tell Nelly that she had reached the absolute zenith of her career with that one hit of hers.",
+    "revised": "I never told Nelly that her one hit marked the zenith of her career.",
+    "revisedWordCount": 14
+  },
+  {
+    "word": "Zephyr",
+    "original": "If not for the zephyrs that were blowing and cooling us, our room would\u2019ve been unbearably hot.",
+    "revised": "Without the zephyrs cooling us, our room would have been unbearably hot.",
+    "revisedWordCount": 12
+  }
+]

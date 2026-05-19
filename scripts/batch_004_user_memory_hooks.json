@@ -1,0 +1,784 @@
+{
+  "Plethora": {
+    "kind": "sound_spelling",
+    "text": "Plaza full - a plaza completely full of a massive overabundance of items."
+  },
+  "Pliable": {
+    "kind": "sound_spelling",
+    "text": "Ply - like plywood, it bends easily and is highly flexible."
+  },
+  "Poignant": {
+    "kind": "sound_spelling",
+    "text": "Point - a sad memory so sharp it feels like it points straight into your heart."
+  },
+  "Polemic": {
+    "kind": "sound_spelling",
+    "text": "Polemic = debate weaponized: a blistering attack essay or speech against a person or idea."
+  },
+  "Portent": {
+    "kind": "sound_spelling",
+    "text": "Important - a highly important sign that something terrible is about to happen."
+  },
+  "Potable": {
+    "kind": "sound_spelling",
+    "text": "Pot - water safe enough to boil in a pot and drink."
+  },
+  "Potentate": {
+    "kind": "morphology",
+    "text": "\"potent\" (powerful) = an incredibly powerful ruler or dictator."
+  },
+  "Pragmatic": null,
+  "Precipice": {
+    "kind": "sound_spelling",
+    "text": "Press of ice - standing dangerously on the very edge of a massive cliff of ice."
+  },
+  "Preclude": {
+    "kind": "morphology",
+    "text": "\"pre-\" (before) + \"cludere\" (shut) = shut the door before it happens, making it impossible."
+  },
+  "Precocious": {
+    "kind": "etymology_story",
+    "text": "Latin praecox (\"cooked before\"): a child whose mind has \"cooked\" ahead of schedule."
+  },
+  "Predilection": {
+    "kind": "sound_spelling",
+    "text": "Pre-direction - you lean in a pre-direction because you have a strong preference for it."
+  },
+  "Preponderance": {
+    "kind": "morphology",
+    "text": "\"pre-\" (before) + \"ponder\" (weigh) = an amount so massive it outweighs everything else."
+  },
+  "Prepossessing": {
+    "kind": "sound_spelling",
+    "text": "Possess - someone so attractive you want to possess their attention."
+  },
+  "Presage": {
+    "kind": "morphology",
+    "text": "\"pre-\" (before) + \"sage\" (wise) = wise intuition that reads what is coming before it arrives."
+  },
+  "Prescient": {
+    "kind": "morphology",
+    "text": "\"pre-\" (before) + \"sci\" (know) = knowing what will happen before it does."
+  },
+  "Prescribe": null,
+  "Presumptuous": null,
+  "Pretense": null,
+  "Primeval": {
+    "kind": "morphology",
+    "text": "\"prim\" (first) + \"ev\" (age) = relating to the very first, ancient ages of the earth."
+  },
+  "Privation": {
+    "kind": "sound_spelling",
+    "text": "Deprive - a state of extreme poverty where you are deprived of basic needs."
+  },
+  "Probity": {
+    "kind": "sound_spelling",
+    "text": "Probe - a politician whose morals are so flawless they withstand the deepest legal probe."
+  },
+  "Proclivity": {
+    "kind": "sound_spelling",
+    "text": "Incline-built - in lean toward a habit; a tendency so steady it feels like gravity."
+  },
+  "Procure": null,
+  "Profane": {
+    "kind": "morphology",
+    "text": "\"pro-\" (outside) + \"fanum\" (temple) = disrespect spoken outside the sacred space."
+  },
+  "Profligate": {
+    "kind": "sound_spelling",
+    "text": "Profits gate - throwing profits out the gate because you are reckless with money."
+  },
+  "Profuse": {
+    "kind": "morphology",
+    "text": "\"pro-\" (forth) + \"fundere\" (pour) = pouring forth in massive abundant quantities."
+  },
+  "Promulgate": {
+    "kind": "sound_spelling",
+    "text": "Prom gate - announcing new rules loudly right at the prom gate."
+  },
+  "Propagate": null,
+  "Propensity": {
+    "kind": "sound_spelling",
+    "text": "Pro pen - a writer with a natural tendency to always grab a pro pen."
+  },
+  "Propitious": {
+    "kind": "sound_spelling",
+    "text": "Profits - conditions look favorable; strong signs you could see big profits."
+  },
+  "Propriety": {
+    "kind": "sound_spelling",
+    "text": "Proper - acting with strict, perfectly proper, socially acceptable behavior."
+  },
+  "Prosaic": {
+    "kind": "sound_spelling",
+    "text": "Prose - writing that sounds like ordinary prose instead of poetry; dull."
+  },
+  "Proscribe": {
+    "kind": "morphology",
+    "text": "\"pro-\" (before) + \"scribere\" (write) = write a name on a list to legally forbid someone."
+  },
+  "Protean": {
+    "kind": "etymology_story",
+    "text": "From Proteus, Greek sea god who changed shape to escape - versatile, constantly shifting."
+  },
+  "Prowess": null,
+  "Prudence": {
+    "kind": "sound_spelling",
+    "text": "Prude - so careful and cautious with choices that people joke you are a prude."
+  },
+  "Prurient": null,
+  "Puerile": {
+    "kind": "sound_spelling",
+    "text": "Pure ill - a child acting so immaturely it makes you feel purely ill."
+  },
+  "Pugnacious": {
+    "kind": "morphology",
+    "text": "\"pugn\" (fight) = eager to argue or fight; combative energy."
+  },
+  "Pulchritude": {
+    "kind": "sound_spelling",
+    "text": "Pull attitude - beauty so strong it pulls the room's attitude toward you."
+  },
+  "Punctilious": {
+    "kind": "sound_spelling",
+    "text": "Punctuation - obsessed with tiny details; corrects your text-message punctuation."
+  },
+  "Pungent": {
+    "kind": "sound_spelling",
+    "text": "Punch in - a smell so sharp it punches you in the nose."
+  },
+  "Punitive": {
+    "kind": "morphology",
+    "text": "\"pun\" (punish) = intended to punish, not merely to correct."
+  },
+  "Putrid": {
+    "kind": "sound_spelling",
+    "text": "Puke - rot so foul it makes you want to puke."
+  },
+  "Quagmire": {
+    "kind": "sound_spelling",
+    "text": "Quack mire - a duck stuck in a muddy, complicated swamp."
+  },
+  "Quaint": null,
+  "Quandary": {
+    "kind": "sound_spelling",
+    "text": "Wandering - wandering lost because you are stuck in painful uncertainty."
+  },
+  "Quell": {
+    "kind": "sound_spelling",
+    "text": "Quiet well - force quiets the riot well."
+  },
+  "Querulous": {
+    "kind": "sound_spelling",
+    "text": "Quarrel - whining and always ready to pick a petty quarrel."
+  },
+  "Quixotic": {
+    "kind": "etymology_story",
+    "text": "Don Quixote charged windmills as giants - idealistic but impractical."
+  },
+  "Quotidian": {
+    "kind": "sound_spelling",
+    "text": "Quota - same boring daily quota; ordinary everyday life."
+  },
+  "Rail": {
+    "kind": "sound_spelling",
+    "text": "Derail - ranting so hard you try to derail the meeting."
+  },
+  "Rancid": null,
+  "Rancor": {
+    "kind": "sound_spelling",
+    "text": "Rank core - bitter hatred sitting in the core of your heart."
+  },
+  "Rapport": null,
+  "Rash": null,
+  "Raucous": {
+    "kind": "sound_spelling",
+    "text": "Ruckus - a loud chaotic crowd making a ruckus."
+  },
+  "Raze": {
+    "kind": "sound_spelling",
+    "text": "Razor - bulldozing a building down as if shaved by a razor."
+  },
+  "Rebuke": null,
+  "Recalcitrant": {
+    "kind": "morphology",
+    "text": "\"re-\" (back) + \"calcitrare\" (kick) = kicking back; stubbornly disobedient."
+  },
+  "Recapitulate": {
+    "kind": "morphology",
+    "text": "\"re-\" (again) + \"capit\" (head) = revisit the main heads or points in summary."
+  },
+  "Reciprocate": null,
+  "Reclusive": {
+    "kind": "morphology",
+    "text": "\"re-\" (back) + \"clus\" (shut) = shut away from the world; withdrawn."
+  },
+  "Reconcile": null,
+  "Rectitude": {
+    "kind": "morphology",
+    "text": "\"rect\" (straight/right) = upright, morally straight behavior."
+  },
+  "Redoubtable": {
+    "kind": "sound_spelling",
+    "text": "Doubt - an opponent so intimidating you doubt you can win."
+  },
+  "Refract": null,
+  "Refurbish": null,
+  "Refute": null,
+  "Regurgitate": null,
+  "Relegate": {
+    "kind": "sound_spelling",
+    "text": "Relocate - moved down to a lower, less important rank or role."
+  },
+  "Relish": {
+    "kind": "sound_spelling",
+    "text": "Hot dog relish - savoring a moment the way you savor relish on a hot dog."
+  },
+  "Remedial": null,
+  "Remiss": {
+    "kind": "sound_spelling",
+    "text": "Miss - careless with duty so you miss the deadline entirely."
+  },
+  "Renovate": null,
+  "Renown": null,
+  "Renunciation": {
+    "kind": "morphology",
+    "text": "\"re-\" (back) + \"nuntiare\" (announce) = announce you formally renounce a claim."
+  },
+  "Repentant": null,
+  "Replete": {
+    "kind": "morphology",
+    "text": "\"re-\" (again) + \"plere\" (fill) = filled back up to maximum capacity."
+  },
+  "Repose": {
+    "kind": "sound_spelling",
+    "text": "Pose - lying still in a calm resting pose."
+  },
+  "Reprehensible": {
+    "kind": "sound_spelling",
+    "text": "Apprehend - behavior so bad the police should apprehend you."
+  },
+  "Reprieve": null,
+  "Reproach": {
+    "kind": "sound_spelling",
+    "text": "Roach - scolding the owner for a roach in the kitchen."
+  },
+  "Reprobate": {
+    "kind": "sound_spelling",
+    "text": "Probation - a scoundrel who failed probation and slid back to trouble."
+  },
+  "Reprove": {
+    "kind": "sound_spelling",
+    "text": "Prove - scolding someone until they prove they will not repeat it."
+  },
+  "Repudiate": {
+    "kind": "sound_spelling",
+    "text": "Refuse it - reject a claim and refuse it as false."
+  },
+  "Repulse": {
+    "kind": "morphology",
+    "text": "\"re-\" (back) + \"puls\" (drive) = drive an attack or feeling back."
+  },
+  "Reputable": null,
+  "Requisition": null,
+  "Rescind": {
+    "kind": "sound_spelling",
+    "text": "Send back - cancel an order and send it entirely back."
+  },
+  "Reservoir": null,
+  "Resilient": {
+    "kind": "morphology",
+    "text": "\"re-\" (back) + \"salire\" (jump) = bounce back after a hard hit."
+  },
+  "Resolute": {
+    "kind": "sound_spelling",
+    "text": "Resolution - a firm resolution you refuse to break."
+  },
+  "Resolve": null,
+  "Respite": {
+    "kind": "sound_spelling",
+    "text": "Rest bit - a badly needed rest bit during an exhausting hike."
+  },
+  "Resplendent": {
+    "kind": "sound_spelling",
+    "text": "Splendid - shining so bright it looks splendid."
+  },
+  "Restitution": {
+    "kind": "sound_spelling",
+    "text": "Restore - paying or working to restore what was stolen or broken."
+  },
+  "Restive": {
+    "kind": "sound_spelling",
+    "text": "Restless - a horse tense and restless, unable to stand still."
+  },
+  "Retract": {
+    "kind": "morphology",
+    "text": "\"re-\" (back) + \"tract\" (pull) = formally pull back a false statement."
+  },
+  "Revel": {
+    "kind": "sound_spelling",
+    "text": "Rebel - the rebel parties all night after a wild win."
+  },
+  "Revere": {
+    "kind": "sound_spelling",
+    "text": "Reverend - deep respectful awe, like toward a reverend."
+  },
+  "Revoke": {
+    "kind": "morphology",
+    "text": "\"re-\" (back) + \"voc\" (call) = call a license back and cancel it."
+  },
+  "Rhapsodize": {
+    "kind": "sound_spelling",
+    "text": "Rap song - praising or ranting with the heat of a passionate rap."
+  },
+  "Ribald": {
+    "kind": "sound_spelling",
+    "text": "Rip bawd - coarse, lewd humor ripped from the tavern; indecent and deliberately shocking."
+  },
+  "Rife": {
+    "kind": "sound_spelling",
+    "text": "Rifle - an area rife with rifles; common and dangerous."
+  },
+  "Ruminate": {
+    "kind": "etymology_story",
+    "text": "Latin ruminare (chew the cud) - chew the same thought over and over."
+  },
+  "Ruse": {
+    "kind": "sound_spelling",
+    "text": "Confuse - a trick meant to confuse the enemy."
+  },
+  "Saccharine": {
+    "kind": "sound_spelling",
+    "text": "Saccharin - sweetness as fake as the sweetener; cloying and artificial."
+  },
+  "Sacrosanct": {
+    "kind": "morphology",
+    "text": "\"sacro\" (sacred) + \"sanct\" (holy) = doubly sacred; not to be violated."
+  },
+  "Sagacity": {
+    "kind": "sound_spelling",
+    "text": "Sage - the deep judgment of a wise sage."
+  },
+  "Salient": {
+    "kind": "sound_spelling",
+    "text": "Sail - the main sail is the most salient feature on the boat."
+  },
+  "Salutation": null,
+  "Salve": {
+    "kind": "sound_spelling",
+    "text": "Solve - ointment that soothes a burn and solves the worst of the sting."
+  },
+  "Sanctimonious": {
+    "kind": "morphology",
+    "text": "\"sanct\" (holy) = acting holier-than-thou to claim moral high ground."
+  },
+  "Sanguine": {
+    "kind": "etymology_story",
+    "text": "Latin sanguis (blood): old humor theory tied blood tone to confident optimism."
+  },
+  "Satiate": {
+    "kind": "sound_spelling",
+    "text": "Satisfy ate - you ate enough to satisfy brutal hunger."
+  },
+  "Scathing": {
+    "kind": "sound_spelling",
+    "text": "Scalding - a review that scalds; harshly critical."
+  },
+  "Scintillating": {
+    "kind": "sound_spelling",
+    "text": "Sparkling - wit and energy sparkling like champagne bubbles."
+  },
+  "Scrupulous": {
+    "kind": "sound_spelling",
+    "text": "Scrap - checking every scrap because honesty demands perfect detail."
+  },
+  "Scurrilous": {
+    "kind": "sound_spelling",
+    "text": "Scurry - ugly rumors that make the target want to scurry away."
+  },
+  "Sedentary": {
+    "kind": "morphology",
+    "text": "\"sed\" (sit) = life spent sitting; little movement."
+  },
+  "Semaphore": null,
+  "Seminal": {
+    "kind": "morphology",
+    "text": "\"semin\" (seed) = a seed idea that spawns a whole field of later work."
+  },
+  "Sensual": null,
+  "Sensuous": null,
+  "Serendipity": {
+    "kind": "etymology_story",
+    "text": "Walpole coined it from \"The Three Princes of Serendip\" - lucky finds by accident."
+  },
+  "Serene": null,
+  "Servile": {
+    "kind": "morphology",
+    "text": "\"serv\" (serve/slave) = groveling, excessively submissive."
+  },
+  "Sinuous": {
+    "kind": "sound_spelling",
+    "text": "Sinus - a road winding like sinus passages; serpentine curves."
+  },
+  "Sobriety": null,
+  "Solicitous": {
+    "kind": "sound_spelling",
+    "text": "Sole - hovering over whether your shoe sole is hurting your foot."
+  },
+  "Solipsistic": {
+    "kind": "morphology",
+    "text": "\"solus\" (alone) + \"ipse\" (self) = the world is only \"me\" in your mind."
+  },
+  "Soluble": null,
+  "Solvent": {
+    "kind": "sound_spelling",
+    "text": "Solve rent - cash flow strong enough to solve rent and pay debts."
+  },
+  "Somnolent": {
+    "kind": "morphology",
+    "text": "\"somn\" (sleep) = drowsy, ready to nod off."
+  },
+  "Sophomoric": {
+    "kind": "sound_spelling",
+    "text": "Sophomore - acting like a cocky, immature sophomore."
+  },
+  "Sovereign": null,
+  "Speculative": null,
+  "Spurious": {
+    "kind": "sound_spelling",
+    "text": "Furious - the judge furious at evidence that is clearly fake."
+  },
+  "Stagnate": null,
+  "Staid": {
+    "kind": "sound_spelling",
+    "text": "Stayed - so staid they stayed home; serious, steady, unflashy."
+  },
+  "Stingy": null,
+  "Stoic": {
+    "kind": "etymology_story",
+    "text": "From the Stoa Poikile porch where Zeno taught - endure pain without theatrics."
+  },
+  "Stolid": {
+    "kind": "sound_spelling",
+    "text": "Solid - emotionally solid like a brick wall; unmovable."
+  },
+  "Strenuous": null,
+  "Strident": {
+    "kind": "sound_spelling",
+    "text": "Trident - noise as harsh as a trident slammed into stone."
+  },
+  "Stupefy": {
+    "kind": "sound_spelling",
+    "text": "Stupid - shocked stupid; brain freezes for a moment."
+  },
+  "Subjugate": {
+    "kind": "morphology",
+    "text": "\"sub\" (under) + \"jugum\" (yoke) = bring a people under your yoke."
+  },
+  "Sublime": null,
+  "Submissive": null,
+  "Succinct": {
+    "kind": "sound_spelling",
+    "text": "Sucked in - speech with extra words sucked in; tight and brief."
+  },
+  "Superfluous": {
+    "kind": "morphology",
+    "text": "\"super\" (over) + \"flu\" (flow) = extra detail flowing over the brim."
+  },
+  "Surfeit": {
+    "kind": "sound_spelling",
+    "text": "Surf it - so many waves you cannot surf them all; excess."
+  },
+  "Surmise": {
+    "kind": "sound_spelling",
+    "text": "Summarize - guess the whole plot from scraps, like forced summarizing."
+  },
+  "Surreptitious": {
+    "kind": "sound_spelling",
+    "text": "Syrup - pouring extra syrup when nobody is watching."
+  },
+  "Surrogate": null,
+  "Swarthy": {
+    "kind": "sound_spelling",
+    "text": "Weather-line - outdoor life etched into complexion (literary \"swarth\" tones)."
+  },
+  "Sycophant": {
+    "kind": "sound_spelling",
+    "text": "Psyche + fawn - flatters power to win favor; a professional bootlicker."
+  },
+  "Tacit": {
+    "kind": "sound_spelling",
+    "text": "Take it - a silent deal where everyone takes it and says nothing."
+  },
+  "Taciturn": {
+    "kind": "morphology",
+    "text": "\"tacit\" (silent) = habitually quiet; not chatty."
+  },
+  "Tangential": {
+    "kind": "sound_spelling",
+    "text": "Tangent - barely grazing the topic; flies off on a tangent."
+  },
+  "Tantamount": {
+    "kind": "sound_spelling",
+    "text": "Total amount - equivalent in seriousness or value to another total."
+  },
+  "Tedious": null,
+  "Temerity": {
+    "kind": "sound_spelling",
+    "text": "Team error - reckless nerve to blame the whole team error on the boss."
+  },
+  "Temperance": null,
+  "Tenable": {
+    "kind": "morphology",
+    "text": "\"tenere\" (hold) = an argument you can hold up under scrutiny."
+  },
+  "Tenuous": {
+    "kind": "sound_spelling",
+    "text": "Ten percent grip - holding the rope by the thinnest tenth; shaky."
+  },
+  "Terrestrial": null,
+  "Timorous": {
+    "kind": "sound_spelling",
+    "text": "Tremble - timid and trembling like a frightened mouse."
+  },
+  "Tirade": {
+    "kind": "sound_spelling",
+    "text": "Tired - a long angry speech that leaves everyone tired."
+  },
+  "Toady": {
+    "kind": "sound_spelling",
+    "text": "Toad - creeping praise like a toad at the tyrant's foot."
+  },
+  "Tome": {
+    "kind": "sound_spelling",
+    "text": "Tomb - a huge tome as heavy as a tombstone."
+  },
+  "Torpid": {
+    "kind": "sound_spelling",
+    "text": "Torpedo - floating sluggish like a torpedo before launch."
+  },
+  "Torrid": {
+    "kind": "sound_spelling",
+    "text": "Tear it - passion so hot it tears at restraint; scorching heat."
+  },
+  "Tortuous": {
+    "kind": "sound_spelling",
+    "text": "Torture - path so twisting it feels like torture to navigate."
+  },
+  "Tractable": {
+    "kind": "morphology",
+    "text": "\"tract\" (lead/manage) = easy to lead; docile and manageable."
+  },
+  "Tranquil": null,
+  "Transgress": {
+    "kind": "morphology",
+    "text": "\"trans\" (across) + \"gress\" (step) = step across a moral line you should not."
+  },
+  "Transient": {
+    "kind": "morphology",
+    "text": "\"trans\" (across) + \"ire\" (go) = passing through; not staying long."
+  },
+  "Transmute": {
+    "kind": "morphology",
+    "text": "\"trans\" (across) + \"mut\" (change) = change something into another substance."
+  },
+  "Travesty": {
+    "kind": "sound_spelling",
+    "text": "Tragedy - a mockery of justice so bad it is a tragedy."
+  },
+  "Tremulous": {
+    "kind": "sound_spelling",
+    "text": "Tremble - voice trembling from fear."
+  },
+  "Trenchant": {
+    "kind": "sound_spelling",
+    "text": "Trench - criticism that cuts a deep trench."
+  },
+  "Trepidation": {
+    "kind": "sound_spelling",
+    "text": "Trap - dread that you are walking into a trap."
+  },
+  "Trite": {
+    "kind": "sound_spelling",
+    "text": "Tripe - an idea as tired as cheap tripe."
+  },
+  "Truculent": {
+    "kind": "sound_spelling",
+    "text": "Truck - aggressive like a truck ready to run you down."
+  },
+  "Truncate": {
+    "kind": "sound_spelling",
+    "text": "Trunk - chop at the trunk to shorten the tree."
+  },
+  "Turgid": {
+    "kind": "sound_spelling",
+    "text": "Turgid = swollen - bloated language or tissue, overstuffed and heavy (not muddy/turbid)."
+  },
+  "Turpitude": {
+    "kind": "sound_spelling",
+    "text": "Moral filth - conduct courts label crimes of moral turpitude; deep baseness."
+  },
+  "Ubiquitous": {
+    "kind": "morphology",
+    "text": "\"ubique\" (everywhere) = showing up everywhere at once."
+  },
+  "Umbrage": {
+    "kind": "morphology",
+    "text": "\"umbr\" (shadow) = take offense as if a disrespectful shadow fell on you."
+  },
+  "Uncanny": null,
+  "Unctuous": {
+    "kind": "sound_spelling",
+    "text": "Oil-on-tone - flattery so smooth it feels greasy; slick, insincere charm."
+  },
+  "Undulate": {
+    "kind": "sound_spelling",
+    "text": "Undulate - waves moving under the surface in smooth rolls."
+  },
+  "Upbraid": {
+    "kind": "sound_spelling",
+    "text": "Braid - scolding someone for ruining your careful braid."
+  },
+  "Usurp": {
+    "kind": "sound_spelling",
+    "text": "Use up - seize power to use up what is left of the kingdom."
+  },
+  "Utilitarian": null,
+  "Utopia": {
+    "kind": "etymology_story",
+    "text": "More coined \"Utopia\" from ou + topos (\"no place\") - a perfect society that cannot exist."
+  },
+  "Vacillate": {
+    "kind": "sound_spelling",
+    "text": "Vase - wavering forever between two vases you cannot choose."
+  },
+  "Vacuous": {
+    "kind": "morphology",
+    "text": "\"vac\" (empty) = empty behind the eyes; mindless."
+  },
+  "Validate": null,
+  "Vapid": {
+    "kind": "sound_spelling",
+    "text": "Vapor - remark so dull it evaporates like vapor."
+  },
+  "Variegated": {
+    "kind": "morphology",
+    "text": "\"varius\" (various) = patched with varied colors or tones."
+  },
+  "Vehemently": {
+    "kind": "sound_spelling",
+    "text": "Vehicle - yelling with full heat at the car that cut you off."
+  },
+  "Veneer": null,
+  "Venerable": {
+    "kind": "morphology",
+    "text": "\"venerari\" (respect) = worthy of reverence for age, dignity, or achievement."
+  },
+  "Venerate": {
+    "kind": "sound_spelling",
+    "text": "Revere-plus - honor deeply as if before something sacred (same family as reverent)."
+  },
+  "Veracity": {
+    "kind": "morphology",
+    "text": "\"ver\" (truth) = truthfulness you can stake a claim on."
+  },
+  "Verbose": {
+    "kind": "morphology",
+    "text": "\"verb\" (word) = padded with too many words; talky and windy."
+  },
+  "Verdant": {
+    "kind": "morphology",
+    "text": "\"virid\" (green) = green with lush growth."
+  },
+  "Vestige": {
+    "kind": "sound_spelling",
+    "text": "Vest - only a ripped old vest remains as a trace of the wreck."
+  },
+  "Vex": {
+    "kind": "sound_spelling",
+    "text": "Hex - annoy someone as if you cast a petty hex on them."
+  },
+  "Vicarious": {
+    "kind": "sound_spelling",
+    "text": "Borrowed thrill - living someone else's excitement secondhand."
+  },
+  "Vicissitude": null,
+  "Vigilant": null,
+  "Vilify": {
+    "kind": "morphology",
+    "text": "\"vilis\" (vile) + \"-fy\" (make) = talk someone into looking vile."
+  },
+  "Vindicate": {
+    "kind": "morphology",
+    "text": "Vindicare-show the accusation was false; clear a ruined name."
+  },
+  "Vindictive": {
+    "kind": "sound_spelling",
+    "text": "Victim - wanting the other side to become your suffering victim."
+  },
+  "Virtuoso": null,
+  "Viscous": {
+    "kind": "sound_spelling",
+    "text": "Viscosity - thick, sticky, slow to pour."
+  },
+  "Vitriolic": {
+    "kind": "sound_spelling",
+    "text": "Vitriol - words as burning as strong acid."
+  },
+  "Vituperate": {
+    "kind": "sound_spelling",
+    "text": "Viper - hissing insults with viper venom."
+  },
+  "Vivacious": {
+    "kind": "morphology",
+    "text": "\"viv\" (life) = lively, bubbling with life."
+  },
+  "Vocation": {
+    "kind": "morphology",
+    "text": "\"voc\" (call) = a career that feels like a calling."
+  },
+  "Vociferous": {
+    "kind": "morphology",
+    "text": "\"voc\" (voice) + \"ferre\" (carry) = carrying a loud voice into the room."
+  },
+  "Wallow": null,
+  "Wane": {
+    "kind": "sound_spelling",
+    "text": "Wayne - Wayne Enterprises lights dimming as Bruce fades after a brutal night."
+  },
+  "Wanton": {
+    "kind": "sound_spelling",
+    "text": "Wonton - wanton waste of a whole bowl of wonton soup on purpose; reckless malice."
+  },
+  "Whimsical": null,
+  "Wily": {
+    "kind": "sound_spelling",
+    "text": "Wile E. - cunning traps and scams like the cartoon coyote."
+  },
+  "Winsome": {
+    "kind": "sound_spelling",
+    "text": "Win some - charm that wins some hearts instantly."
+  },
+  "Wistful": {
+    "kind": "sound_spelling",
+    "text": "Wishful - nostalgia colored by sad wishful longing."
+  },
+  "Wizened": {
+    "kind": "sound_spelling",
+    "text": "Wizard - face wizened like a storybook wizard: shriveled and lined."
+  },
+  "Wrath": null,
+  "Yoke": null,
+  "Zealous": {
+    "kind": "sound_spelling",
+    "text": "Jealous - fire of a jealous lover turned toward a cause; fiercely devoted."
+  },
+  "Zenith": {
+    "kind": "sound_spelling",
+    "text": "Zenith tip - apex of the arc (sun at noon); your highest point, not the bottom below."
+  },
+  "Zephyr": {
+    "kind": "sound_spelling",
+    "text": "Zero fear - breeze so gentle it gives you zero fear of a storm."
+  }
+}

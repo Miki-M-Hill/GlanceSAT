@@ -6,32 +6,143 @@
 import SwiftData
 import SwiftUI
 
+private struct LibraryScrollRequest: Equatable {
+    let wordID: UUID
+    let token: Int
+}
+
 struct ExploreView: View {
+    @Binding var pendingLibraryWordID: UUID?
+    var isLibraryTabActive: Bool = true
+
     @Environment(\.colorScheme) private var colorScheme
     @Query(sort: \Word.word, order: .forward) private var allWords: [Word]
     @FocusState private var isSearchFocused: Bool
 
-    @State private var showFilterSheet = false
+    @State private var showLibraryFilters = false
     @State private var showSettings = false
     @State private var searchText = ""
+    @State private var selectedStatus: LearningStatusFilter?
+    @State private var selectedCategory: PassageDomain?
+    @State private var selectedConnotation: WordConnotationPolarity?
+    @State private var scrollPosition: UUID?
+    @State private var scrollRequest: LibraryScrollRequest?
+    @State private var deepLinkScrollTask: Task<Void, Never>?
 
-    @State private var selectedStatus: Set<LearningStatusFilter> = []
-    @State private var selectedScoreBand: Set<ScoreBandFilter> = []
-    @State private var selectedContext: Set<PassageContextFilter> = []
-    @State private var selectedTone: Set<ToneFilter> = []
+    init(
+        pendingLibraryWordID: Binding<UUID?> = .constant(nil),
+        isLibraryTabActive: Bool = true
+    ) {
+        _pendingLibraryWordID = pendingLibraryWordID
+        self.isLibraryTabActive = isLibraryTabActive
+    }
+
+    private var hasActiveFilters: Bool {
+        selectedStatus != nil || selectedCategory != nil || selectedConnotation != nil
+    }
+
+    @discardableResult
+    private func prepareLibraryDeepLink(wordID: UUID) -> Bool {
+        searchText = ""
+        selectedStatus = nil
+        selectedCategory = nil
+        selectedConnotation = nil
+        showLibraryFilters = false
+        isSearchFocused = false
+
+        guard allWords.contains(where: { $0.id == wordID }) else { return false }
+        guard filteredWords.contains(where: { $0.id == wordID }) else { return false }
+        return true
+    }
+
+    private func scrollLibraryToWord(_ wordID: UUID) {
+        scrollRequest = LibraryScrollRequest(
+            wordID: wordID,
+            token: (scrollRequest?.token ?? 0) + 1
+        )
+    }
+
+    private func ensureLibraryScrollPositionIsValid() {
+        guard !filteredWords.isEmpty else {
+            scrollPosition = nil
+            return
+        }
+        if let scrollPosition,
+           filteredWords.contains(where: { $0.id == scrollPosition }) {
+            return
+        }
+        scrollPosition = filteredWords.first?.id
+    }
+
+    private func finishLibraryDeepLink(wordID: UUID) {
+        guard scrollPosition == wordID else { return }
+        pendingLibraryWordID = nil
+        WidgetDeepLinkRouter.clearPendingWordID()
+    }
+
+    private func navigateLibraryPagerToWord(_ wordID: UUID) {
+        guard filteredWords.contains(where: { $0.id == wordID }) else { return }
+
+        var transaction = Transaction()
+        transaction.disablesAnimations = true
+        withTransaction(transaction) {
+            scrollPosition = wordID
+        }
+
+        DispatchQueue.main.async {
+            scrollPosition = wordID
+            DispatchQueue.main.asyncAfter(deadline: .now() + 0.1) {
+                scrollPosition = wordID
+            }
+        }
+    }
+
+    private func retryPendingLibraryDeepLinkIfNeeded() {
+        guard isLibraryTabActive else { return }
+        guard let wordID = pendingLibraryWordID ?? WidgetDeepLinkRouter.peekPendingWordID() else { return }
+        scheduleLibraryDeepLink(wordID: wordID)
+    }
+
+    private func scheduleLibraryDeepLink(wordID: UUID) {
+        deepLinkScrollTask?.cancel()
+        deepLinkScrollTask = Task { @MainActor in
+            for attempt in 0 ..< 30 {
+                if Task.isCancelled { return }
+                guard prepareLibraryDeepLink(wordID: wordID) else {
+                    try? await Task.sleep(nanoseconds: 80_000_000)
+                    continue
+                }
+
+                scrollLibraryToWord(wordID)
+                try? await Task.sleep(nanoseconds: 150_000_000)
+                scrollLibraryToWord(wordID)
+                try? await Task.sleep(nanoseconds: 200_000_000)
+
+                if scrollPosition == wordID {
+                    finishLibraryDeepLink(wordID: wordID)
+                    return
+                }
+
+                try? await Task.sleep(nanoseconds: UInt64(80_000_000 + (attempt * 40_000_000)))
+            }
+        }
+    }
 
     private var filteredWords: [Word] {
         let query = searchText.trimmingCharacters(in: .whitespacesAndNewlines).lowercased()
         return allWords.filter { word in
-            if !selectedStatus.isEmpty, !selectedStatus.contains(.from(word.status)) { return false }
-            if !selectedScoreBand.isEmpty, !selectedScoreBand.contains(.from(word.difficulty)) { return false }
-            if !selectedContext.isEmpty, !selectedContext.contains(.from(word.category)) { return false }
-            if !selectedTone.isEmpty, !selectedTone.contains(.from(word.category)) { return false }
+            if let selectedStatus, LearningStatusFilter.from(word.status) != selectedStatus { return false }
+            if let selectedCategory, word.resolvedPassageDomain != selectedCategory { return false }
+            if let selectedConnotation, WordConnotationPolarity(raw: word.semanticCharge) != selectedConnotation {
+                return false
+            }
 
             if query.isEmpty { return true }
             if word.word.lowercased().contains(query) { return true }
             if word.category.lowercased().contains(query) { return true }
+            if word.resolvedPassageDomain.displayTitle.lowercased().contains(query) { return true }
             if let ety = word.etymology?.lowercased(), ety.contains(query) { return true }
+            if let hook = word.memoryHookText?.lowercased(), hook.contains(query) { return true }
             return word.displaySenseBlocks.contains { sense in
                 sense.partOfSpeech.lowercased().contains(query)
                     || sense.definition.lowercased().contains(query)
@@ -43,50 +154,51 @@ struct ExploreView: View {
     var body: some View {
         NavigationStack {
             GeometryReader { proxy in
-                let headerHeight: CGFloat = 86
-                let pageHeight = max(360, proxy.size.height - headerHeight)
+                VStack(spacing: 0) {
+                    libraryHeader
 
-                ZStack(alignment: .top) {
-                    HubPalette.linen
-                        .ignoresSafeArea()
+                    if filteredWords.isEmpty {
+                        Spacer(minLength: 0)
+                        emptyState
+                            .padding(.horizontal, 20)
+                        Spacer(minLength: 0)
+                    } else {
+                        GeometryReader { cardProxy in
+                            let pageHeight = max(1, cardProxy.size.height)
 
-                    VStack(spacing: 0) {
-                        Spacer()
-                            .frame(height: headerHeight)
-
-                        if filteredWords.isEmpty {
-                            emptyState
-                                .frame(maxWidth: .infinity, maxHeight: .infinity)
-                                .padding(.horizontal, 20)
-                        } else {
-                            ScrollView(.vertical, showsIndicators: false) {
-                                LazyVStack(spacing: 0) {
-                                    ForEach(filteredWords, id: \.id) { word in
-                                        VStack {
-                                            ExploreWordPageCard(word: word)
-                                                .padding(.horizontal, 20)
-                                                .scrollTransition(.interactive, axis: .vertical) { content, phase in
-                                                    content
-                                                        .scaleEffect(phase.isIdentity ? 1.0 : 0.94)
-                                                        .opacity(phase.isIdentity ? 1.0 : 0.30)
-                                                }
-                                        }
-                                        .frame(maxWidth: .infinity)
-                                        .frame(height: pageHeight)
-                                    }
-                                }
-                                .scrollTargetLayout()
-                            }
-                            .scrollIndicators(.hidden)
-                            .scrollTargetBehavior(.paging)
-                            .frame(height: pageHeight)
+                            LibraryWordPager(
+                                words: filteredWords,
+                                pageHeight: pageHeight,
+                                scrollPosition: $scrollPosition,
+                                scrollRequest: $scrollRequest,
+                                onNavigateToWord: navigateLibraryPagerToWord
+                            )
                         }
                     }
-
-                    libraryHeader
                 }
+                .frame(width: proxy.size.width, height: proxy.size.height, alignment: .top)
             }
             .background(HubPalette.linen)
+            .onChange(of: pendingLibraryWordID, initial: true) { _, wordID in
+                guard let wordID else { return }
+                scheduleLibraryDeepLink(wordID: wordID)
+            }
+            .onChange(of: allWords.count) { _, _ in
+                ensureLibraryScrollPositionIsValid()
+                guard let wordID = pendingLibraryWordID ?? WidgetDeepLinkRouter.peekPendingWordID() else { return }
+                scheduleLibraryDeepLink(wordID: wordID)
+            }
+            .onChange(of: filteredWords.map(\.id)) { _, _ in
+                ensureLibraryScrollPositionIsValid()
+            }
+            .onAppear {
+                ensureLibraryScrollPositionIsValid()
+                retryPendingLibraryDeepLinkIfNeeded()
+            }
+            .onChange(of: isLibraryTabActive) { _, isActive in
+                guard isActive else { return }
+                retryPendingLibraryDeepLinkIfNeeded()
+            }
             .navigationTitle("Glance")
             .navigationBarTitleDisplayMode(.inline)
             .toolbarBackground(HubPalette.linen, for: .navigationBar)
@@ -94,16 +206,12 @@ struct ExploreView: View {
             .toolbarColorScheme(colorScheme, for: .navigationBar)
             .tint(HubPalette.espresso)
         }
-        .sheet(isPresented: $showFilterSheet) {
-            ExploreFilterSheet(
+        .sheet(isPresented: $showLibraryFilters) {
+            LibraryFiltersSheet(
                 selectedStatus: $selectedStatus,
-                selectedScoreBand: $selectedScoreBand,
-                selectedContext: $selectedContext,
-                selectedTone: $selectedTone
+                selectedCategory: $selectedCategory,
+                selectedConnotation: $selectedConnotation
             )
-            .presentationDetents([.medium, .large])
-            .presentationCornerRadius(32)
-            .presentationBackground(.ultraThinMaterial)
         }
         .sheet(isPresented: $showSettings) {
             SettingsView()
@@ -111,46 +219,53 @@ struct ExploreView: View {
     }
 
     private var libraryHeader: some View {
-        VStack(spacing: 0) {
+        VStack(spacing: 10) {
             topControls
-                .padding(.horizontal, 20)
-                .padding(.top, 10)
-                .safeAreaPadding(.top, 6)
-                .padding(.bottom, 12)
+
+            if hasActiveFilters {
+                libraryActiveFilterChips
+            }
         }
+        .padding(.horizontal, 20)
+        .padding(.top, 2)
+        .padding(.bottom, 8)
         .frame(maxWidth: .infinity)
-        .background(HubPalette.linen.ignoresSafeArea(edges: .top))
+        .animation(.spring(response: 0.34, dampingFraction: 0.86), value: hasActiveFilters)
     }
 
-    private var librarySearchFillGradient: LinearGradient {
-        LinearGradient(
-            colors: [
-                Color.white.opacity(0.72),
-                HubPalette.oatmeal.opacity(0.26),
-                HubPalette.amberAccent.opacity(0.10),
-            ],
-            startPoint: .topLeading,
-            endPoint: .bottomTrailing
-        )
-    }
-
-    private var librarySearchStrokeGradient: LinearGradient {
-        LinearGradient(
-            colors: [
-                Color.white.opacity(0.78),
-                HubPalette.ember.opacity(0.14),
-                Color.black.opacity(0.04),
-            ],
-            startPoint: .topLeading,
-            endPoint: .bottomTrailing
-        )
+    private var libraryActiveFilterChips: some View {
+        ScrollView(.horizontal, showsIndicators: false) {
+            HStack(spacing: 8) {
+                if let selectedStatus {
+                    LibraryFilterChip(title: selectedStatus.label) {
+                        self.selectedStatus = nil
+                    }
+                }
+                if let selectedCategory {
+                    LibraryFilterChip(title: selectedCategory.displayTitle) {
+                        self.selectedCategory = nil
+                    }
+                }
+                if let selectedConnotation {
+                    LibraryFilterChip(title: selectedConnotation.label) {
+                        self.selectedConnotation = nil
+                    }
+                }
+            }
+            .padding(.vertical, 1)
+        }
+        .frame(maxWidth: .infinity, alignment: .leading)
     }
 
     private var topControls: some View {
         HStack {
-            IconCircleButton(systemName: "line.3.horizontal.decrease") {
-                showFilterSheet = true
+            IconCircleButton(
+                systemName: hasActiveFilters ? "line.3.horizontal.decrease.circle.fill" : "line.3.horizontal.decrease",
+                isActive: hasActiveFilters
+            ) {
+                showLibraryFilters = true
             }
+            .accessibilityLabel("Filters")
 
             HStack(spacing: 8) {
                 Image(systemName: "magnifyingglass")
@@ -169,14 +284,10 @@ struct ExploreView: View {
             .padding(.vertical, 10)
             .background(
                 RoundedRectangle(cornerRadius: 16, style: .continuous)
-                    .fill(.ultraThinMaterial)
+                    .fill(HubPalette.oatmealDeep.opacity(0.55))
                     .overlay(
                         RoundedRectangle(cornerRadius: 16, style: .continuous)
-                            .fill(librarySearchFillGradient)
-                    )
-                    .overlay(
-                        RoundedRectangle(cornerRadius: 16, style: .continuous)
-                            .strokeBorder(librarySearchStrokeGradient, lineWidth: 1)
+                            .strokeBorder(Color.white.opacity(0.42), lineWidth: 0.7)
                     )
             )
             .frame(maxWidth: .infinity, alignment: .leading)
@@ -204,71 +315,115 @@ struct ExploreView: View {
     }
 }
 
+/// One full-screen library page; card is centered in the space between search and tab bar.
+private struct CenteredLibraryCardPage: View {
+    let word: Word
+
+    var body: some View {
+        VStack(spacing: 0) {
+            Spacer(minLength: 0)
+            ExploreWordPageCard(word: word)
+                .padding(.horizontal, 20)
+            Spacer(minLength: 0)
+        }
+        .frame(maxWidth: .infinity, maxHeight: .infinity)
+    }
+}
+
+/// TikTok-style vertical paging: one swipe always moves exactly one word.
+private struct LibraryWordPager: View {
+    let words: [Word]
+    let pageHeight: CGFloat
+    @Binding var scrollPosition: UUID?
+    @Binding var scrollRequest: LibraryScrollRequest?
+    let onNavigateToWord: (UUID) -> Void
+
+    var body: some View {
+        ScrollView(.vertical, showsIndicators: false) {
+            LazyVStack(spacing: 0) {
+                ForEach(words, id: \.id) { word in
+                    CenteredLibraryCardPage(word: word)
+                        .frame(height: pageHeight)
+                        .frame(maxWidth: .infinity)
+                        .id(word.id)
+                }
+            }
+            .scrollTargetLayout()
+        }
+        .scrollTargetBehavior(.paging)
+        .scrollPosition(id: $scrollPosition)
+        .scrollIndicators(.hidden)
+        .scrollBounceBehavior(.basedOnSize, axes: .vertical)
+        .onChange(of: scrollRequest) { _, request in
+            guard let request else { return }
+            onNavigateToWord(request.wordID)
+        }
+    }
+}
+
 private struct ExploreWordPageCard: View {
     let word: Word
     @State private var sensePage = 0
 
-    private var etymology: String? {
-        word.etymology?.trimmingCharacters(in: .whitespacesAndNewlines).nilIfEmpty
+    private var originOrHookBody: String? {
+        word.cardOriginOrHookBody
+    }
+
+    private var originOrHookTitle: String {
+        word.cardOriginOrHookTitle
     }
 
     var body: some View {
-        VStack(alignment: .leading, spacing: 12) {
-            Text(word.word)
-                .font(GlanceHubFont.semibold(34))
-                .lineLimit(1)
-                .minimumScaleFactor(0.62)
-                .frame(maxWidth: .infinity, alignment: .leading)
-                .foregroundStyle(HubPalette.espresso)
+        let senses = word.displaySenseBlocks
+        let active = senses[safe: sensePage] ?? senses.first
 
-            let senses = word.displaySenseBlocks
+        VStack(alignment: .leading, spacing: 0) {
+            HStack(alignment: .center, spacing: 8) {
+                Text(word.word)
+                    .font(GlanceHubFont.semibold(34))
+                    .lineLimit(2)
+                    .fixedSize(horizontal: false, vertical: true)
+                    .foregroundStyle(HubPalette.espresso)
+
+                WordPronunciationButton(word: word.word, size: 32)
+
+                Spacer(minLength: 0)
+            }
+            .frame(maxWidth: .infinity, alignment: .leading)
 
             if senses.count > 1 {
-                HStack(spacing: 6) {
+                HStack(spacing: 8) {
                     ForEach(Array(senses.enumerated()), id: \.offset) { index, sense in
                         Button {
                             withAnimation(.spring(response: 0.32, dampingFraction: 0.78)) {
                                 sensePage = index
                             }
                         } label: {
-                            Text(sense.partOfSpeech)
-                                .font(GlanceHubFont.semibold(12))
-                                .foregroundStyle(index == sensePage ? HubPalette.linen : HubPalette.espressoMuted)
-                                .padding(.horizontal, 12)
-                                .padding(.vertical, 7)
-                                .background(
-                                    Capsule(style: .continuous)
-                                        .fill(index == sensePage ? HubPalette.ember : Color.white.opacity(0.28))
-                                        .overlay(
-                                            Capsule(style: .continuous)
-                                                .strokeBorder(Color.white.opacity(index == sensePage ? 0.16 : 0.44), lineWidth: 1)
-                                        )
-                                )
+                            partOfSpeechChip(sense.partOfSpeech, isSelected: index == sensePage)
                         }
                         .buttonStyle(.plain)
                     }
+
+                    WordConnotationRow(word: word, compact: true)
+                        .layoutPriority(1)
+
+                    Spacer(minLength: 0)
                 }
+                .padding(.top, 12)
             } else if let only = senses.first {
-                Text(only.partOfSpeech)
-                    .font(GlanceHubFont.semibold(12))
-                    .foregroundStyle(HubPalette.espressoMuted)
-                    .padding(.horizontal, 11)
-                    .padding(.vertical, 6)
-                    .background(
-                        Capsule(style: .continuous)
-                            .fill(HubPalette.oatmealDeep.opacity(0.45))
-                            .overlay(
-                                Capsule(style: .continuous)
-                                    .strokeBorder(Color.white.opacity(0.42), lineWidth: 0.7)
-                            )
-                    )
+                HStack(alignment: .center, spacing: 6) {
+                    partOfSpeechChip(only.partOfSpeech, isSelected: true)
+                    WordConnotationRow(word: word, compact: true)
+                    Spacer(minLength: 0)
+                }
+                .padding(.top, 12)
             }
 
             Divider()
                 .background(HubPalette.espressoFaint)
-                .padding(.vertical, 4)
+                .padding(.vertical, 12)
 
-            if let active = senses[safe: sensePage] ?? senses.first {
+            if let active {
                 Text("Definition")
                     .font(GlanceHubFont.semibold(12))
                     .tracking(0.6)
@@ -284,7 +439,7 @@ private struct ExploreWordPageCard: View {
                     .font(GlanceHubFont.semibold(12))
                     .tracking(0.6)
                     .foregroundStyle(HubPalette.plantDeep)
-                    .padding(.top, 8)
+                    .padding(.top, 14)
 
                 Text(active.exampleSentence)
                     .font(GlanceHubFont.regular(16))
@@ -294,23 +449,25 @@ private struct ExploreWordPageCard: View {
                     .padding(.top, 6)
             }
 
-            if let etymology {
-                VStack(alignment: .leading, spacing: 6) {
-                    Divider()
-                        .background(HubPalette.espressoFaint)
-                    Text("Origin")
-                        .font(GlanceHubFont.semibold(12))
-                        .tracking(0.6)
-                        .foregroundStyle(HubPalette.plantDeep)
-                    Text(etymology)
-                        .font(GlanceHubFont.regular(12))
-                        .foregroundStyle(HubPalette.espresso)
-                        .fixedSize(horizontal: false, vertical: true)
-                }
+            if let body = originOrHookBody {
+                Text(originOrHookTitle)
+                    .font(GlanceHubFont.semibold(12))
+                    .tracking(0.6)
+                    .foregroundStyle(HubPalette.plantDeep)
+                    .padding(.top, 14)
+
+                Text(body)
+                    .font(GlanceHubFont.regular(16))
+                    .foregroundStyle(HubPalette.espresso)
+                    .fixedSize(horizontal: false, vertical: true)
+                    .lineSpacing(3)
+                    .padding(.top, 6)
             }
         }
         .padding(22)
+        .fixedSize(horizontal: false, vertical: true)
         .frame(maxWidth: .infinity, alignment: .topLeading)
+        .animation(.easeInOut(duration: 0.22), value: sensePage)
         .background(
             RoundedRectangle(cornerRadius: 28, style: .continuous)
                 .fill(.ultraThinMaterial)
@@ -349,88 +506,169 @@ private struct ExploreWordPageCard: View {
             sensePage = 0
         }
     }
+
+    private func partOfSpeechChip(_ label: String, isSelected: Bool) -> some View {
+        Text(label)
+            .font(GlanceHubFont.semibold(12))
+            .foregroundStyle(isSelected ? WordCardChrome.partOfSpeechForeground : WordCardChrome.partOfSpeechInactiveForeground)
+            .padding(.horizontal, 12)
+            .padding(.vertical, 7)
+            .background(
+                Capsule(style: .continuous)
+                    .fill(isSelected ? WordCardChrome.partOfSpeechFill : WordCardChrome.partOfSpeechInactiveFill)
+                    .overlay(
+                        Capsule(style: .continuous)
+                            .strokeBorder(
+                                isSelected ? Color.white.opacity(0.35) : WordCardChrome.partOfSpeechInactiveStroke,
+                                lineWidth: isSelected ? 1 : 0.7
+                            )
+                    )
+            )
+    }
 }
 
-private struct ExploreFilterSheet: View {
-    @Binding var selectedStatus: Set<LearningStatusFilter>
-    @Binding var selectedScoreBand: Set<ScoreBandFilter>
-    @Binding var selectedContext: Set<PassageContextFilter>
-    @Binding var selectedTone: Set<ToneFilter>
+// MARK: - Library filters
+
+private struct LibraryFiltersSheet: View {
+    @Environment(\.dismiss) private var dismiss
+
+    @Binding var selectedStatus: LearningStatusFilter?
+    @Binding var selectedCategory: PassageDomain?
+    @Binding var selectedConnotation: WordConnotationPolarity?
+
+    private var hasActiveFilters: Bool {
+        selectedStatus != nil || selectedCategory != nil || selectedConnotation != nil
+    }
 
     var body: some View {
         NavigationStack {
             Form {
-                filterSection("Learning Status", all: LearningStatusFilter.allCases, selected: $selectedStatus)
-                filterSection("Target Score Band", all: ScoreBandFilter.allCases, selected: $selectedScoreBand)
-                filterSection("Passage Context", all: PassageContextFilter.allCases, selected: $selectedContext)
-                filterSection("Connotation / Tone", all: ToneFilter.allCases, selected: $selectedTone)
-            }
-            .scrollContentBackground(.hidden)
-            .background(.ultraThinMaterial)
-            .navigationTitle("Glance")
-            .navigationBarTitleDisplayMode(.inline)
-            .tint(HubPalette.espresso)
-            .toolbar {
-                ToolbarItem(placement: .topBarTrailing) {
-                    Button("Reset") {
-                        selectedStatus.removeAll()
-                        selectedScoreBand.removeAll()
-                        selectedContext.removeAll()
-                        selectedTone.removeAll()
-                    }
-                    .foregroundStyle(HubPalette.ember)
-                }
-            }
-        }
-    }
-
-    private func filterSection<T: ExploreFilterOption>(
-        _ title: String,
-        all: [T],
-        selected: Binding<Set<T>>
-    ) -> some View {
-        Section(title) {
-            ForEach(all) { option in
-                Button {
-                    if selected.wrappedValue.contains(option) {
-                        selected.wrappedValue.remove(option)
-                    } else {
-                        selected.wrappedValue.insert(option)
-                    }
-                } label: {
-                    HStack {
-                        Text(option.label)
-                        Spacer()
-                        if selected.wrappedValue.contains(option) {
-                            Image(systemName: "checkmark")
-                                .font(GlanceHubFont.semibold(12))
-                                .foregroundStyle(HubPalette.ember)
+                Section {
+                    Picker("Learning status", selection: $selectedStatus) {
+                        Text("Any").tag(LearningStatusFilter?.none)
+                        ForEach(LearningStatusFilter.allCases) { status in
+                            Text(status.label).tag(Optional(status))
                         }
                     }
+                    .pickerStyle(.inline)
+                } footer: {
+                    Text("Filter by how well you know each word.")
                 }
-                .buttonStyle(.plain)
+
+                Section {
+                    Picker("Passage", selection: $selectedCategory) {
+                        Text("Any").tag(PassageDomain?.none)
+                        ForEach(PassageDomain.displayOrder) { domain in
+                            Text(domain.displayTitle).tag(Optional(domain))
+                        }
+                    }
+                    .pickerStyle(.inline)
+                } footer: {
+                    Text("Match words to SAT passage themes.")
+                }
+
+                Section {
+                    Picker("Connotation", selection: $selectedConnotation) {
+                        Text("Any").tag(WordConnotationPolarity?.none)
+                        ForEach(WordConnotationPolarity.filterOptions, id: \.self) { polarity in
+                            Text(polarity.label).tag(Optional(polarity))
+                        }
+                    }
+                    .pickerStyle(.inline)
+                } footer: {
+                    Text("Filter by emotional charge of the word.")
+                }
             }
+            .formStyle(.grouped)
+            .scrollContentBackground(.hidden)
+            .background(HubPalette.linen.ignoresSafeArea())
+            .navigationTitle("Filters")
+            .navigationBarTitleDisplayMode(.inline)
+            .toolbarBackground(HubPalette.linen, for: .navigationBar)
+            .toolbarBackground(.visible, for: .navigationBar)
+            .toolbar {
+                ToolbarItem(placement: .topBarLeading) {
+                    Button("Reset") {
+                        resetFilters()
+                    }
+                    .disabled(!hasActiveFilters)
+                }
+                ToolbarItem(placement: .confirmationAction) {
+                    Button("Done") {
+                        dismiss()
+                    }
+                    .fontWeight(.semibold)
+                }
+            }
+            .tint(HubPalette.plantDeep)
         }
+        .presentationDetents([.medium, .large])
+        .presentationDragIndicator(.visible)
+        .presentationBackground(HubPalette.linen)
+    }
+
+    private func resetFilters() {
+        selectedStatus = nil
+        selectedCategory = nil
+        selectedConnotation = nil
+    }
+}
+
+private struct LibraryFilterChip: View {
+    let title: String
+    let onRemove: () -> Void
+
+    var body: some View {
+        Button(action: onRemove) {
+            HStack(spacing: 5) {
+                Text(title)
+                    .font(GlanceHubFont.medium(13))
+                    .foregroundStyle(HubPalette.espresso)
+                    .lineLimit(1)
+
+                Image(systemName: "xmark.circle.fill")
+                    .font(.system(size: 14, weight: .semibold))
+                    .foregroundStyle(HubPalette.espressoMuted)
+                    .accessibilityHidden(true)
+            }
+            .padding(.horizontal, 12)
+            .padding(.vertical, 7)
+            .background(
+                Capsule(style: .continuous)
+                    .fill(HubPalette.plantDeep.opacity(0.12))
+                    .overlay(
+                        Capsule(style: .continuous)
+                            .strokeBorder(HubPalette.plantDeep.opacity(0.22), lineWidth: 0.7)
+                    )
+            )
+        }
+        .buttonStyle(.plain)
+        .accessibilityLabel("Remove \(title) filter")
     }
 }
 
 private struct IconCircleButton: View {
     let systemName: String
+    var isActive: Bool = false
     let action: () -> Void
 
     var body: some View {
         Button(action: action) {
             Image(systemName: systemName)
                 .font(GlanceHubFont.semibold(16))
-                .foregroundStyle(HubPalette.espresso)
+                .foregroundStyle(isActive ? HubPalette.plantDeep : HubPalette.espresso)
                 .frame(width: 42, height: 42)
                 .background(
                     Circle()
-                        .fill(.thinMaterial)
+                        .fill(isActive ? HubPalette.plantDeep.opacity(0.14) : Color.clear)
+                        .background(Circle().fill(.thinMaterial))
                 )
                 .overlay(
                     Circle()
-                        .strokeBorder(Color.white.opacity(0.58), lineWidth: 1)
+                        .strokeBorder(
+                            isActive ? HubPalette.plantDeep.opacity(0.35) : Color.white.opacity(0.58),
+                            lineWidth: 1
+                        )
                 )
                 .shadow(color: Color.black.opacity(0.08), radius: 8, y: 4)
         }
@@ -438,11 +676,7 @@ private struct IconCircleButton: View {
     }
 }
 
-private protocol ExploreFilterOption: CaseIterable, Identifiable, Hashable {
-    var label: String { get }
-}
-
-private enum LearningStatusFilter: String, CaseIterable, Identifiable, ExploreFilterOption {
+private enum LearningStatusFilter: String, CaseIterable, Identifiable, Hashable {
     case unseen = "Unseen"
     case learning = "Learning"
     case mastered = "Mastered"
@@ -459,57 +693,8 @@ private enum LearningStatusFilter: String, CaseIterable, Identifiable, ExploreFi
     }
 }
 
-private enum ScoreBandFilter: String, CaseIterable, Identifiable, ExploreFilterOption {
-    case core = "Core (1200+)"
-    case advanced = "Advanced (1400+)"
-    case elite = "Elite (1500+)"
-
-    var id: Self { self }
-    var label: String { rawValue }
-
-    static func from(_ difficulty: Int) -> Self {
-        switch difficulty {
-        case 1 ... 2: return .core
-        case 3 ... 4: return .advanced
-        default: return .elite
-        }
-    }
-}
-
-private enum PassageContextFilter: String, CaseIterable, Identifiable, ExploreFilterOption {
-    case literature = "Literature"
-    case historyCivics = "History/Civics"
-    case science = "Science"
-
-    var id: Self { self }
-    var label: String { rawValue }
-
-    static func from(_ category: String) -> Self {
-        let c = category.lowercased()
-        if c.contains("history") || c.contains("logic") || c.contains("social") || c.contains("behavior") {
-            return .historyCivics
-        }
-        if c.contains("science") || c.contains("environment") || c.contains("engineering") {
-            return .science
-        }
-        return .literature
-    }
-}
-
-private enum ToneFilter: String, CaseIterable, Identifiable, ExploreFilterOption {
-    case positive = "Positive"
-    case negative = "Negative"
-    case objective = "Objective"
-
-    var id: Self { self }
-    var label: String { rawValue }
-
-    static func from(_ category: String) -> Self {
-        let c = category.lowercased()
-        if c.contains("social") || c.contains("behavior") { return .objective }
-        if c.contains("history") || c.contains("environment") { return .negative }
-        return .positive
-    }
+private extension WordConnotationPolarity {
+    static let filterOptions: [WordConnotationPolarity] = [.positive, .negative, .neutral, .mixed]
 }
 
 private extension String {

@@ -21,7 +21,8 @@ struct QuizResult {
 
 struct QuizTrendPoint {
     var dayLabel: String
-    var score: Int // out of 10
+    /// `nil` when there was no quiz activity that day (sparkline breaks).
+    var score: Int? // out of 10
 }
 
 final class ProgressViewModel: ObservableObject {
@@ -29,7 +30,8 @@ final class ProgressViewModel: ObservableObject {
     @Published var wordsMastered: Int = 0
     @Published var currentStreak: Int = 0
     @Published var bestStreak: Int = 0
-    @Published var quizAccuracy: Int = 0
+    /// `nil` until at least `minAnsweredForAccuracy` quiz questions have been answered.
+    @Published var quizAccuracy: Int? = nil
     @Published var quizCount: Int = 0
     @Published var weeklyWordDelta: Int = 0
     @Published var weeklyMasteredDelta: Int = 0
@@ -37,13 +39,9 @@ final class ProgressViewModel: ObservableObject {
     @Published var monthlyQuizAccuracyDelta: Int = 0
     @Published var tomorrowReviewCount: Int = 0
     @Published var tomorrowNewCount: Int = 0
-    @Published var categories: [CategoryAccuracy] = [
-        CategoryAccuracy(name: "Literary", accuracy: 0),
-        CategoryAccuracy(name: "Academic", accuracy: 0),
-        CategoryAccuracy(name: "Legal", accuracy: 0),
-        CategoryAccuracy(name: "Scientific", accuracy: 0),
-        CategoryAccuracy(name: "Political", accuracy: 0),
-    ]
+    @Published var categories: [CategoryAccuracy] = PassageDomain.displayOrder.map {
+        CategoryAccuracy(name: $0.displayTitle, accuracy: 0)
+    }
     @Published var recentQuizzes: [QuizResult] = []
     @Published var recentQuizTrend: [QuizTrendPoint] = []
     @Published var activeQuizDays: Int = 0
@@ -62,21 +60,17 @@ final class ProgressViewModel: ObservableObject {
         let weekAgo = Calendar.current.date(byAdding: .day, value: -7, to: now) ?? now
         weeklyWordDelta = words.filter { isEncountered($0) && (($0.lastReviewDate ?? .distantPast) >= weekAgo) }.count
         weeklyMasteredDelta = words.filter { isMastered($0) && (($0.lastReviewDate ?? .distantPast) >= weekAgo) }.count
-        weeklyRemembered = words.filter { $0.successfulRecalls > 0 && (($0.lastReviewDate ?? .distantPast) >= weekAgo) }.count
+        weeklyRemembered = words.filter { hadSuccessfulRecallSince($0, weekAgo: weekAgo) }.count
         tomorrowReviewCount = computeTomorrowReviewCount(from: words, now: now)
         tomorrowNewCount = min(10, max(0, 10 - tomorrowReviewCount))
 
-        let totalCorrect = sessions.reduce(0) { $0 + $1.correctAnswers }
-        let totalQuestions = sessions.reduce(0) { $0 + max(1, $1.totalQuestions) }
-        quizAccuracy = totalQuestions >= minAnsweredForAccuracy
-            ? Int((Double(totalCorrect) / Double(totalQuestions) * 100).rounded())
-            : 0
+        quizAccuracy = quizAccuracyPercent(from: sessions)
         monthlyQuizAccuracyDelta = computeMonthlyQuizAccuracyDelta(from: sessions, now: now)
 
-        let uniqueSessionDays = uniqueDays(from: sessions.map(\.startedAt))
-        activeQuizDays = uniqueSessionDays.count
-        currentStreak = streakEndingAtLatestDay(uniqueDays: uniqueSessionDays)
-        bestStreak = longestStreak(uniqueDays: uniqueSessionDays)
+        let uniqueSessionDayKeys = uniqueDayKeys(from: sessions.map(\.creditedQuizDayKey))
+        activeQuizDays = uniqueSessionDayKeys.count
+        currentStreak = QuizStreakCalculator.currentStreakDays(sessionDayKeys: Set(uniqueSessionDayKeys))
+        bestStreak = longestStreak(dayKeys: uniqueSessionDayKeys)
 
         categories = computeCategoryAccuracy(from: words)
         recentQuizzes = computeRecentQuizzes(from: sessions)
@@ -91,12 +85,23 @@ final class ProgressViewModel: ObservableObject {
         (categoryAttemptsByName[name] ?? 0) >= minCategoryAttempts
     }
 
+    private func hadSuccessfulRecallSince(_ word: Word, weekAgo: Date) -> Bool {
+        if let lastSuccess = word.lastSuccessfulReviewDate {
+            return lastSuccess >= weekAgo
+        }
+        // Pre-migration rows: only infer when the active streak implies the latest review was a success.
+        guard word.consecutiveCorrect >= 1, word.successfulRecalls > 0, let reviewed = word.lastReviewDate else {
+            return false
+        }
+        return reviewed >= weekAgo
+    }
+
     private func isEncountered(_ word: Word) -> Bool {
         word.totalAttempts > 0 || word.successfulRecalls > 0 || word.lastReviewDate != nil || word.status.lowercased() != "new"
     }
 
     private func isMastered(_ word: Word) -> Bool {
-        word.status.lowercased() == "mastered" || word.successfulRecalls >= 5
+        word.status.lowercased() == "mastered"
     }
 
     private func computeMonthlyQuizAccuracyDelta(from sessions: [QuizSession], now: Date) -> Int {
@@ -157,20 +162,18 @@ final class ProgressViewModel: ObservableObject {
         let grouped = Dictionary(grouping: sessions) { cal.startOfDay(for: $0.startedAt) }
         var points: [QuizTrendPoint] = []
         points.reserveCapacity(10)
-        var fallback = 0
         for offset in stride(from: 9, through: 0, by: -1) {
             let day = cal.startOfDay(for: cal.date(byAdding: .day, value: -offset, to: now) ?? now)
             let daySessions = grouped[day] ?? []
-            let score: Int
+            let score: Int?
             if daySessions.isEmpty {
-                score = fallback
+                score = nil
             } else {
                 let ratios = daySessions.map { Double($0.correctAnswers) / Double(max(1, $0.totalQuestions)) }
                 let mean = ratios.reduce(0, +) / Double(ratios.count)
                 score = Int((mean * 10).rounded())
-                fallback = score
             }
-            points.append(QuizTrendPoint(dayLabel: offset == 0 ? "Today" : "D-\(offset)", score: score))
+            points.append(QuizTrendPoint(dayLabel: offset == 0 ? "Today" : "", score: score))
         }
         return points
     }
@@ -178,70 +181,33 @@ final class ProgressViewModel: ObservableObject {
     private func computeCategoryAccuracy(from words: [Word]) -> [CategoryAccuracy] {
         var agg: [String: (successes: Int, attempts: Int)] = [:]
         for word in words {
-            let bucket = bucketForCategory(word.category)
+            let bucket = word.resolvedPassageDomain.displayTitle
             var current = agg[bucket] ?? (0, 0)
             current.successes += word.successfulRecalls
             current.attempts += max(word.totalAttempts, word.successfulRecalls)
             agg[bucket] = current
         }
         categoryAttemptsByName = agg.mapValues(\.attempts)
-        let order = ["Literary", "Academic", "Legal", "Scientific", "Political"]
-        return order.map { name in
+        return PassageDomain.displayOrder.map { domain in
+            let name = domain.displayTitle
             let val = agg[name] ?? (0, 0)
             let ratio = val.attempts > 0 ? Double(val.successes) / Double(val.attempts) : 0
             return CategoryAccuracy(name: name, accuracy: ratio)
         }
     }
 
-    private func bucketForCategory(_ raw: String) -> String {
-        let c = raw.lowercased()
-        if c.contains("history") || c.contains("civics") || c.contains("polit") {
-            return "Political"
-        }
-        if c.contains("science") || c.contains("engineer") || c.contains("environment") {
-            return "Scientific"
-        }
-        if c.contains("law") || c.contains("legal") || c.contains("logic") {
-            return "Legal"
-        }
-        if c.contains("academic") {
-            return "Academic"
-        }
-        return "Literary"
+    private func uniqueDayKeys(from keys: [String]) -> [String] {
+        Array(Set(keys)).sorted()
     }
 
-    private func uniqueDays(from dates: [Date]) -> [Date] {
-        let cal = Calendar.current
-        let set = Set(dates.map { cal.startOfDay(for: $0) })
-        return set.sorted()
-    }
-
-    private func streakEndingAtLatestDay(uniqueDays: [Date]) -> Int {
-        guard let last = uniqueDays.last else { return 0 }
-        let cal = Calendar.current
-        var streak = 1
-        var cursor = last
-        while true {
-            guard let prev = cal.date(byAdding: .day, value: -1, to: cursor) else { break }
-            if uniqueDays.contains(where: { cal.isDate($0, inSameDayAs: prev) }) {
-                streak += 1
-                cursor = prev
-            } else {
-                break
-            }
-        }
-        return streak
-    }
-
-    private func longestStreak(uniqueDays: [Date]) -> Int {
-        guard !uniqueDays.isEmpty else { return 0 }
-        let cal = Calendar.current
+    private func longestStreak(dayKeys: [String]) -> Int {
+        guard !dayKeys.isEmpty else { return 0 }
         var best = 1
         var current = 1
-        for i in 1 ..< uniqueDays.count {
-            let prev = uniqueDays[i - 1]
-            let now = uniqueDays[i]
-            if let diff = cal.dateComponents([.day], from: prev, to: now).day, diff == 1 {
+        for i in 1 ..< dayKeys.count {
+            let prev = dayKeys[i - 1]
+            let now = dayKeys[i]
+            if QuizStreakCalculator.previousDayKey(from: now) == prev {
                 current += 1
                 best = max(best, current)
             } else {

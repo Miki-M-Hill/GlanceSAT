@@ -30,7 +30,21 @@ private struct AppRootView: View {
     @AppStorage("debugPrefersDarkMode") private var debugPrefersDarkMode = false
     @AppStorage("debugStreakDayOverride") private var debugStreakDayOverride = -1
     @AppStorage("debugShowsPostQuizToday") private var debugShowsPostQuizToday = false
-    @State private var selectedTab: RootTab = .today
+    @AppStorage("debugPlantWiltPreview") private var debugPlantWiltPreview = -1
+    @State private var selectedTab: RootTab
+    @State private var pendingLibraryWordID: UUID?
+
+    init() {
+        if WidgetDeepLinkRouter.consumeNavigateToTodayFromWidget() {
+            _selectedTab = State(initialValue: .today)
+            _pendingLibraryWordID = State(initialValue: nil)
+            return
+        }
+
+        let pending = WidgetDeepLinkRouter.peekPendingWordID()
+        _selectedTab = State(initialValue: pending != nil ? .library : .today)
+        _pendingLibraryWordID = State(initialValue: pending)
+    }
 
     var body: some View {
         Group {
@@ -46,19 +60,53 @@ private struct AppRootView: View {
                 .transition(.opacity)
             }
         }
+        .background(HubPalette.linen.ignoresSafeArea())
         .preferredColorScheme(debugPreferredColorScheme)
         .task(priority: .background) {
             await WordJSONImportService.importIfNeeded(modelContext: modelContext)
-            await MainActor.run {
-                WidgetInteractionReconciler.applyPendingEvents(modelContext: modelContext)
-                WidgetSnapshotWriter.refresh(modelContext: modelContext)
-            }
+            await refreshWidgetDataFromHost()
         }
         .onChange(of: scenePhase) { _, phase in
             guard phase == .active else { return }
-            WidgetInteractionReconciler.applyPendingEvents(modelContext: modelContext)
-            WidgetSnapshotWriter.refresh(modelContext: modelContext)
+            Task(priority: .userInitiated) {
+                await refreshWidgetDataFromHost()
+            }
         }
+        .onReceive(NotificationCenter.default.publisher(for: NSNotification.Name.NSSystemTimeZoneDidChange)) { _ in
+            Task(priority: .userInitiated) {
+                await refreshWidgetDataFromHost()
+            }
+        }
+        .onOpenURL { url in
+            guard WidgetDeepLinkRouter.handleIncomingURL(url) else { return }
+            applyWidgetDeepLinkRouting()
+        }
+    }
+
+    private func applyWidgetDeepLinkRouting() {
+        if WidgetDeepLinkRouter.consumeNavigateToTodayFromWidget() {
+            var transaction = Transaction()
+            transaction.disablesAnimations = true
+            withTransaction(transaction) {
+                selectedTab = .today
+                pendingLibraryWordID = nil
+            }
+            WidgetDeepLinkRouter.clearPendingWordID()
+            return
+        }
+
+        if let wordID = WidgetDeepLinkRouter.peekPendingWordID() {
+            var transaction = Transaction()
+            transaction.disablesAnimations = true
+            withTransaction(transaction) {
+                pendingLibraryWordID = wordID
+                selectedTab = .library
+            }
+        }
+    }
+
+    private func refreshWidgetDataFromHost() async {
+        await WidgetSnapshotWriter.refresh(modelContext: modelContext)
     }
 
     private var debugPreferredColorScheme: ColorScheme? {
@@ -71,17 +119,28 @@ private struct AppRootView: View {
 
     private var mainApp: some View {
         ZStack {
-            DailyHubView()
-                .opacity(selectedTab == .today ? 1 : 0)
-                .allowsHitTesting(selectedTab == .today)
+            HubPalette.linen
+                .ignoresSafeArea()
 
-            ExploreView()
-                .opacity(selectedTab == .library ? 1 : 0)
-                .allowsHitTesting(selectedTab == .library)
+            ZStack {
+                DailyHubView()
+                    .opacity(selectedTab == .today ? 1 : 0)
+                    .allowsHitTesting(selectedTab == .today)
+                    .accessibilityHidden(selectedTab != .today)
 
-            GlanceSATProgressScreen()
-                .opacity(selectedTab == .insights ? 1 : 0)
-                .allowsHitTesting(selectedTab == .insights)
+                ExploreView(
+                    pendingLibraryWordID: $pendingLibraryWordID,
+                    isLibraryTabActive: selectedTab == .library
+                )
+                    .opacity(selectedTab == .library ? 1 : 0)
+                    .allowsHitTesting(selectedTab == .library)
+                    .accessibilityHidden(selectedTab != .library)
+
+                GlanceSATProgressScreen()
+                    .opacity(selectedTab == .insights ? 1 : 0)
+                    .allowsHitTesting(selectedTab == .insights)
+                    .accessibilityHidden(selectedTab != .insights)
+            }
         }
         .overlay(alignment: .topLeading) {
             if selectedTab == .today {
@@ -94,37 +153,76 @@ private struct AppRootView: View {
         }
     }
 
+    #if DEBUG
+    private func applyDebugPlantPreview(days: Int?, wilted: Bool?) {
+        withAnimation(.spring(response: 0.34, dampingFraction: 0.7)) {
+            if let days {
+                debugStreakDayOverride = days
+            } else if wilted != true {
+                // Healthy / use current streak — drop day override. Wilted keeps the selected day.
+                debugStreakDayOverride = -1
+            }
+
+            if let wilted {
+                debugPlantWiltPreview = wilted ? 1 : 0
+            } else {
+                debugPlantWiltPreview = -1
+            }
+        }
+    }
+    #endif
+
     @ViewBuilder
     private var debugOnboardingButton: some View {
         #if DEBUG
         Menu {
-            Section("Streak Preview") {
-                ForEach([0, 1, 3, 7], id: \.self) { day in
-                    Button {
-                        withAnimation(.spring(response: 0.34, dampingFraction: 0.7)) {
-                            debugStreakDayOverride = debugStreakDayOverride == day ? -1 : day
-                        }
-                    } label: {
-                        Label("\(day) day", systemImage: debugStreakDayOverride == day ? "checkmark.circle.fill" : "circle")
-                    }
+            Section("Streak plant") {
+                Button { applyDebugPlantPreview(days: 0, wilted: false) } label: {
+                    Label("Day 0", systemImage: debugStreakDayOverride == 0 && debugPlantWiltPreview != 1 ? "checkmark.circle.fill" : "circle")
                 }
-
-                Button {
-                    withAnimation(.spring(response: 0.34, dampingFraction: 0.7)) {
-                        debugStreakDayOverride = -1
-                    }
-                } label: {
-                    Label("Use real streak", systemImage: "arrow.counterclockwise")
+                Button { applyDebugPlantPreview(days: 1, wilted: false) } label: {
+                    Label("Day 1", systemImage: debugStreakDayOverride == 1 && debugPlantWiltPreview != 1 ? "checkmark.circle.fill" : "circle")
+                }
+                Button { applyDebugPlantPreview(days: 3, wilted: false) } label: {
+                    Label("Day 3", systemImage: debugStreakDayOverride == 3 && debugPlantWiltPreview != 1 ? "checkmark.circle.fill" : "circle")
+                }
+                Button { applyDebugPlantPreview(days: 7, wilted: false) } label: {
+                    Label("Day 7", systemImage: debugStreakDayOverride == 7 && debugPlantWiltPreview != 1 ? "checkmark.circle.fill" : "circle")
+                }
+                Button { applyDebugPlantPreview(days: nil, wilted: false) } label: {
+                    Label("Healthy", systemImage: debugStreakDayOverride < 0 && debugPlantWiltPreview == 0 ? "checkmark.circle.fill" : "leaf")
+                }
+                Button { applyDebugPlantPreview(days: nil, wilted: true) } label: {
+                    Label("Wilted", systemImage: debugPlantWiltPreview == 1 ? "checkmark.circle.fill" : "leaf.fill")
+                }
+                Button { applyDebugPlantPreview(days: nil, wilted: nil) } label: {
+                    Label("Use current streak", systemImage: "arrow.counterclockwise")
                 }
             }
 
             Section("App Preview") {
                 Button {
                     withAnimation(.easeInOut(duration: 0.24)) {
-                        debugShowsPostQuizToday.toggle()
+                        DebugTodayQuizControls.resetToPreQuizToday()
                     }
                 } label: {
-                    Label(debugShowsPostQuizToday ? "Show pre-quiz Today" : "Show post-quiz Today", systemImage: debugShowsPostQuizToday ? "rectangle.badge.xmark" : "checkmark.rectangle")
+                    Label("Reset to pre-quiz today", systemImage: DebugTodayQuizControls.forcePreQuizToday ? "checkmark.circle.fill" : "arrow.counterclockwise")
+                }
+
+                Button {
+                    withAnimation(.easeInOut(duration: 0.24)) {
+                        DebugTodayQuizControls.previewPostQuizToday()
+                    }
+                } label: {
+                    Label("Preview post-quiz Today", systemImage: DebugTodayQuizControls.showsPostQuizToday ? "checkmark.rectangle.fill" : "checkmark.rectangle")
+                }
+
+                Button {
+                    withAnimation(.easeInOut(duration: 0.24)) {
+                        DebugTodayQuizControls.useLiveTodayState()
+                    }
+                } label: {
+                    Label("Use live Today state", systemImage: "clock.arrow.circlepath")
                 }
 
                 Button {
@@ -176,14 +274,10 @@ private struct RootTabBar: View {
 
             ZStack(alignment: .leading) {
                 Capsule(style: .continuous)
-                    .fill(.thinMaterial)
+                    .fill(HubPalette.linen)
                     .overlay(
                         Capsule(style: .continuous)
-                            .fill(HubPalette.oatmeal.opacity(0.30))
-                    )
-                    .overlay(
-                        Capsule(style: .continuous)
-                            .strokeBorder(Color.white.opacity(0.42), lineWidth: 1)
+                            .strokeBorder(HubPalette.oatmealDeep.opacity(0.35), lineWidth: 1)
                     )
 
                 Capsule(style: .continuous)
@@ -226,29 +320,20 @@ private struct RootTabBar: View {
 
 @main
 struct GlanceSATApp: App {
-    
-    var sharedModelContainer: ModelContainer = {
-        let schema = Schema([
-            Item.self,
-            Word.self,
-            QuizSession.self,
-        ])
-        
-        let modelConfiguration = ModelConfiguration(
-            schema: schema,
-            isStoredInMemoryOnly: false
-        )
+    @UIApplicationDelegateAdaptor(GlanceSATAppDelegate.self) private var appDelegate
 
+    var sharedModelContainer: ModelContainer = {
         do {
-            return try ModelContainer(for: schema, configurations: [modelConfiguration])
+            return try ModelContainerFactory.makeShared()
         } catch {
-            fatalError("Brutal failure: Could not create shared ModelContainer: \(error)")
+            fatalError("Could not create ModelContainer: \(error)")
         }
     }()
 
     var body: some Scene {
         WindowGroup {
             AppRootView()
+                .background(HubPalette.linen.ignoresSafeArea())
         }
         .modelContainer(sharedModelContainer)
     }

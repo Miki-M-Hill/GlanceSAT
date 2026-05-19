@@ -12,9 +12,9 @@ private enum SettingsURLs {
     static let appStoreShare = URL(string: "https://apps.apple.com/app/glancesat/id000000000")!
     static let instagram = URL(string: "https://www.instagram.com/glance_sat?igsh=MWNiN2ZuZXh2MDF0cA%3D%3D&utm_source=qr")!
     static let tiktok = URL(string: "https://www.tiktok.com/@glance_sat?_r=1&_t=ZT-96IwRGOLCgP")!
-    static let help = URL(string: "https://support.apple.com/guide/iphone/iph66127d151/ios")!
-    static let privacy = URL(string: "https://www.apple.com/legal/privacy/")!
-    static let terms = URL(string: "https://www.apple.com/legal/internet-services/itunes/dev/stdeula/")!
+    static let help = URL(string: "https://www.glanceprep.com/support")!
+    static let privacy = URL(string: "https://www.glanceprep.com/privacy")!
+    static let terms = URL(string: "https://www.glanceprep.com/terms")!
 }
 
 struct SettingsView: View {
@@ -26,6 +26,7 @@ struct SettingsView: View {
     @State private var showSATDateSheet = false
     @State private var showWidgetStudio = false
     @State private var satDraftDate = Date()
+    @State private var inAppWebPage: PresentableWebURL?
 
     private var resolvedSATDate: Date {
         if satExamDateSeconds <= 0 {
@@ -77,7 +78,7 @@ struct SettingsView: View {
                         ShareLink(
                             item: SettingsURLs.appStoreShare,
                             subject: Text("Glance"),
-                            message: Text("I’m prepping for the SAT with Glance — sharp vocabulary, daily rhythm.")
+                            message: Text("I'm prepping for the SAT with Glance - sharp vocabulary, daily rhythm.")
                         ) {
                             shareRowLabel
                         }
@@ -92,11 +93,11 @@ struct SettingsView: View {
 
                     settingsSectionHeader("Social")
                     settingsCard {
-                        settingsButton(icon: "camera", title: "Instagram", subtitle: "@glance_sat") {
+                        settingsBrandButton(brand: .instagram, title: "Instagram", subtitle: "@glance_sat") {
                             openURL(SettingsURLs.instagram)
                         }
                         rowDivider
-                        settingsButton(icon: "music.note.list", title: "TikTok", subtitle: "@glance_sat") {
+                        settingsBrandButton(brand: .tiktok, title: "TikTok", subtitle: "@glance_sat") {
                             openURL(SettingsURLs.tiktok)
                         }
                     }
@@ -104,15 +105,15 @@ struct SettingsView: View {
                     settingsSectionHeader("Support & legal")
                     settingsCard {
                         settingsButton(icon: "questionmark.circle", title: "Help") {
-                            openURL(SettingsURLs.help)
+                            inAppWebPage = PresentableWebURL(url: SettingsURLs.help)
                         }
                         rowDivider
                         settingsButton(icon: "hand.raised", title: "Privacy policy") {
-                            openURL(SettingsURLs.privacy)
+                            inAppWebPage = PresentableWebURL(url: SettingsURLs.privacy)
                         }
                         rowDivider
                         settingsButton(icon: "doc.text", title: "Terms and conditions") {
-                            openURL(SettingsURLs.terms)
+                            inAppWebPage = PresentableWebURL(url: SettingsURLs.terms)
                         }
                     }
 
@@ -132,19 +133,24 @@ struct SettingsView: View {
                 .padding(.top, 8)
             }
             .background(HubPalette.linen.ignoresSafeArea())
-            .navigationTitle("Glance")
-            .navigationBarTitleDisplayMode(.large)
+            .navigationTitle("")
+            .navigationBarTitleDisplayMode(.inline)
             .toolbarBackground(HubPalette.linen, for: .navigationBar)
             .toolbarBackground(.visible, for: .navigationBar)
             .toolbarColorScheme(.light, for: .navigationBar)
             .tint(HubPalette.espresso)
             .toolbar {
-                ToolbarItem(placement: .topBarTrailing) {
-                    Button("Done") {
+                ToolbarItem(placement: .cancellationAction) {
+                    DailyQuizBackButton {
                         dismiss()
                     }
-                    .font(.system(size: 17, weight: .regular, design: .rounded))
-                    .foregroundStyle(HubPalette.espresso)
+                }
+
+                ToolbarItem(placement: .principal) {
+                    Text("Glance")
+                        .font(GlanceHubFont.semibold(17))
+                        .foregroundStyle(HubPalette.espresso)
+                        .frame(height: 44)
                 }
             }
         }
@@ -153,6 +159,10 @@ struct SettingsView: View {
         }
         .fullScreenCover(isPresented: $showWidgetStudio) {
             WidgetStudioView()
+        }
+        .sheet(item: $inAppWebPage) { page in
+            SafariSheet(url: page.url)
+                .ignoresSafeArea()
         }
     }
 
@@ -229,11 +239,62 @@ struct SettingsView: View {
             .padding(.leading, 54)
     }
 
+    private enum SettingsBrand {
+        case instagram
+        case tiktok
+    }
+
     private func settingsButton(icon: String, title: String, subtitle: String? = nil, action: @escaping () -> Void) -> some View {
         Button(action: action) {
             settingsRowLabel(icon: icon, title: title, subtitle: subtitle, showChevron: true)
         }
         .buttonStyle(.plain)
+    }
+
+    private func settingsBrandButton(
+        brand: SettingsBrand,
+        title: String,
+        subtitle: String? = nil,
+        action: @escaping () -> Void
+    ) -> some View {
+        Button(action: action) {
+            settingsBrandRowLabel(brand: brand, title: title, subtitle: subtitle)
+        }
+        .buttonStyle(.plain)
+    }
+
+    private func settingsBrandRowLabel(brand: SettingsBrand, title: String, subtitle: String?) -> some View {
+        HStack(alignment: .center, spacing: 14) {
+            Group {
+                switch brand {
+                case .instagram:
+                    SocialBrandIcon.instagram
+                case .tiktok:
+                    SocialBrandIcon.tiktok
+                }
+            }
+
+            VStack(alignment: .leading, spacing: 3) {
+                Text(title)
+                    .font(.system(size: 16, weight: .regular, design: .rounded))
+                    .foregroundStyle(HubPalette.espresso)
+                if let subtitle, !subtitle.isEmpty {
+                    Text(subtitle)
+                        .font(.system(size: 12, weight: .regular, design: .rounded))
+                        .foregroundStyle(HubPalette.espressoMuted)
+                        .fixedSize(horizontal: false, vertical: true)
+                }
+            }
+
+            Spacer(minLength: 8)
+
+            Image(systemName: "chevron.right")
+                .font(.system(size: 12, weight: .semibold))
+                .foregroundStyle(HubPalette.espressoFaint)
+        }
+        .padding(.horizontal, 16)
+        .padding(.vertical, 14)
+        .contentShape(Rectangle())
     }
 
     private func settingsRowLabel(icon: String, title: String, subtitle: String?, showChevron: Bool) -> some View {
