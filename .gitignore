@@ -24,6 +24,9 @@ xcuserdata/
 .swiftpm/configuration/registries.json
 .swiftpm/xcode/package.xcworkspace/contents.xcworkspacedata
 
+# Local tooling
+.venv-icon/
+
 # macOS
 .DS_Store
 .AppleDouble

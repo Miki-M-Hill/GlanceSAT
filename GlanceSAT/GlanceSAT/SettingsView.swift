@@ -3,28 +3,16 @@
 //  GlanceSAT
 //
 
-import StoreKit
 import SwiftUI
-import UIKit
-
-private enum SettingsURLs {
-    /// Replace with your App Store product URL when published.
-    static let appStoreShare = URL(string: "https://apps.apple.com/app/glancesat/id000000000")!
-    static let instagram = URL(string: "https://www.instagram.com/glance_sat?igsh=MWNiN2ZuZXh2MDF0cA%3D%3D&utm_source=qr")!
-    static let tiktok = URL(string: "https://www.tiktok.com/@glance_sat?_r=1&_t=ZT-96IwRGOLCgP")!
-    static let help = URL(string: "https://www.glanceprep.com/support")!
-    static let privacy = URL(string: "https://www.glanceprep.com/privacy")!
-    static let terms = URL(string: "https://www.glanceprep.com/terms")!
-}
 
 struct SettingsView: View {
     @Environment(\.dismiss) private var dismiss
     @Environment(\.openURL) private var openURL
+    @Environment(\.colorScheme) private var colorScheme
 
     @AppStorage("satExamDateSeconds") private var satExamDateSeconds: Double = 0
 
     @State private var showSATDateSheet = false
-    @State private var showWidgetStudio = false
     @State private var satDraftDate = Date()
     @State private var inAppWebPage: PresentableWebURL?
 
@@ -48,23 +36,21 @@ struct SettingsView: View {
         (Bundle.main.infoDictionary?["CFBundleShortVersionString"] as? String) ?? "1.0"
     }
 
+    private var shareMessage: String {
+        if AppExternalLinks.appStoreProductURL != nil {
+            return "I'm prepping for the SAT with Glance — sharp vocabulary, daily rhythm."
+        }
+        return "Check out Glance — SAT vocabulary with a daily rhythm."
+    }
+
     var body: some View {
         NavigationStack {
             ScrollView(.vertical, showsIndicators: false) {
                 VStack(alignment: .leading, spacing: 26) {
-                    settingsSectionHeader("Widgets")
-                    settingsCard {
-                        settingsButton(icon: "rectangle.inset.filled.and.person.filled", title: "Widget Studio", subtitle: "Design your Home Screen widget") {
-                            showWidgetStudio = true
-                        }
-                    }
-
                     settingsSectionHeader("Subscription & goals")
                     settingsCard {
                         settingsButton(icon: "creditcard", title: "Manage subscription") {
-                            if let url = URL(string: "https://apps.apple.com/account/subscriptions") {
-                                openURL(url)
-                            }
+                            Task { await AppExternalLinks.openManageSubscriptions(using: openURL) }
                         }
                         rowDivider
                         settingsButton(icon: "calendar", title: "SAT Date", subtitle: satDateSubtitle) {
@@ -76,9 +62,9 @@ struct SettingsView: View {
                     settingsSectionHeader("Spread the word")
                     settingsCard {
                         ShareLink(
-                            item: SettingsURLs.appStoreShare,
+                            item: AppExternalLinks.shareItemURL,
                             subject: Text("Glance"),
-                            message: Text("I'm prepping for the SAT with Glance - sharp vocabulary, daily rhythm.")
+                            message: Text(shareMessage)
                         ) {
                             shareRowLabel
                         }
@@ -87,33 +73,33 @@ struct SettingsView: View {
                         rowDivider
 
                         settingsButton(icon: "star", title: "Leave us a review") {
-                            requestReview()
+                            AppExternalLinks.requestReviewOrOpenStore(using: openURL)
                         }
                     }
 
                     settingsSectionHeader("Social")
                     settingsCard {
                         settingsBrandButton(brand: .instagram, title: "Instagram", subtitle: "@glance_sat") {
-                            openURL(SettingsURLs.instagram)
+                            AppExternalLinks.openInstagram(using: openURL)
                         }
                         rowDivider
                         settingsBrandButton(brand: .tiktok, title: "TikTok", subtitle: "@glance_sat") {
-                            openURL(SettingsURLs.tiktok)
+                            AppExternalLinks.openTikTok(using: openURL)
                         }
                     }
 
                     settingsSectionHeader("Support & legal")
                     settingsCard {
                         settingsButton(icon: "questionmark.circle", title: "Help") {
-                            inAppWebPage = PresentableWebURL(url: SettingsURLs.help)
+                            inAppWebPage = PresentableWebURL(url: AppExternalLinks.help)
                         }
                         rowDivider
                         settingsButton(icon: "hand.raised", title: "Privacy policy") {
-                            inAppWebPage = PresentableWebURL(url: SettingsURLs.privacy)
+                            inAppWebPage = PresentableWebURL(url: AppExternalLinks.privacy)
                         }
                         rowDivider
                         settingsButton(icon: "doc.text", title: "Terms and conditions") {
-                            inAppWebPage = PresentableWebURL(url: SettingsURLs.terms)
+                            inAppWebPage = PresentableWebURL(url: AppExternalLinks.terms)
                         }
                     }
 
@@ -124,6 +110,14 @@ struct SettingsView: View {
                         Text("Version \(appVersion)")
                             .font(.system(size: 12, weight: .regular, design: .rounded))
                             .foregroundStyle(HubPalette.espressoFaint)
+                        if AppExternalLinks.appStoreAppleID == nil {
+                            Text("Add your App Store ID in GlanceSAT-Info.plist to enable App Store share & review links.")
+                                .font(.system(size: 11, weight: .regular, design: .rounded))
+                                .foregroundStyle(HubPalette.espressoFaint)
+                                .multilineTextAlignment(.center)
+                                .padding(.horizontal, 12)
+                                .padding(.top, 4)
+                        }
                     }
                     .frame(maxWidth: .infinity)
                     .padding(.top, 12)
@@ -135,10 +129,7 @@ struct SettingsView: View {
             .background(HubPalette.linen.ignoresSafeArea())
             .navigationTitle("")
             .navigationBarTitleDisplayMode(.inline)
-            .toolbarBackground(HubPalette.linen, for: .navigationBar)
-            .toolbarBackground(.visible, for: .navigationBar)
-            .toolbarColorScheme(.light, for: .navigationBar)
-            .tint(HubPalette.espresso)
+            .glanceNavigationBarChrome(colorScheme: colorScheme)
             .toolbar {
                 ToolbarItem(placement: .cancellationAction) {
                     DailyQuizBackButton {
@@ -156,9 +147,6 @@ struct SettingsView: View {
         }
         .sheet(isPresented: $showSATDateSheet) {
             satDateSheet
-        }
-        .fullScreenCover(isPresented: $showWidgetStudio) {
-            WidgetStudioView()
         }
         .sheet(item: $inAppWebPage) { page in
             SafariSheet(url: page.url)
@@ -184,8 +172,7 @@ struct SettingsView: View {
             }
             .background(HubPalette.linen)
             .navigationTitle("Glance")
-            .navigationBarTitleDisplayMode(.inline)
-            .toolbarBackground(HubPalette.linen, for: .navigationBar)
+            .glanceNavigationBarChrome(colorScheme: colorScheme)
             .toolbar {
                 ToolbarItem(placement: .cancellationAction) {
                     Button("Cancel") {
@@ -351,11 +338,6 @@ struct SettingsView: View {
         .padding(.horizontal, 16)
         .padding(.vertical, 14)
         .contentShape(Rectangle())
-    }
-
-    private func requestReview() {
-        guard let scene = UIApplication.shared.connectedScenes.first as? UIWindowScene else { return }
-        SKStoreReviewController.requestReview(in: scene)
     }
 }
 

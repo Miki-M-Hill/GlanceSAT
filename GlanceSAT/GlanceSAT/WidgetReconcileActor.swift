@@ -24,6 +24,8 @@ actor WidgetReconcileActor {
                 continue
             case .know:
                 break
+            case .quizAnswer:
+                break
             }
 
             guard let id = UUID(uuidString: event.wordID) else { continue }
@@ -38,7 +40,16 @@ actor WidgetReconcileActor {
             guard let word = try modelContext.fetch(descriptor).first else { continue }
 
             let reviewedAt = min(event.date, Date())
-            _ = SRSEngine.calculateNextReview(word: word, quality: 5, reviewedAt: reviewedAt)
+            let quality: Int
+            switch event.action {
+            case .know:
+                quality = 5
+            case .quizAnswer:
+                quality = event.wasCorrect == true ? 5 : 1
+            default:
+                continue
+            }
+            _ = SRSEngine.calculateNextReview(word: word, quality: quality, reviewedAt: reviewedAt)
 
             appliedKeys.insert(dedupeKey)
             didMutate = true

@@ -34,7 +34,9 @@ struct QuizQuestion: Identifiable {
     let appliesSRS: Bool
 }
 
-final class QuizGenerator {
+enum QuizGenerator {
+
+    static let targetQuestionCount = DailyWordBatchService.maxDailyWords
 
     static func questionSlotKey(targetID: UUID, type: QuestionType) -> String {
         "\(targetID.uuidString).\(type)"
@@ -44,16 +46,31 @@ final class QuizGenerator {
         questionSlotKey(targetID: question.targetWord.id, type: question.questionType)
     }
 
-    /// Builds up to 10 questions with 6/3/1 synonym / sentence / connotation-foil pacing when possible.
-    func generateQuiz(
+    static func wordID(fromQuestionSlot slot: String) -> UUID? {
+        guard let raw = slot.split(separator: ".", maxSplits: 1).first else { return nil }
+        return UUID(uuidString: String(raw))
+    }
+
+    /// Drops prior slot exclusions for words that must receive a fresh question (supplemental retries).
+    static func excludingSlots(_ slots: Set<String>, allowingRetestFor wordIDs: Set<UUID>) -> Set<String> {
+        guard !wordIDs.isEmpty else { return slots }
+        return slots.filter { slot in
+            guard let wordID = wordID(fromQuestionSlot: slot) else { return true }
+            return !wordIDs.contains(wordID)
+        }
+    }
+
+    /// Builds exactly `targetQuestionCount` unique questions when the catalog has enough words.
+    static func generateQuiz(
         for words: [SATWord],
         context: ModelContext,
         excludingSlots excludedSlots: Set<String> = [],
         srsEligibleWordIDs: Set<UUID>? = nil
     ) throws -> [QuizQuestion] {
-        let due = Array(words.prefix(10))
+        let due = Array(words.prefix(targetQuestionCount))
         guard !due.isEmpty else { return [] }
 
+        var slotExclusions = excludedSlots
         var remaining = due
         var foilQuestion: QuizQuestion?
 
@@ -68,7 +85,7 @@ final class QuizGenerator {
 
         for (_, target) in bossCandidates {
             let slot = Self.questionSlotKey(targetID: target.id, type: .connotationFoil)
-            if excludedSlots.contains(slot) { continue }
+            if slotExclusions.contains(slot) { continue }
 
             guard let foilID = target.tonalFoilId,
                   let foil = try fetchWord(id: foilID, context: context) else {
@@ -98,7 +115,7 @@ final class QuizGenerator {
         let sentenceEligible = remaining
             .filter {
                 !$0.quizCompletionSentence.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty
-                    && !excludedSlots.contains(Self.questionSlotKey(targetID: $0.id, type: .sentenceCompletion))
+                    && !slotExclusions.contains(Self.questionSlotKey(targetID: $0.id, type: .sentenceCompletion))
                     && Self.canUseSentenceCompletion(sentence: $0.quizCompletionSentence, word: $0.word)
             }
             .sorted { sentenceScore(for: $0) > sentenceScore(for: $1) }
@@ -117,7 +134,7 @@ final class QuizGenerator {
         let synonymWords = remaining
             .filter {
                 !sentenceAssignedIDs.contains($0.id)
-                    && !excludedSlots.contains(Self.questionSlotKey(targetID: $0.id, type: .synonym))
+                    && !slotExclusions.contains(Self.questionSlotKey(targetID: $0.id, type: .synonym))
             }
             .prefix(synonymCap)
         var synonymQuestions: [QuizQuestion] = []
@@ -130,10 +147,97 @@ final class QuizGenerator {
         allQuestions.append(contentsOf: sentenceQuestions)
         allQuestions.append(contentsOf: synonymQuestions)
 
-        return taggingSRS(applySequencingLock(to: allQuestions), eligibleIDs: srsEligibleWordIDs)
+        var usedWordIDs = Set(allQuestions.map { $0.targetWord.id })
+        var fillerExclude = Set(due.map(\.id))
+
+        while allQuestions.count < targetQuestionCount {
+            let unusedFromDue = due.filter { !usedWordIDs.contains($0.id) }
+            if let word = unusedFromDue.first,
+               let question = try makeFallbackQuestion(
+                   for: word,
+                   excludedSlots: slotExclusions,
+                   context: context
+               ) {
+                allQuestions.append(question)
+                usedWordIDs.insert(word.id)
+                slotExclusions.insert(questionSlotKey(for: question))
+                continue
+            }
+
+            let need = targetQuestionCount - allQuestions.count
+            let fillers = try fetchFillerWords(
+                excluding: fillerExclude.union(usedWordIDs),
+                limit: max(need * 4, 12),
+                context: context
+            )
+            guard !fillers.isEmpty else { break }
+
+            var addedAny = false
+            for word in fillers {
+                guard allQuestions.count < targetQuestionCount else { break }
+                guard !usedWordIDs.contains(word.id) else { continue }
+                fillerExclude.insert(word.id)
+                guard let question = try makeFallbackQuestion(
+                    for: word,
+                    excludedSlots: slotExclusions,
+                    context: context
+                ) else { continue }
+                allQuestions.append(question)
+                usedWordIDs.insert(word.id)
+                slotExclusions.insert(questionSlotKey(for: question))
+                addedAny = true
+            }
+            if !addedAny { break }
+        }
+
+        let sequenced = applySequencingLock(to: Array(allQuestions.prefix(targetQuestionCount)))
+        return taggingSRS(sequenced, eligibleIDs: srsEligibleWordIDs)
     }
 
-    private func taggingSRS(_ questions: [QuizQuestion], eligibleIDs: Set<UUID>?) -> [QuizQuestion] {
+    private static func makeFallbackQuestion(
+        for word: SATWord,
+        excludedSlots: Set<String>,
+        context: ModelContext
+    ) throws -> QuizQuestion? {
+        let synonymSlot = questionSlotKey(targetID: word.id, type: .synonym)
+        if !excludedSlots.contains(synonymSlot) {
+            return try makeSynonymQuestion(for: word, context: context)
+        }
+
+        let sentenceSlot = questionSlotKey(targetID: word.id, type: .sentenceCompletion)
+        if !excludedSlots.contains(sentenceSlot),
+           !word.quizCompletionSentence.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty,
+           canUseSentenceCompletion(sentence: word.quizCompletionSentence, word: word.word) {
+            return try makeSentenceCompletionQuestion(for: word, context: context)
+        }
+
+        return nil
+    }
+
+    private static func fetchFillerWords(
+        excluding excludedIDs: Set<UUID>,
+        limit: Int,
+        context: ModelContext
+    ) throws -> [SATWord] {
+        guard limit > 0 else { return [] }
+
+        let referenceDate = Date()
+        let predicate = #Predicate<SATWord> { word in
+            word.nextReviewDate <= referenceDate
+        }
+        var descriptor = FetchDescriptor<SATWord>(
+            predicate: predicate,
+            sortBy: [SortDescriptor(\.nextReviewDate, order: .forward)]
+        )
+        descriptor.fetchLimit = max(limit * 3, 48)
+
+        var pool = try context.fetch(descriptor)
+        pool.removeAll { excludedIDs.contains($0.id) }
+        pool.shuffle()
+        return Array(pool.prefix(limit))
+    }
+
+    private static func taggingSRS(_ questions: [QuizQuestion], eligibleIDs: Set<UUID>?) -> [QuizQuestion] {
         questions.map { question in
             let applies = eligibleIDs.map { $0.contains(question.targetWord.id) } ?? true
             guard question.appliesSRS != applies else { return question }
@@ -153,7 +257,7 @@ final class QuizGenerator {
 
     // MARK: - Connotation foil (boss fight)
 
-    private func makeConnotationFoilQuestion(target: SATWord, foil: SATWord) throws -> QuizQuestion {
+    private static func makeConnotationFoilQuestion(target: SATWord, foil: SATWord) throws -> QuizQuestion {
         let prompt = Self.blankExampleSentence(target.quizCompletionSentence, word: target.word)
 
         return QuizQuestion(
@@ -169,7 +273,7 @@ final class QuizGenerator {
         )
     }
 
-    private func fetchWord(id: UUID, context: ModelContext) throws -> SATWord? {
+    private static func fetchWord(id: UUID, context: ModelContext) throws -> SATWord? {
         let lookup = id
         let predicate = #Predicate<SATWord> { word in
             word.id == lookup
@@ -181,7 +285,7 @@ final class QuizGenerator {
 
     // MARK: - Level 1 — Synonym
 
-    private func makeSynonymQuestion(for target: SATWord, context: ModelContext) throws -> QuizQuestion {
+    private static func makeSynonymQuestion(for target: SATWord, context: ModelContext) throws -> QuizQuestion {
         let correct: String
         if let pick = target.quizSynonyms.randomElement(), !pick.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty {
             correct = pick.trimmingCharacters(in: .whitespacesAndNewlines)
@@ -216,7 +320,45 @@ final class QuizGenerator {
 
     // MARK: - Level 2 — Sentence completion
 
-    private func makeSentenceCompletionQuestion(for target: SATWord, context: ModelContext) throws -> QuizQuestion {
+    /// Sentence-completion payload for the quiz widget (uses `exampleSentence`, not `quizSentence`).
+    struct WidgetSentenceQuiz: Sendable {
+        let promptText: String
+        let options: [String]
+        let correctAnswer: String
+    }
+
+    static func makeWidgetSentenceQuiz(
+        for target: SATWord,
+        exampleSentence: String,
+        context: ModelContext
+    ) throws -> WidgetSentenceQuiz? {
+        let sentence = exampleSentence.trimmingCharacters(in: .whitespacesAndNewlines)
+        guard !sentence.isEmpty,
+              canUseSentenceCompletion(sentence: sentence, word: target.word) else {
+            return nil
+        }
+
+        let sentenceBuild = buildSentencePrompt(sentence, word: target.word)
+        let correct = inflect(target.word, as: sentenceBuild.inflection)
+
+        let pick = try pickRecencyWrongOptions(
+            for: target,
+            needCount: 3,
+            correct: correct,
+            context: context
+        ) { inflect($0.word, as: sentenceBuild.inflection) }
+
+        let options = shuffledFourOptions(correct: correct, wrong: pick.displayOptions)
+        guard options.count >= 2 else { return nil }
+
+        return WidgetSentenceQuiz(
+            promptText: sentenceBuild.prompt,
+            options: options,
+            correctAnswer: correct
+        )
+    }
+
+    private static func makeSentenceCompletionQuestion(for target: SATWord, context: ModelContext) throws -> QuizQuestion {
         let sentenceBuild = Self.buildSentencePrompt(target.quizCompletionSentence, word: target.word)
         let prompt = sentenceBuild.prompt
         let inflection = sentenceBuild.inflection
@@ -251,7 +393,7 @@ final class QuizGenerator {
         let headwords: [String]
     }
 
-    private func pickRecencyWrongOptions(
+    private static func pickRecencyWrongOptions(
         for target: SATWord,
         needCount: Int,
         correct: String,
@@ -317,7 +459,7 @@ final class QuizGenerator {
         return RecencyWrongPick(displayOptions: displayOptions, headwords: headwords)
     }
 
-    private func sortByRecency(_ words: [SATWord]) -> [SATWord] {
+    private static func sortByRecency(_ words: [SATWord]) -> [SATWord] {
         words.sorted { lhs, rhs in
             switch (lhs.lastReviewDate, rhs.lastReviewDate) {
             case let (left?, right?):
@@ -334,7 +476,7 @@ final class QuizGenerator {
 
     // MARK: - Sequencing lock (shuffle, then fix)
 
-    private func applySequencingLock(to questions: [QuizQuestion]) -> [QuizQuestion] {
+    private static func applySequencingLock(to questions: [QuizQuestion]) -> [QuizQuestion] {
         guard questions.count > 1 else { return questions }
 
         var ordered = questions
@@ -376,7 +518,7 @@ final class QuizGenerator {
 
     // MARK: - SwiftData
 
-    private func fetchWords(
+    private static func fetchWords(
         excluding excludedID: UUID,
         partOfSpeech pos: String,
         difficultyMin: Int?,
@@ -399,21 +541,26 @@ final class QuizGenerator {
         }
 
         var descriptor = FetchDescriptor<SATWord>(predicate: predicate)
+        descriptor.fetchLimit = 240
         return try context.fetch(descriptor)
     }
 
-    private func fetchAllWords(excluding excludedID: UUID, context: ModelContext) throws -> [SATWord] {
+    private static func fetchAllWords(excluding excludedID: UUID, context: ModelContext) throws -> [SATWord] {
         let excluded = excludedID
         let predicate = #Predicate<SATWord> { w in
             w.id != excluded
         }
-        var descriptor = FetchDescriptor<SATWord>(predicate: predicate)
+        var descriptor = FetchDescriptor<SATWord>(
+            predicate: predicate,
+            sortBy: [SortDescriptor(\.lastReviewDate, order: .reverse)]
+        )
+        descriptor.fetchLimit = 320
         return try context.fetch(descriptor)
     }
 
     // MARK: - Helpers
 
-    private func synonymLikeAnswer(from word: SATWord) -> String {
+    private static func synonymLikeAnswer(from word: SATWord) -> String {
         if let s = word.quizSynonyms.randomElement() {
             let t = s.trimmingCharacters(in: .whitespacesAndNewlines)
             if !t.isEmpty { return t }
@@ -421,7 +568,7 @@ final class QuizGenerator {
         return word.word.trimmingCharacters(in: .whitespacesAndNewlines)
     }
 
-    private func isDistinctOption(_ option: String, correct: String, targetWord: String, existing: [String]) -> Bool {
+    private static func isDistinctOption(_ option: String, correct: String, targetWord: String, existing: [String]) -> Bool {
         let key = Self.normalizedKey(option)
         if key.isEmpty { return false }
         if key == Self.normalizedKey(correct) { return false }
@@ -430,7 +577,7 @@ final class QuizGenerator {
         return !used.contains(key)
     }
 
-    private func shuffledFourOptions(correct: String, wrong: [String]) -> [String] {
+    private static func shuffledFourOptions(correct: String, wrong: [String]) -> [String] {
         let wrongThree = Array(wrong.prefix(3))
         let combined = [correct] + wrongThree
         var seen = Set<String>()
@@ -445,7 +592,7 @@ final class QuizGenerator {
     }
 
     /// Higher scores are better candidates for context-recall sentence questions.
-    private func sentenceScore(for word: SATWord) -> Int {
+    private static func sentenceScore(for word: SATWord) -> Int {
         let statusBonus: Int
         switch word.status.lowercased() {
         case "mastered":

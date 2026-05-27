@@ -10,6 +10,7 @@ enum WidgetDeepLinkRouter {
 
     private static let pendingWordIDKey = "app.pendingLibraryWordID"
     private static let navigateToTodayKey = "app.widgetNavigateToToday"
+    private static let navigateToPaywallKey = "app.widgetNavigateToPaywall"
 
     static func libraryURL(wordID: UUID) -> URL {
         URL(string: "\(scheme)://library/word/\(wordID.uuidString.lowercased())")!
@@ -17,6 +18,17 @@ enum WidgetDeepLinkRouter {
 
     static func todayURL() -> URL {
         URL(string: "\(scheme)://today")!
+    }
+
+    static func paywallURL() -> URL {
+        URL(string: "\(scheme)://paywall")!
+    }
+
+    /// Returns true once if a widget requested the paywall (`glancesat://paywall`).
+    static func consumeNavigateToPaywallFromWidget() -> Bool {
+        guard UserDefaults.standard.bool(forKey: navigateToPaywallKey) else { return false }
+        UserDefaults.standard.removeObject(forKey: navigateToPaywallKey)
+        return true
     }
 
     /// Returns true once if a widget requested the Today tab (`glancesat://today`).
@@ -33,6 +45,14 @@ enum WidgetDeepLinkRouter {
         if isTodayHostOrPath(url) {
             UserDefaults.standard.set(true, forKey: navigateToTodayKey)
             UserDefaults.standard.removeObject(forKey: pendingWordIDKey)
+            UserDefaults.standard.removeObject(forKey: navigateToPaywallKey)
+            return true
+        }
+
+        if isPaywallHostOrPath(url) {
+            UserDefaults.standard.set(true, forKey: navigateToPaywallKey)
+            UserDefaults.standard.removeObject(forKey: pendingWordIDKey)
+            UserDefaults.standard.removeObject(forKey: navigateToTodayKey)
             return true
         }
 
@@ -40,6 +60,15 @@ enum WidgetDeepLinkRouter {
         UserDefaults.standard.removeObject(forKey: navigateToTodayKey)
         UserDefaults.standard.set(wordID.uuidString, forKey: pendingWordIDKey)
         return true
+    }
+
+    private static func isPaywallHostOrPath(_ url: URL) -> Bool {
+        if url.host?.trimmingCharacters(in: .whitespacesAndNewlines).lowercased() == "paywall" {
+            return true
+        }
+        let trimmed = url.path.trimmingCharacters(in: CharacterSet(charactersIn: "/"))
+        return trimmed.lowercased() == "paywall"
+            || trimmed.split(separator: "/").contains(where: { $0.lowercased() == "paywall" })
     }
 
     private static func isTodayHostOrPath(_ url: URL) -> Bool {

@@ -16,6 +16,8 @@ struct GlanceSATWidgetRootView: View {
         Group {
             if entry.isStaleSnapshot {
                 GlanceSATWidgetStaleView(family: family)
+            } else if entry.isDailyLimitLocked {
+                GlanceSATWidgetLockedView(family: family)
             } else if entry.isResting {
                 GlanceSATWidgetRestView(entry: entry, family: family)
             } else {
@@ -27,7 +29,67 @@ struct GlanceSATWidgetRootView: View {
                 }
             }
         }
-        .widgetURL(WidgetDeepLink.todayURL())
+        .widgetURL(entry.isDailyLimitLocked ? WidgetDeepLink.paywallURL() : WidgetDeepLink.todayURL())
+    }
+}
+
+// MARK: - Freemium daily limit
+
+struct GlanceSATWidgetLockedView: View {
+    let family: WidgetFamily
+
+    var body: some View {
+        switch family {
+        case .accessoryInline:
+            Label("Daily limit reached", systemImage: "lock.fill")
+                .font(.system(.footnote, design: .default, weight: .medium))
+                .lineLimit(1)
+                .minimumScaleFactor(0.72)
+                .widgetAccentable()
+
+        case .accessoryCircular:
+            ZStack {
+                AccessoryWidgetBackground()
+                Image(systemName: "lock.fill")
+                    .font(.system(size: 20, weight: .semibold))
+                    .widgetAccentable()
+            }
+
+        case .accessoryRectangular:
+            HStack(alignment: .center, spacing: 8) {
+                Image(systemName: "lock.fill")
+                    .font(.system(size: 20, weight: .semibold))
+                    .widgetAccentable()
+                VStack(alignment: .leading, spacing: 1) {
+                    Text("Daily limit reached.")
+                        .font(.system(size: 14, weight: .semibold))
+                        .lineLimit(1)
+                    Text("Tap to unlock more.")
+                        .font(.system(size: 12, weight: .regular))
+                        .foregroundStyle(.secondary)
+                        .lineLimit(1)
+                        .minimumScaleFactor(0.8)
+                }
+            }
+            .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .leading)
+
+        default:
+            VStack(spacing: 8) {
+                Image(systemName: "lock.fill")
+                    .font(.system(size: 28, weight: .semibold))
+                Text("Daily limit reached.")
+                    .font(.system(size: 16, weight: .semibold))
+                    .multilineTextAlignment(.center)
+                    .lineLimit(2)
+                    .minimumScaleFactor(0.85)
+                Text("Tap to unlock more.")
+                    .font(.system(size: 13, weight: .regular))
+                    .foregroundStyle(.secondary)
+                    .multilineTextAlignment(.center)
+            }
+            .frame(maxWidth: .infinity, maxHeight: .infinity)
+            .padding(12)
+        }
     }
 }
 
@@ -252,7 +314,7 @@ struct GlanceSATHomeFamiliesView: View {
                 definitionWithPartOfSpeech: entry.word.widgetDefinitionWithPartOfSpeech,
                 detailText: activeDetailText,
                 isDetailRevealed: isAnyDetailRevealed,
-                includeAction: true,
+                includeAction: !isSmallFamily,
                 isSmallFamily: isSmallFamily
             )
 
@@ -289,8 +351,10 @@ struct GlanceSATHomeFamiliesView: View {
 
                 Spacer(minLength: 0)
 
-                homeActionTray
-                    .padding(.top, metrics.sectionSpacing)
+                if !isSmallFamily {
+                    homeActionTray
+                        .padding(.top, metrics.sectionSpacing)
+                }
             }
             .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .center)
             .padding(insets)
@@ -342,25 +406,17 @@ struct GlanceSATHomeFamiliesView: View {
     private var homeActionTray: some View {
         HStack(spacing: 10) {
             widgetActionButton(
-                systemName: "speaker.wave.2.fill",
-                accessibilityLabel: "Pronounce \(entry.word.word)",
-                intent: SpeakWidgetWordIntent(word: entry.word.word)
+                systemName: isHookRevealed ? "lightbulb.fill" : "lightbulb",
+                accessibilityLabel: hookActionAccessibilityLabel,
+                intent: ToggleWidgetDetailIntent(wordID: entry.word.id.uuidString)
             )
 
-            if !isSmallFamily {
+            if hasExample {
                 widgetActionButton(
-                    systemName: isHookRevealed ? "lightbulb.fill" : "lightbulb",
-                    accessibilityLabel: hookActionAccessibilityLabel,
-                    intent: ToggleWidgetDetailIntent(wordID: entry.word.id.uuidString)
+                    systemName: "quote.opening",
+                    accessibilityLabel: isExampleRevealed ? "Hide example sentence" : "Show example sentence",
+                    intent: ToggleWidgetExampleIntent(wordID: entry.word.id.uuidString)
                 )
-
-                if hasExample {
-                    widgetActionButton(
-                        systemName: "quote.opening",
-                        accessibilityLabel: isExampleRevealed ? "Hide example sentence" : "Show example sentence",
-                        intent: ToggleWidgetExampleIntent(wordID: entry.word.id.uuidString)
-                    )
-                }
             }
         }
         .frame(maxWidth: .infinity, alignment: .center)
@@ -416,39 +472,48 @@ private struct GlanceSATLockFamiliesView: View {
                 AccessoryWidgetBackground()
                 Text(monogram)
                     .font(.system(size: 21, weight: .semibold, design: .default))
+                    .foregroundColor(.primary)
                     .minimumScaleFactor(0.5)
                     .widgetAccentable()
             }
 
         case .accessoryRectangular:
             GeometryReader { proxy in
-                VStack(alignment: .center, spacing: 2) {
+                let wordFontSize = min(proxy.size.width * 0.14, proxy.size.height * 0.44)
+                let definitionFontSize = min(proxy.size.width * 0.105, proxy.size.height * 0.34)
+
+                VStack(alignment: .center, spacing: 1) {
                     Text(entry.word.word)
-                        .font(.system(size: 15.5, weight: .semibold, design: .default))
+                        .font(.system(size: max(13, wordFontSize), weight: .semibold, design: .default))
+                        .foregroundColor(.primary)
                         .multilineTextAlignment(.center)
                         .widgetAccentable()
                         .lineLimit(1)
-                        .minimumScaleFactor(0.55)
-                        .frame(maxWidth: .infinity)
+                        .minimumScaleFactor(0.5)
+                        .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .center)
 
                     Text(entry.word.widgetDefinitionWithPartOfSpeech)
-                        .font(.system(size: lockDefinitionSize(for: proxy.size), weight: .regular, design: .default))
-                        .foregroundStyle(.secondary)
+                        .font(.system(size: max(10, definitionFontSize), weight: .regular, design: .default))
+                        .foregroundColor(.primary)
                         .multilineTextAlignment(.center)
-                        .lineLimit(nil)
-                        .minimumScaleFactor(0.44)
-                        .fixedSize(horizontal: false, vertical: true)
-                        .frame(maxWidth: .infinity)
+                        .widgetAccentable()
+                        .lineLimit(3)
+                        .minimumScaleFactor(0.5)
+                        .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .center)
                 }
                 .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .center)
             }
 
         case .accessoryInline:
-            Text("\(entry.word.word) (\(entry.word.widgetPartOfSpeechLabel))")
-                .font(.system(.footnote, design: .default, weight: .medium))
-                .minimumScaleFactor(0.7)
-                .lineLimit(1)
-                .widgetAccentable()
+            GeometryReader { proxy in
+                Text("\(entry.word.word) (\(entry.word.widgetPartOfSpeechLabel))")
+                    .font(.system(size: max(12, min(proxy.size.width * 0.09, proxy.size.height * 0.85)), weight: .semibold, design: .default))
+                    .foregroundColor(.primary)
+                    .minimumScaleFactor(0.5)
+                    .lineLimit(1)
+                    .widgetAccentable()
+                    .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .center)
+            }
 
         default:
             EmptyView()
@@ -459,23 +524,6 @@ private struct GlanceSATLockFamiliesView: View {
         let t = entry.word.word.trimmingCharacters(in: .whitespacesAndNewlines)
         guard let c = t.first else { return "G" }
         return String(c).uppercased()
-    }
-
-    private func lockDefinitionSize(for size: CGSize) -> CGFloat {
-        let definitionCount = entry.word.widgetDefinitionWithPartOfSpeech.count
-        let base: CGFloat
-        switch definitionCount {
-        case 0...54:
-            base = 11.2
-        case 55...82:
-            base = 10.1
-        case 83...118:
-            base = 9.1
-        default:
-            base = 8.2
-        }
-
-        return min(base, max(7.2, size.height * 0.19))
     }
 }
 

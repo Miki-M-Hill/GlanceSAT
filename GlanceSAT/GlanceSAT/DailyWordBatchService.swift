@@ -14,6 +14,208 @@ enum DailyWordBatchService {
     static let batchHistoryFilename = "daily_batch_history.json"
     private static let maxBatchHistoryEntries = 60
 
+    // MARK: - Onboarding seeding (initial difficulty)
+    private static let onboardingSeedingAppliedBaselineKey = "onboardingSeedingAppliedBaseline"
+    private static let hasCompletedOnboardingKey = "hasCompletedOnboarding"
+    private static let diagnosticBaselineKey = "diagnosticBaseline"
+
+    private struct DifficultyBand {
+        let min: Int
+        let max: Int
+        /// When true, pick harder candidates first inside a range.
+        let preferHarder: Bool
+    }
+
+    /// Monotonic difficulty band mapping:
+    /// - better onboarding quiz => higher difficulty band (harder words earlier)
+    /// - lower onboarding quiz => lower difficulty band (easier words earlier)
+    private static func difficultyBand(for baseline: DiagnosticBaseline) -> DifficultyBand {
+        switch baseline {
+        case .gettingStarted:
+            // Gentle start.
+            return DifficultyBand(min: 1, max: 2, preferHarder: false)
+        case .momentumGrowing:
+            // Slightly tougher.
+            return DifficultyBand(min: 2, max: 3, preferHarder: true)
+        case .solidFoundation:
+            // Mid-to-upper difficulty.
+            return DifficultyBand(min: 3, max: 4, preferHarder: true)
+        case .alreadyAhead:
+            // Highest initial difficulty.
+            return DifficultyBand(min: 4, max: 6, preferHarder: true)
+        }
+    }
+
+    /// True only once per onboarding baseline (so replaying onboarding re-seeds).
+    private static func onboardingSeedingBaselineIfNeeded() -> DiagnosticBaseline? {
+        let defaults = UserDefaults.standard
+        guard defaults.bool(forKey: hasCompletedOnboardingKey) else { return nil }
+
+        let raw = defaults.string(forKey: diagnosticBaselineKey) ?? ""
+        guard let baseline = DiagnosticBaseline(rawValue: raw) else { return nil }
+
+        let lastAppliedRaw = defaults.string(forKey: onboardingSeedingAppliedBaselineKey)
+        guard lastAppliedRaw != raw else { return nil }
+        return baseline
+    }
+
+    private static func markOnboardingSeedingApplied(_ baseline: DiagnosticBaseline) {
+        UserDefaults.standard.set(baseline.rawValue, forKey: onboardingSeedingAppliedBaselineKey)
+    }
+
+    private static func seededDueSortDescriptors(preferHarder: Bool) -> [SortDescriptor<Word>] {
+        // Keep existing "boss-target" bias via onboardingRank, but add a difficulty bias inside the range.
+        // Finally preserve due ordering via nextReviewDate.
+        return [
+            SortDescriptor(\.onboardingRank, order: .forward),
+            SortDescriptor(\.difficulty, order: preferHarder ? .reverse : .forward),
+            SortDescriptor(\.nextReviewDate, order: .forward),
+        ]
+    }
+
+    @MainActor
+    private static func selectSeededNewBatch(
+        modelContext: ModelContext,
+        referenceDate: Date,
+        baseline: DiagnosticBaseline
+    ) -> [Word] {
+        let cap = selectionCap
+        let dayKey = calendarDayKey(for: referenceDate)
+        let band = difficultyBand(for: baseline)
+
+        // 1) Prefer due words (nextReviewDate <= today) because SRS produces the best adaptation.
+        //    We pull a larger due pool once, then pick from it with difficulty-band relaxation.
+        var duePool: [Word] = []
+        do {
+            var descriptor = FetchDescriptor<Word>(
+                predicate: #Predicate<Word> { word in
+                    word.nextReviewDate <= referenceDate
+                },
+                sortBy: seededDueSortDescriptors(preferHarder: band.preferHarder)
+            )
+            // Oversample so we can satisfy the initial difficulty band even if the due pool is skewed.
+            descriptor.fetchLimit = max(cap * 30, 240)
+            duePool = try modelContext.fetch(descriptor)
+            duePool = shuffledDailySelection(duePool, dayKey: dayKey)
+        } catch {
+            // Fall back to the existing selection logic (handled by caller).
+        }
+
+        if !duePool.isEmpty {
+            var selected: [Word] = []
+            selected.reserveCapacity(cap)
+            var selectedIDs = Set<UUID>()
+
+            // Strict initial band first; then relax outward gradually.
+            let attemptRanges: [(min: Int, max: Int)] = [
+                (band.min, band.max),
+                (band.min - 1, band.max + 1),
+                (band.min - 2, band.max + 2),
+            ]
+
+            func clamp(_ value: Int) -> Int { Swift.max(0, value) }
+
+            for (minD, maxD) in attemptRanges {
+                let minDifficulty = clamp(minD)
+                let maxDifficulty = clamp(maxD)
+                for word in duePool where selected.count < cap && !selectedIDs.contains(word.id) {
+                    guard word.difficulty >= minDifficulty && word.difficulty <= maxDifficulty else { continue }
+                    selected.append(word)
+                    selectedIDs.insert(word.id)
+                }
+                if selected.count >= cap { break }
+            }
+
+            // If the due pool is too small / too skewed, fill remaining slots with the best candidates
+            // from the due pool (already difficulty-biased by sort order).
+            if selected.count < cap {
+                for word in duePool where selected.count < cap && !selectedIDs.contains(word.id) {
+                    selected.append(word)
+                    selectedIDs.insert(word.id)
+                }
+            }
+
+            return Array(selected.prefix(cap))
+        }
+
+        // 2) If nothing is due, fall back to catalog sampling—but still difficulty-biased by band.
+        //    We keep the same deterministic shuffle pattern as the existing fallback selector.
+        return selectSeededCatalogFallbackBatch(
+            modelContext: modelContext,
+            limit: cap,
+            excluding: [],
+            dayKey: dayKey,
+            band: band
+        )
+    }
+
+    @MainActor
+    private static func selectSeededCatalogFallbackBatch(
+        modelContext: ModelContext,
+        limit: Int,
+        excluding: Set<UUID>,
+        dayKey: String,
+        band: DifficultyBand
+    ) -> [Word] {
+        guard limit > 0 else { return [] }
+
+        let attemptRanges: [(min: Int, max: Int)] = [
+            (band.min, band.max),
+            (band.min - 1, band.max + 1),
+            (band.min - 2, band.max + 2),
+        ]
+
+        var selected: [Word] = []
+        selected.reserveCapacity(limit)
+        var selectedIDs = excluding
+
+        var rng = DayKeyedRNG(dayKey: dayKey)
+
+        for (minD, maxD) in attemptRanges {
+            let minDifficulty = max(0, minD)
+            let maxDifficulty = max(0, maxD)
+            let remaining = limit - selected.count
+            guard remaining > 0 else { break }
+
+            var descriptor = FetchDescriptor<Word>(
+                predicate: #Predicate<Word> { word in
+                    word.difficulty >= minDifficulty && word.difficulty <= maxDifficulty
+                },
+                sortBy: [
+                    SortDescriptor(\.frequencyRank, order: .forward),
+                    SortDescriptor(\.difficulty, order: band.preferHarder ? .reverse : .forward),
+                    SortDescriptor(\.onboardingRank, order: .forward),
+                ]
+            )
+            // Oversample within the band; we then deterministically shuffle and take a prefix.
+            descriptor.fetchLimit = max(remaining * 10, 80)
+
+            guard var pool = try? modelContext.fetch(descriptor), !pool.isEmpty else { continue }
+            pool.removeAll { selectedIDs.contains($0.id) }
+            guard !pool.isEmpty else { continue }
+
+            pool.shuffle(using: &rng)
+
+            for word in pool where selected.count < limit && !selectedIDs.contains(word.id) {
+                selected.append(word)
+                selectedIDs.insert(word.id)
+                if selected.count >= limit { break }
+            }
+        }
+
+        // Final safety: if the band filters still didn't yield enough, use the original fallback selector.
+        guard selected.count < limit else { return selected }
+        let remaining = limit - selected.count
+        let extra = selectCatalogFallbackBatch(
+            modelContext: modelContext,
+            limit: remaining,
+            excluding: selectedIDs,
+            dayKey: dayKey
+        )
+        selected.append(contentsOf: extra)
+        return selected.prefix(limit).map { $0 }
+    }
+
     /// Prioritize rigged onboarding boss targets, then earliest due date.
     static var dueWordSortDescriptors: [SortDescriptor<Word>] {
         [
@@ -31,7 +233,7 @@ enum DailyWordBatchService {
         ]
     }
 
-    static func calendarDayKey(for date: Date = Date(), calendar: Calendar = .current) -> String {
+    nonisolated static func calendarDayKey(for date: Date = Date(), calendar: Calendar = .current) -> String {
         let dayStart = calendar.startOfDay(for: date)
         let formatter = DateFormatter()
         formatter.calendar = calendar
@@ -99,8 +301,18 @@ enum DailyWordBatchService {
                 words = fresh
                 persistedWordIDs = fresh.map(\.id)
             } else {
-                words = resolved
-                persistedWordIDs = stored.wordIDs
+                var resolvedWords = resolved
+                if resolvedWords.count < selectionCap {
+                    // Same calendar day: a free-tier batch may only have 3 IDs; premium unlocks up to 10.
+                    resolvedWords = backfillDueWords(
+                        into: resolvedWords,
+                        modelContext: modelContext,
+                        referenceDate: referenceDate,
+                        dayKey: todayKey
+                    )
+                }
+                words = resolvedWords
+                persistedWordIDs = resolvedWords.map(\.id)
             }
         } else {
             let fresh = selectNewBatch(modelContext: modelContext, referenceDate: referenceDate)
@@ -108,16 +320,27 @@ enum DailyWordBatchService {
             persistedWordIDs = fresh.map(\.id)
         }
 
-        persistBatch(wordIDs: persistedWordIDs, dayKey: todayKey)
-
-        WidgetSnapshotWriter.writeSnapshot(words: words, calendarDayKey: todayKey)
+        let capped = applySubscriptionCap(words)
+        persistBatch(wordIDs: capped.map(\.id), dayKey: todayKey)
+        WidgetSnapshotWriter.writeSnapshot(words: capped, calendarDayKey: todayKey, modelContext: modelContext)
+        EntitlementManager.shared.syncWidgetSubscriptionState()
         WidgetTimelineReloader.scheduleVocabularyReload()
 
         if previousKey != todayKey {
             WidgetTimelineReloader.scheduleAllWidgetReload()
         }
 
-        return words
+        return capped
+    }
+
+    @MainActor
+    private static func applySubscriptionCap(_ words: [Word]) -> [Word] {
+        Array(words.prefix(FreemiumLimits.effectiveDailyWordCount))
+    }
+
+    @MainActor
+    private static var selectionCap: Int {
+        FreemiumLimits.effectiveDailyWordCount
     }
 
     private static func filterDueWords(_ words: [Word], referenceDate: Date) -> [Word] {
@@ -131,8 +354,9 @@ enum DailyWordBatchService {
         referenceDate: Date,
         dayKey: String
     ) -> [Word] {
-        guard existing.count < maxDailyWords else {
-            return Array(existing.prefix(maxDailyWords))
+        let cap = selectionCap
+        guard existing.count < cap else {
+            return Array(existing.prefix(cap))
         }
 
         var result = existing
@@ -141,20 +365,21 @@ enum DailyWordBatchService {
             word.nextReviewDate <= referenceDate
         }
         var descriptor = FetchDescriptor<Word>(predicate: predicate, sortBy: dueWordSortDescriptors)
-        descriptor.fetchLimit = maxDailyWords + max(seen.count, 24)
+        descriptor.fetchLimit = cap + max(seen.count, 24)
 
         if let fetched = try? modelContext.fetch(descriptor) {
-            for word in fetched where !seen.contains(word.id) {
+            let shuffled = shuffledDailySelection(fetched, dayKey: dayKey)
+            for word in shuffled where !seen.contains(word.id) {
                 result.append(word)
                 seen.insert(word.id)
-                if result.count >= maxDailyWords { break }
+                if result.count >= cap { break }
             }
         }
 
-        if result.count < maxDailyWords {
+        if result.count < cap {
             let extra = selectCatalogFallbackBatch(
                 modelContext: modelContext,
-                limit: maxDailyWords - result.count,
+                limit: cap - result.count,
                 excluding: seen,
                 dayKey: dayKey
             )
@@ -166,25 +391,47 @@ enum DailyWordBatchService {
 
     @MainActor
     private static func selectNewBatch(modelContext: ModelContext, referenceDate: Date) -> [Word] {
+        if let baseline = onboardingSeedingBaselineIfNeeded() {
+            let seeded = selectSeededNewBatch(
+                modelContext: modelContext,
+                referenceDate: referenceDate,
+                baseline: baseline
+            )
+            markOnboardingSeedingApplied(baseline)
+            return seeded
+        }
+
         var descriptor = FetchDescriptor<Word>(
             predicate: #Predicate<Word> { word in
                 word.nextReviewDate <= referenceDate
             },
             sortBy: dueWordSortDescriptors
         )
-        descriptor.fetchLimit = maxDailyWords
+        let cap = selectionCap
+        descriptor.fetchLimit = max(cap * 4, cap)
 
-        if let due = try? modelContext.fetch(descriptor), !due.isEmpty {
-            return due
+        if var due = try? modelContext.fetch(descriptor), !due.isEmpty {
+            let dayKey = calendarDayKey(for: referenceDate)
+            due = shuffledDailySelection(due, dayKey: dayKey)
+            return Array(due.prefix(cap))
         }
 
         let dayKey = calendarDayKey(for: referenceDate)
         return selectCatalogFallbackBatch(
             modelContext: modelContext,
-            limit: maxDailyWords,
+            limit: cap,
             excluding: [],
             dayKey: dayKey
         )
+    }
+
+    /// Randomizes selection order so unseen / Level-0 words are not served alphabetically.
+    @MainActor
+    static func shuffledDailySelection(_ words: [Word], dayKey: String) -> [Word] {
+        var copy = words
+        var rng = DayKeyedRNG(dayKey: dayKey)
+        copy.shuffle(using: &rng)
+        return copy
     }
 
     /// Frequency-ranked pool, shuffled deterministically per calendar day (stable widget rotation, no A-z bias).
@@ -256,6 +503,19 @@ enum DailyWordBatchService {
         var calendarDayKey: String
         var wordIDs: [UUID]
         var generatedAt: Date
+    }
+
+    /// Reads today's persisted batch IDs without touching SwiftData (for early quiz prefetch at launch).
+    nonisolated static func loadPersistedTodayWordIDs(
+        referenceDate: Date = Date(),
+        calendar: Calendar = .current
+    ) -> [UUID] {
+        guard let batch = loadPersistedBatch(),
+              batch.calendarDayKey == calendarDayKey(for: referenceDate, calendar: calendar),
+              !isFutureCalendarDayKey(batch.calendarDayKey, referenceDate: referenceDate, calendar: calendar) else {
+            return []
+        }
+        return batch.wordIDs
     }
 
     private static func loadPersistedBatch() -> PersistedDailyWordBatch? {
@@ -333,15 +593,17 @@ enum DailyWordBatchService {
             return []
         }
 
+        let shuffledDue = shuffledDailySelection(duePool, dayKey: todayKey)
+
         if !historicalIDs.isEmpty {
-            for word in duePool where historicalIDs.contains(word.id) && !seen.contains(word.id) {
+            for word in shuffledDue where historicalIDs.contains(word.id) && !seen.contains(word.id) {
                 result.append(word)
                 seen.insert(word.id)
                 if result.count >= need { return result }
             }
         }
 
-        for word in duePool where !seen.contains(word.id) {
+        for word in shuffledDue where !seen.contains(word.id) {
             result.append(word)
             seen.insert(word.id)
             if result.count >= need { return result }

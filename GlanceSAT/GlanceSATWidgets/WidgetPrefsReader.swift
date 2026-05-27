@@ -12,9 +12,11 @@ enum WidgetPrefsReader {
         static let typography = "widget.prefs.typography"
         static let primaryQuizCompletedDayKey = "widget.primaryQuizCompletedDayKey"
         static let streakDays = "widget.streakDays"
+        static let hasPremiumAccess = "widget.subscription.hasPremium"
+        static let freemiumDailyLimitReached = "widget.subscription.freemiumLimitReached"
     }
 
-    private static let appGroup = "group.com.mikihill.GlanceSAT"
+    private static let appGroup = GlanceSATWidgetConstants.appGroupIdentifier
 
     static var defaults: UserDefaults? {
         UserDefaults(suiteName: appGroup)
@@ -46,5 +48,13 @@ enum WidgetPrefsReader {
 
     static func streakDays() -> Int {
         defaults?.integer(forKey: Keys.streakDays) ?? 0
+    }
+
+    static func hasPremiumAccess() -> Bool {
+        defaults?.bool(forKey: Keys.hasPremiumAccess) ?? false
+    }
+
+    static func isFreemiumDailyLimitReached() -> Bool {
+        defaults?.bool(forKey: Keys.freemiumDailyLimitReached) ?? false
     }
 }

@@ -8,7 +8,7 @@ import Foundation
 
 /// Cross-process advisory lock for App Group JSON / UserDefaults RMW (host + widget extension).
 enum AppGroupFileLock {
-    private static let appGroupID = "group.com.mikihill.GlanceSAT"
+    private static let appGroupID = GlanceSATWidgetConstants.appGroupIdentifier
     private static let lockFilename = ".widget_app_group.lock"
 
     static var lockFileURL: URL? {

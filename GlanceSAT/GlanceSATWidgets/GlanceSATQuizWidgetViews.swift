@@ -59,12 +59,13 @@ private struct GlanceSATQuizPromptView: View {
                 Spacer(minLength: 0)
 
                 VStack(spacing: 10 * scale) {
-                    Text(entry.word.word)
-                        .font(.system(size: wordSize, weight: .semibold, design: .default))
+                    Text(entry.word.sentenceQuizPrompt)
+                        .font(.system(size: promptFontSize, weight: .medium, design: .default))
                         .foregroundStyle(palette.primary)
                         .multilineTextAlignment(.center)
-                        .lineLimit(1)
-                        .minimumScaleFactor(0.65)
+                        .lineLimit(promptLineLimit)
+                        .minimumScaleFactor(0.72)
+                        .fixedSize(horizontal: false, vertical: true)
                         .frame(maxWidth: .infinity)
                         .widgetAccentable()
 
@@ -78,11 +79,15 @@ private struct GlanceSATQuizPromptView: View {
         }
     }
 
-    private var wordSize: CGFloat {
+    private var promptFontSize: CGFloat {
         switch family {
-        case .systemLarge: return 24 * scale
-        default: return 21 * scale
+        case .systemLarge: return 15 * scale
+        default: return 13.5 * scale
         }
+    }
+
+    private var promptLineLimit: Int {
+        family == .systemLarge ? 4 : 3
     }
 
     @ViewBuilder

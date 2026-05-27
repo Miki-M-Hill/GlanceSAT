@@ -7,7 +7,7 @@ import Combine
 import Foundation
 import SwiftData
 
-struct CategoryAccuracy {
+struct CategoryAccuracy: Sendable, Codable {
     var name: String
     var accuracy: Double
 }
@@ -51,19 +51,18 @@ final class ProgressViewModel: ObservableObject {
     let minCategoryAttempts = 5
     let minTrendDays = 3
 
-    func refresh(words: [Word], sessions: [QuizSession], now: Date = Date()) {
-        let encounteredWords = words.filter { isEncountered($0) }
-        wordsEncountered = encounteredWords.count
-        wordsMastered = words.filter { isMastered($0) }.count
+    func refresh(wordStats: InsightsWordStats, sessions: [QuizSession], now: Date = Date()) {
+        wordsEncountered = wordStats.wordsEncountered
+        wordsMastered = wordStats.wordsMastered
+        weeklyWordDelta = wordStats.weeklyWordDelta
+        weeklyMasteredDelta = wordStats.weeklyMasteredDelta
+        weeklyRemembered = wordStats.weeklyRemembered
+        tomorrowReviewCount = wordStats.tomorrowReviewCount
+        tomorrowNewCount = wordStats.tomorrowNewCount
+        categories = wordStats.categories
+        categoryAttemptsByName = wordStats.categoryAttemptsByName
+
         quizCount = sessions.count
-
-        let weekAgo = Calendar.current.date(byAdding: .day, value: -7, to: now) ?? now
-        weeklyWordDelta = words.filter { isEncountered($0) && (($0.lastReviewDate ?? .distantPast) >= weekAgo) }.count
-        weeklyMasteredDelta = words.filter { isMastered($0) && (($0.lastReviewDate ?? .distantPast) >= weekAgo) }.count
-        weeklyRemembered = words.filter { hadSuccessfulRecallSince($0, weekAgo: weekAgo) }.count
-        tomorrowReviewCount = computeTomorrowReviewCount(from: words, now: now)
-        tomorrowNewCount = min(10, max(0, 10 - tomorrowReviewCount))
-
         quizAccuracy = quizAccuracyPercent(from: sessions)
         monthlyQuizAccuracyDelta = computeMonthlyQuizAccuracyDelta(from: sessions, now: now)
 
@@ -72,7 +71,6 @@ final class ProgressViewModel: ObservableObject {
         currentStreak = QuizStreakCalculator.currentStreakDays(sessionDayKeys: Set(uniqueSessionDayKeys))
         bestStreak = longestStreak(dayKeys: uniqueSessionDayKeys)
 
-        categories = computeCategoryAccuracy(from: words)
         recentQuizzes = computeRecentQuizzes(from: sessions)
         recentQuizTrend = computeTrend(from: sessions, now: now)
     }
@@ -83,25 +81,6 @@ final class ProgressViewModel: ObservableObject {
 
     func isCategoryReady(_ name: String) -> Bool {
         (categoryAttemptsByName[name] ?? 0) >= minCategoryAttempts
-    }
-
-    private func hadSuccessfulRecallSince(_ word: Word, weekAgo: Date) -> Bool {
-        if let lastSuccess = word.lastSuccessfulReviewDate {
-            return lastSuccess >= weekAgo
-        }
-        // Pre-migration rows: only infer when the active streak implies the latest review was a success.
-        guard word.consecutiveCorrect >= 1, word.successfulRecalls > 0, let reviewed = word.lastReviewDate else {
-            return false
-        }
-        return reviewed >= weekAgo
-    }
-
-    private func isEncountered(_ word: Word) -> Bool {
-        word.totalAttempts > 0 || word.successfulRecalls > 0 || word.lastReviewDate != nil || word.status.lowercased() != "new"
-    }
-
-    private func isMastered(_ word: Word) -> Bool {
-        word.status.lowercased() == "mastered"
     }
 
     private func computeMonthlyQuizAccuracyDelta(from sessions: [QuizSession], now: Date) -> Int {
@@ -129,17 +108,6 @@ final class ProgressViewModel: ObservableObject {
         guard totalQuestions >= minAnsweredForAccuracy else { return nil }
         let totalCorrect = sessions.reduce(0) { $0 + $1.correctAnswers }
         return Int((Double(totalCorrect) / Double(totalQuestions) * 100).rounded())
-    }
-
-    private func computeTomorrowReviewCount(from words: [Word], now: Date) -> Int {
-        let calendar = Calendar.current
-        let tomorrowStart = calendar.startOfDay(for: calendar.date(byAdding: .day, value: 1, to: now) ?? now)
-        let nextDayStart = calendar.date(byAdding: .day, value: 1, to: tomorrowStart) ?? tomorrowStart
-        return words.filter { word in
-            word.nextReviewDate >= tomorrowStart
-                && word.nextReviewDate < nextDayStart
-                && word.status.lowercased() != "new"
-        }.count
     }
 
     private func computeRecentQuizzes(from sessions: [QuizSession]) -> [QuizResult] {
@@ -176,24 +144,6 @@ final class ProgressViewModel: ObservableObject {
             points.append(QuizTrendPoint(dayLabel: offset == 0 ? "Today" : "", score: score))
         }
         return points
-    }
-
-    private func computeCategoryAccuracy(from words: [Word]) -> [CategoryAccuracy] {
-        var agg: [String: (successes: Int, attempts: Int)] = [:]
-        for word in words {
-            let bucket = word.resolvedPassageDomain.displayTitle
-            var current = agg[bucket] ?? (0, 0)
-            current.successes += word.successfulRecalls
-            current.attempts += max(word.totalAttempts, word.successfulRecalls)
-            agg[bucket] = current
-        }
-        categoryAttemptsByName = agg.mapValues(\.attempts)
-        return PassageDomain.displayOrder.map { domain in
-            let name = domain.displayTitle
-            let val = agg[name] ?? (0, 0)
-            let ratio = val.attempts > 0 ? Double(val.successes) / Double(val.attempts) : 0
-            return CategoryAccuracy(name: name, accuracy: ratio)
-        }
     }
 
     private func uniqueDayKeys(from keys: [String]) -> [String] {

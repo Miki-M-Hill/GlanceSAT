@@ -7,6 +7,8 @@ import SwiftUI
 
 /// Two-option connotation distinction: target vs tonal foil in a blanked example sentence.
 struct ConnotationFoilView: View {
+    @Environment(\.colorScheme) private var colorScheme
+
     let promptText: String
     let optionLabels: [String]
     let correctAnswer: String
@@ -23,7 +25,7 @@ struct ConnotationFoilView: View {
             sentencePrompt
                 .font(GlanceHubFont.regular(20))
                 .multilineTextAlignment(.center)
-                .foregroundStyle(HubPalette.espresso)
+                .foregroundStyle(DailyQuizChrome.questionHighlightColor(for: colorScheme))
                 .padding(.horizontal, 8)
 
             Spacer(minLength: 0)
@@ -90,24 +92,24 @@ struct ConnotationFoilView: View {
 
     private func pillFill(isCorrect: Bool, isSelected: Bool) -> Color {
         if isAnswerRevealed {
-            if isCorrect { return HubPalette.plantDeep.opacity(0.88) }
-            if isSelected { return HubPalette.missedForeground.opacity(0.75) }
+            if isCorrect { return HubPalette.connotationCorrectFill }
+            if isSelected { return HubPalette.quizAnswerIncorrectFill }
         }
-        return HubPalette.oatmealDeep.opacity(0.55)
+        return DailyQuizChrome.answerCapsuleFill(for: colorScheme)
     }
 
     private func pillStroke(isCorrect: Bool, isSelected: Bool) -> Color {
         if isAnswerRevealed, isCorrect || isSelected {
             return Color.white.opacity(0.35)
         }
-        return Color.white.opacity(0.42)
+        return DailyQuizChrome.answerCapsuleStroke(for: colorScheme)
     }
 
     private func pillForeground(isCorrect: Bool, isSelected: Bool) -> Color {
         if isAnswerRevealed, isCorrect || isSelected {
-            return HubPalette.linen
+            return colorScheme == .dark ? HubPalette.softHighlight : HubPalette.linen
         }
-        return HubPalette.espresso
+        return DailyQuizChrome.answerLabelColor(for: colorScheme)
     }
 
     private func normalized(_ value: String) -> String {

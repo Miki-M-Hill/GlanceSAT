@@ -9,7 +9,7 @@ import WidgetKit
 
 struct AnswerWidgetQuizIntent: AppIntent {
     static var title: LocalizedStringResource = "Answer Quiz"
-    static var description = IntentDescription("Answer the synonym quiz on the Glance quiz widget.")
+    static var description = IntentDescription("Answer the sentence-completion quiz on the Glance quiz widget.")
 
     @Parameter(title: "Word ID") var wordID: String
     @Parameter(title: "Slot Key") var slotKey: String
@@ -30,50 +30,40 @@ struct AnswerWidgetQuizIntent: AppIntent {
         self.correctAnswer = correctAnswer
     }
 
-    @MainActor
     func perform() async throws -> some IntentResult {
         guard let id = UUID(uuidString: wordID.trimmingCharacters(in: .whitespacesAndNewlines)) else {
             return .result()
         }
 
         let wasCorrect = WidgetQuizSlotStore.isCorrect(selected: selectedOption, expected: correctAnswer)
+        let answeredAt = Date()
+
+        // Minimal synchronous work: UI feedback state only (UserDefaults, no SwiftData).
         WidgetQuizSlotStore.recordAnswer(
             slotKey: slotKey,
             wordID: id,
             selectedOption: selectedOption,
-            wasCorrect: wasCorrect
+            wasCorrect: wasCorrect,
+            answeredAt: answeredAt
         )
 
-        WidgetCenter.shared.reloadTimelines(ofKind: GlanceSATWidgetConstants.quizKind)
-
         let handoffSlotKey = slotKey
-        Task {
-            try await Task.sleep(nanoseconds: UInt64(WidgetQuizSlotStore.feedbackDuration * 1_000_000_000))
+        let holdDuration = WidgetQuizSlotStore.feedbackHoldDuration(wasCorrect: wasCorrect)
+
+        // Heavy work off the hot path: pending SRS log + timeline reload + vocab handoff.
+        Task.detached(priority: .userInitiated) {
+            WidgetPendingEventsStore.appendQuizAnswer(
+                wordID: id,
+                wasCorrect: wasCorrect,
+                date: answeredAt
+            )
+            await WidgetIntentReload.reloadQuizTimelines()
+
+            try? await Task.sleep(nanoseconds: UInt64(holdDuration * 1_000_000_000))
             WidgetQuizSlotStore.advanceToVocab(slotKey: handoffSlotKey, wordID: id)
-            WidgetCenter.shared.reloadTimelines(ofKind: GlanceSATWidgetConstants.quizKind)
+            await WidgetIntentReload.reloadQuizTimelines()
         }
 
-        return .result()
-    }
-}
-
-struct SpeakWidgetWordIntent: AppIntent {
-    static var title: LocalizedStringResource = "Pronounce Word"
-    static var description = IntentDescription("Hear the pronunciation of this vocabulary word.")
-
-    @Parameter(title: "Word") var word: String
-
-    init() {
-        word = ""
-    }
-
-    init(word: String) {
-        self.word = word
-    }
-
-    @MainActor
-    func perform() async throws -> some IntentResult {
-        WidgetPronunciationSpeaker.speak(word)
         return .result()
     }
 }
@@ -92,10 +82,9 @@ struct ToggleWidgetExampleIntent: AppIntent {
         self.wordID = wordID
     }
 
-    @MainActor
     func perform() async throws -> some IntentResult {
         WidgetInteractionStore.toggleExampleReveal(wordID: wordID)
-        WidgetCenter.shared.reloadTimelines(ofKind: GlanceSATWidgetConstants.vocabularyKind)
+        WidgetIntentReload.scheduleVocabularyReload()
         return .result()
     }
 }
@@ -114,10 +103,9 @@ struct ToggleWidgetDetailIntent: AppIntent {
         self.wordID = wordID
     }
 
-    @MainActor
     func perform() async throws -> some IntentResult {
         WidgetInteractionStore.toggleHookReveal(wordID: wordID)
-        WidgetCenter.shared.reloadTimelines(ofKind: GlanceSATWidgetConstants.vocabularyKind)
+        WidgetIntentReload.scheduleVocabularyReload()
         return .result()
     }
 }
@@ -133,20 +121,29 @@ enum WidgetInteractionStore {
         static let dismissedWordIDs = "widget.interactions.dismissedWordIDs"
         static let revealedExampleWordIDs = "widget.interactions.revealedExampleWordIDs"
         static let revealedHookWordIDs = "widget.interactions.revealedDetailWordIDs"
+        static let fastVocabularyReloadRequested = "widget.interactions.fastVocabularyReloadRequested"
     }
 
-    private static let appGroup = "group.com.mikihill.GlanceSAT"
+    private static let appGroup = GlanceSATWidgetConstants.appGroupIdentifier
 
     private static var defaults: UserDefaults? {
         UserDefaults(suiteName: appGroup)
     }
 
     static func toggleExampleReveal(wordID: String) {
-        toggleExclusiveReveal(wordID: wordID, primaryKey: Keys.revealedExampleWordIDs, otherKey: Keys.revealedHookWordIDs)
+        toggleExclusiveReveal(
+            wordID: wordID,
+            primaryKey: Keys.revealedExampleWordIDs,
+            otherKey: Keys.revealedHookWordIDs
+        )
     }
 
     static func toggleHookReveal(wordID: String) {
-        toggleExclusiveReveal(wordID: wordID, primaryKey: Keys.revealedHookWordIDs, otherKey: Keys.revealedExampleWordIDs)
+        toggleExclusiveReveal(
+            wordID: wordID,
+            primaryKey: Keys.revealedHookWordIDs,
+            otherKey: Keys.revealedExampleWordIDs
+        )
     }
 
     static func isExampleRevealed(wordID: UUID) -> Bool {
@@ -158,41 +155,46 @@ enum WidgetInteractionStore {
     }
 
     static func visibleWords(from words: [WidgetWordSnapshot]) -> [WidgetWordSnapshot] {
-        let dismissed = stringSet(forKey: Keys.dismissedWordIDs)
+        let dismissed = Set(defaults?.stringArray(forKey: Keys.dismissedWordIDs) ?? [])
         let visible = words.filter { !dismissed.contains($0.id.uuidString) }
         return visible.isEmpty ? words : visible
     }
 
-    /// Opening one detail closes the other for the same word.
+    static func consumeFastVocabularyReload() -> Bool {
+        let requested = defaults?.bool(forKey: Keys.fastVocabularyReloadRequested) ?? false
+        if requested {
+            defaults?.removeObject(forKey: Keys.fastVocabularyReloadRequested)
+        }
+        return requested
+    }
+
+    /// One lock, minimal array work, and fast-reload flag — matches quiz intent hot-path pattern.
     private static func toggleExclusiveReveal(wordID: String, primaryKey: String, otherKey: String) {
         let trimmed = wordID.trimmingCharacters(in: .whitespacesAndNewlines)
         guard !trimmed.isEmpty else { return }
 
         AppGroupFileLock.withLock {
-            var primary = stringSet(forKey: primaryKey)
-            var other = stringSet(forKey: otherKey)
+            var primary = defaults?.stringArray(forKey: primaryKey) ?? []
+            var other = defaults?.stringArray(forKey: otherKey) ?? []
 
-            if primary.contains(trimmed) {
-                primary.remove(trimmed)
+            if let index = primary.firstIndex(of: trimmed) {
+                primary.remove(at: index)
             } else {
-                primary.insert(trimmed)
-                other.remove(trimmed)
+                primary.append(trimmed)
+                other.removeAll { $0 == trimmed }
             }
 
-            defaults?.set(Array(primary), forKey: primaryKey)
-            defaults?.set(Array(other), forKey: otherKey)
+            defaults?.set(primary, forKey: primaryKey)
+            defaults?.set(other, forKey: otherKey)
+            defaults?.set(true, forKey: Keys.fastVocabularyReloadRequested)
         }
     }
 
     private static func exampleRevealSet() -> Set<String> {
-        stringSet(forKey: Keys.revealedExampleWordIDs)
+        Set(defaults?.stringArray(forKey: Keys.revealedExampleWordIDs) ?? [])
     }
 
     private static func hookRevealSet() -> Set<String> {
-        stringSet(forKey: Keys.revealedHookWordIDs)
-    }
-
-    private static func stringSet(forKey key: String) -> Set<String> {
-        Set(defaults?.stringArray(forKey: key) ?? [])
+        Set(defaults?.stringArray(forKey: Keys.revealedHookWordIDs) ?? [])
     }
 }

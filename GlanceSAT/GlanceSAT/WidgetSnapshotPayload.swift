@@ -38,7 +38,9 @@ struct WidgetWordSnapshot: Codable, Sendable, Identifiable {
     var exampleSentence: String
     var etymology: String?
     var memoryHookText: String?
-    /// Shuffled synonym quiz options for the quiz widget (up to four).
+    /// Blank-filled example sentence for the quiz widget prompt.
+    var sentenceQuizPrompt: String
+    /// Shuffled sentence-completion options for the quiz widget (up to four).
     var synonymQuizOptions: [String]
     var synonymQuizCorrectAnswer: String
 
@@ -56,6 +58,7 @@ struct WidgetWordSnapshot: Codable, Sendable, Identifiable {
         } else {
             memoryHookText = nil
         }
+        sentenceQuizPrompt = ""
         synonymQuizOptions = []
         synonymQuizCorrectAnswer = ""
     }

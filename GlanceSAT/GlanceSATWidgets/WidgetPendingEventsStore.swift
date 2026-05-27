@@ -10,15 +10,50 @@ enum WidgetPendingEventsStore {
         case know
         case review
         case revealExample
+        case quizAnswer
     }
 
     struct Event: Codable, Sendable, Equatable {
         let wordID: String
         let action: Action
         let date: Date
+        /// Set for `.quizAnswer` so the host can run SRS on reconcile.
+        let wasCorrect: Bool?
+
+        init(wordID: String, action: Action, date: Date, wasCorrect: Bool? = nil) {
+            self.wordID = wordID
+            self.action = action
+            self.date = date
+            self.wasCorrect = wasCorrect
+        }
+
+        private enum CodingKeys: String, CodingKey {
+            case wordID, action, date, wasCorrect
+        }
+
+        init(from decoder: Decoder) throws {
+            let container = try decoder.container(keyedBy: CodingKeys.self)
+            wordID = try container.decode(String.self, forKey: .wordID)
+            action = try container.decode(Action.self, forKey: .action)
+            date = try container.decode(Date.self, forKey: .date)
+            wasCorrect = try container.decodeIfPresent(Bool.self, forKey: .wasCorrect)
+        }
     }
 
-    private static let appGroupID = "group.com.mikihill.GlanceSAT"
+    static func appendQuizAnswer(wordID: UUID, wasCorrect: Bool, date: Date = Date()) {
+        AppGroupFileLock.withLock {
+            appendWithinLock(
+                Event(
+                    wordID: wordID.uuidString,
+                    action: .quizAnswer,
+                    date: date,
+                    wasCorrect: wasCorrect
+                )
+            )
+        }
+    }
+
+    private static let appGroupID = GlanceSATWidgetConstants.appGroupIdentifier
     private static let filename = "widget_pending_events.json"
     private static let legacyDefaultsKey = "widget.interactions.pendingEvents"
     private static let maxEvents = 80

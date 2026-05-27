@@ -15,10 +15,10 @@ enum WidgetSnapshotWriter {
     }
 
     @MainActor
-    static func writeSnapshot(words: [Word], calendarDayKey: String) {
+    static func writeSnapshot(words: [Word], calendarDayKey: String, modelContext: ModelContext) {
         let snapshots = words.map { word -> WidgetWordSnapshot in
             var snapshot = WidgetWordSnapshot(from: word)
-            WidgetSynonymQuizBuilder.apply(to: &snapshot, target: word, pool: words)
+            WidgetSentenceQuizBuilder.apply(to: &snapshot, target: word, context: modelContext)
             return snapshot
         }
         let payload = WidgetSnapshotPayload(
@@ -26,7 +26,12 @@ enum WidgetSnapshotWriter {
             calendarDayKey: calendarDayKey,
             words: snapshots
         )
-        guard let dir = WidgetAppGroup.containerURL else { return }
+        guard let dir = WidgetAppGroup.containerURL else {
+            #if DEBUG
+            print("WidgetSnapshotWriter: App Group container missing — check entitlements match WidgetAppGroup.identifier (\(WidgetAppGroup.identifier))")
+            #endif
+            return
+        }
         let url = dir.appendingPathComponent(WidgetAppGroup.snapshotFilename, isDirectory: false)
         AppGroupFileLock.withLock {
             do {

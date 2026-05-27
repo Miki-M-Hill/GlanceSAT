@@ -9,6 +9,8 @@ import SwiftData
 /// Builds supplemental quiz word lists: today's missed daily words first, then SRS fill.
 struct SupplementalQuizPlan: Equatable {
     let words: [Word]
+    /// Words from the prior attempt that must receive a fresh question this round.
+    let retestMissedWordIDs: Set<UUID>
     /// Fill words from prior daily batches (or other due words); today's misses do not update SRS.
     let srsEligibleWordIDs: Set<UUID>
 }
@@ -27,9 +29,9 @@ enum SupplementalQuizPlanner {
         let missedToday = dailyWords.filter {
             missedWordIDs.contains($0.id) && !rememberedWordIDs.contains($0.id)
         }
+        let retestMissedWordIDs = Set(missedToday.map(\.id))
 
         var words = missedToday
-        var srsEligible = Set<UUID>()
         let needFill = max(0, maxWords - words.count)
 
         if needFill > 0 {
@@ -43,13 +45,14 @@ enum SupplementalQuizPlanner {
                 referenceDate: referenceDate
             )
             words.append(contentsOf: fill)
-            srsEligible = Set(fill.map(\.id))
         }
 
         guard !words.isEmpty else { return nil }
+        let fillIDs = Set(words.map(\.id)).subtracting(retestMissedWordIDs)
         return SupplementalQuizPlan(
             words: Array(words.prefix(maxWords)),
-            srsEligibleWordIDs: srsEligible
+            retestMissedWordIDs: retestMissedWordIDs,
+            srsEligibleWordIDs: fillIDs
         )
     }
 

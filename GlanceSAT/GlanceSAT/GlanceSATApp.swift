@@ -23,16 +23,57 @@ private enum RootTab: Int, CaseIterable, Hashable {
     }
 }
 
+private struct AppLaunchGate: View {
+    @Environment(\.modelContext) private var modelContext
+    @State private var showSplashOverlay = true
+    @State private var splashOpacity: Double = 1
+
+    var body: some View {
+        ZStack {
+            AppRootView()
+
+            if showSplashOverlay {
+                SplashView()
+                    .opacity(splashOpacity)
+                    .allowsHitTesting(splashOpacity > 0.01)
+                    .zIndex(1)
+            }
+        }
+        .task {
+            let container = modelContext.container
+            await Task.detached(priority: .userInitiated) {
+                await AppBootstrap.initializeAppData(container: container)
+            }.value
+            AppLaunchState.isDataLoaded = true
+            try? await Task.sleep(for: .milliseconds(300))
+            withAnimation(.easeInOut(duration: 0.6)) {
+                splashOpacity = 0
+            }
+            try? await Task.sleep(for: .milliseconds(600))
+            showSplashOverlay = false
+        }
+    }
+}
+
 private struct AppRootView: View {
     @Environment(\.modelContext) private var modelContext
     @Environment(\.scenePhase) private var scenePhase
+    @StateObject private var entitlementManager = EntitlementManager.shared
+    @StateObject private var paywallPresenter = PaywallPresenter()
+    @StateObject private var libraryFreemiumSession = LibraryFreemiumSession.shared
+    @AppStorage("hasPerformedFirstLibrarySwipe") private var hasPerformedFirstLibrarySwipe = false
+    @State private var showLibrarySwipeNudge = false
+    @State private var librarySwipeNudgeTask: Task<Void, Never>?
     @AppStorage("hasCompletedOnboarding") private var hasCompletedOnboarding = false
     @AppStorage("debugPrefersDarkMode") private var debugPrefersDarkMode = false
     @AppStorage("debugStreakDayOverride") private var debugStreakDayOverride = -1
     @AppStorage("debugShowsPostQuizToday") private var debugShowsPostQuizToday = false
     @AppStorage("debugPlantWiltPreview") private var debugPlantWiltPreview = -1
     @State private var selectedTab: RootTab
+    @State private var mountedTabs: Set<RootTab> = [.today]
     @State private var pendingLibraryWordID: UUID?
+    @State private var quizPreparationManager = QuizPreparationManager()
+    @State private var insightsCoordinator = InsightsRefreshCoordinator()
 
     init() {
         if WidgetDeepLinkRouter.consumeNavigateToTodayFromWidget() {
@@ -62,16 +103,32 @@ private struct AppRootView: View {
         }
         .background(HubPalette.linen.ignoresSafeArea())
         .preferredColorScheme(debugPreferredColorScheme)
-        .task(priority: .background) {
-            await WordJSONImportService.importIfNeeded(modelContext: modelContext)
-            await refreshWidgetDataFromHost()
+        .task(priority: .utility) {
+            await bootstrapAppServices(container: modelContext.container)
         }
         .onChange(of: scenePhase) { _, phase in
-            guard phase == .active else { return }
-            Task(priority: .userInitiated) {
+            switch phase {
+            case .active:
+                Task(priority: .userInitiated) {
+                    await refreshWidgetDataFromHost()
+                    await NotificationManager.scheduleStandardDailyReminders()
+                }
+            case .background:
+                Task(priority: .utility) {
+                    await WidgetReminderNotificationCoordinator.updateWidgetReminderNotification()
+                }
+            default:
+                break
+            }
+        }
+        #if DEBUG
+        .onReceive(NotificationCenter.default.publisher(for: .debugSubscriptionAccessDidChange)) { _ in
+            entitlementManager.reapplyAccess()
+            Task {
                 await refreshWidgetDataFromHost()
             }
         }
+        #endif
         .onReceive(NotificationCenter.default.publisher(for: NSNotification.Name.NSSystemTimeZoneDidChange)) { _ in
             Task(priority: .userInitiated) {
                 await refreshWidgetDataFromHost()
@@ -79,8 +136,21 @@ private struct AppRootView: View {
         }
         .onOpenURL { url in
             guard WidgetDeepLinkRouter.handleIncomingURL(url) else { return }
+            if WidgetDeepLinkRouter.consumeNavigateToPaywallFromWidget() {
+                paywallPresenter.presentPaywall()
+                return
+            }
             applyWidgetDeepLinkRouting()
         }
+        .onAppear {
+            if WidgetDeepLinkRouter.consumeNavigateToPaywallFromWidget() {
+                paywallPresenter.presentPaywall()
+            }
+        }
+        .environmentObject(entitlementManager)
+        .environmentObject(paywallPresenter)
+        .environmentObject(libraryFreemiumSession)
+        .modifier(AppPaywallChrome(paywallPresenter: paywallPresenter))
     }
 
     private func applyWidgetDeepLinkRouting() {
@@ -96,6 +166,10 @@ private struct AppRootView: View {
         }
 
         if let wordID = WidgetDeepLinkRouter.peekPendingWordID() {
+            if libraryFreemiumSession.isLockedForSession, !entitlementManager.hasPremiumAccess {
+                paywallPresenter.presentPaywall()
+                return
+            }
             var transaction = Transaction()
             transaction.disablesAnimations = true
             withTransaction(transaction) {
@@ -107,6 +181,31 @@ private struct AppRootView: View {
 
     private func refreshWidgetDataFromHost() async {
         await WidgetSnapshotWriter.refresh(modelContext: modelContext)
+    }
+
+    @MainActor
+    private func bootstrapAppServices(container: ModelContainer) async {
+        insightsCoordinator.loadCachedIfNeeded()
+
+        let dayKey = DailyWordBatchService.calendarDayKey()
+        guard !WidgetDailyState.isPrimaryQuizCompleted(for: dayKey) else { return }
+
+        let wordIDs = DailyWordBatchService.loadPersistedTodayWordIDs()
+        guard !wordIDs.isEmpty else { return }
+
+        quizPreparationManager.schedulePrefetch(
+            modelContainer: container,
+            wordIDs: wordIDs,
+            calendarDayKey: dayKey,
+            shouldPrefetch: true,
+            modelContext: modelContext
+        )
+
+        insightsCoordinator.scheduleRefresh(
+            container: container,
+            sessions: (try? modelContext.fetch(FetchDescriptor<QuizSession>())) ?? [],
+            force: insightsCoordinator.cachedWordStats == nil
+        )
     }
 
     private var debugPreferredColorScheme: ColorScheme? {
@@ -123,37 +222,153 @@ private struct AppRootView: View {
                 .ignoresSafeArea()
 
             ZStack {
-                DailyHubView()
-                    .opacity(selectedTab == .today ? 1 : 0)
-                    .allowsHitTesting(selectedTab == .today)
-                    .accessibilityHidden(selectedTab != .today)
+                if mountedTabs.contains(.today) {
+                    DailyHubView()
+                        .environment(quizPreparationManager)
+                        .environment(insightsCoordinator)
+                        .opacity(selectedTab == .today ? 1 : 0)
+                        .allowsHitTesting(selectedTab == .today)
+                        .accessibilityHidden(selectedTab != .today)
+                }
 
-                ExploreView(
-                    pendingLibraryWordID: $pendingLibraryWordID,
-                    isLibraryTabActive: selectedTab == .library
-                )
+                if mountedTabs.contains(.library) {
+                    ExploreView(
+                        pendingLibraryWordID: $pendingLibraryWordID,
+                        isLibraryTabActive: selectedTab == .library
+                    )
                     .opacity(selectedTab == .library ? 1 : 0)
                     .allowsHitTesting(selectedTab == .library)
                     .accessibilityHidden(selectedTab != .library)
+                }
 
-                GlanceSATProgressScreen()
-                    .opacity(selectedTab == .insights ? 1 : 0)
-                    .allowsHitTesting(selectedTab == .insights)
-                    .accessibilityHidden(selectedTab != .insights)
+                if mountedTabs.contains(.insights) {
+                    GlanceSATProgressScreen()
+                        .environment(insightsCoordinator)
+                        .opacity(selectedTab == .insights ? 1 : 0)
+                        .allowsHitTesting(selectedTab == .insights)
+                        .accessibilityHidden(selectedTab != .insights)
+                }
+            }
+            .onChange(of: selectedTab) { _, tab in
+                mountedTabs.insert(tab)
+                updateLibrarySwipeNudge(for: tab)
+            }
+            .onAppear {
+                mountedTabs.insert(selectedTab)
+                if pendingLibraryWordID != nil || WidgetDeepLinkRouter.peekPendingWordID() != nil {
+                    mountedTabs.insert(.library)
+                }
+                updateLibrarySwipeNudge(for: selectedTab)
+            }
+            .onChange(of: hasPerformedFirstLibrarySwipe) { _, performed in
+                guard performed else { return }
+                dismissLibrarySwipeNudge()
+            }
+            .onReceive(NotificationCenter.default.publisher(for: .libraryFirstSwipePerformed)) { _ in
+                dismissLibrarySwipeNudge()
             }
         }
         .overlay(alignment: .topLeading) {
-            if selectedTab == .today {
+            #if DEBUG
+            if selectedTab == .today || selectedTab == .insights {
                 debugOnboardingButton
             }
+            #endif
         }
         .tint(HubPalette.espresso)
         .safeAreaInset(edge: .bottom, spacing: 0) {
-            RootTabBar(selectedTab: $selectedTab)
+            ZStack(alignment: .bottom) {
+                RootTabBar(
+                    selectedTab: $selectedTab,
+                    onSelectTab: { selectRootTab($0) }
+                )
+
+                librarySwipeNudgeOverlay
+            }
+        }
+        .onReceive(NotificationCenter.default.publisher(for: .libraryFreemiumPaywallDismissed)) { _ in
+            withAnimation(.easeInOut(duration: 0.22)) {
+                selectedTab = .today
+            }
+        }
+        .ignoresSafeArea(.keyboard, edges: .bottom)
+    }
+
+    private var librarySwipeNudgeOverlay: some View {
+        GeometryReader { proxy in
+            let tabs = RootTab.allCases
+            let horizontalPadding = RootTabBarLayout.horizontalPadding + 14
+            let itemWidth = (proxy.size.width - (horizontalPadding * 2)) / CGFloat(tabs.count)
+            let libraryIndex = CGFloat(RootTab.library.rawValue)
+            let libraryCenterX = horizontalPadding + (itemWidth * libraryIndex) + (itemWidth / 2)
+
+            LibrarySwipeNudge(isVisible: showLibrarySwipeNudge && !hasPerformedFirstLibrarySwipe)
+            .position(x: libraryCenterX, y: proxy.size.height - RootTabBarLayout.height - 6)
+        }
+        .frame(height: RootTabBarLayout.height + 36)
+        .allowsHitTesting(false)
+    }
+
+    private func selectRootTab(_ tab: RootTab) {
+        if tab == .library,
+           libraryFreemiumSession.isLockedForSession,
+           !entitlementManager.hasPremiumAccess {
+            paywallPresenter.presentPaywall()
+            return
+        }
+
+        withAnimation(.easeInOut(duration: 0.22)) {
+            selectedTab = tab
+        }
+        updateLibrarySwipeNudge(for: tab)
+    }
+
+    private func dismissLibrarySwipeNudge() {
+        librarySwipeNudgeTask?.cancel()
+        withAnimation(.easeOut(duration: 0.28)) {
+            showLibrarySwipeNudge = false
+        }
+    }
+
+    private func updateLibrarySwipeNudge(for tab: RootTab) {
+        librarySwipeNudgeTask?.cancel()
+        showLibrarySwipeNudge = false
+
+        guard tab == .library, hasCompletedOnboarding, !hasPerformedFirstLibrarySwipe else { return }
+
+        librarySwipeNudgeTask = Task { @MainActor in
+            try? await Task.sleep(nanoseconds: 2_500_000_000)
+            guard !Task.isCancelled else { return }
+            guard selectedTab == .library, !hasPerformedFirstLibrarySwipe else { return }
+            withAnimation(.easeOut(duration: 0.28)) {
+                showLibrarySwipeNudge = true
+            }
         }
     }
 
     #if DEBUG
+    private enum DebugSubscriptionPreviewMode {
+        case free
+        case premium
+        case live
+    }
+
+    private func applyDebugSubscriptionPreview(_ mode: DebugSubscriptionPreviewMode) {
+        switch mode {
+        case .free:
+            DebugSubscriptionControls.simulateFreeUser()
+            libraryFreemiumSession.resetBrowseSession()
+        case .premium:
+            DebugSubscriptionControls.simulatePremiumUser()
+        case .live:
+            DebugSubscriptionControls.useLiveSubscriptionState()
+        }
+        entitlementManager.reapplyAccess()
+        Task {
+            await refreshWidgetDataFromHost()
+        }
+    }
+
     private func applyDebugPlantPreview(days: Int?, wilted: Bool?) {
         withAnimation(.spring(response: 0.34, dampingFraction: 0.7)) {
             if let days {
@@ -197,6 +412,71 @@ private struct AppRootView: View {
                 }
                 Button { applyDebugPlantPreview(days: nil, wilted: nil) } label: {
                     Label("Use current streak", systemImage: "arrow.counterclockwise")
+                }
+            }
+
+            Section("Subscription") {
+                Button {
+                    applyDebugSubscriptionPreview(.free)
+                } label: {
+                    Label(
+                        "Simulate non-paying user",
+                        systemImage: DebugSubscriptionControls.isForcingFreeUser ? "checkmark.circle.fill" : "lock.fill"
+                    )
+                }
+
+                Button {
+                    applyDebugSubscriptionPreview(.premium)
+                } label: {
+                    Label(
+                        "Simulate premium user",
+                        systemImage: DebugSubscriptionControls.isForcingPremiumUser ? "checkmark.circle.fill" : "crown.fill"
+                    )
+                }
+
+                Button {
+                    applyDebugSubscriptionPreview(.live)
+                } label: {
+                    Label(
+                        "Use live subscription state",
+                        systemImage: DebugSubscriptionControls.usesLiveAccess ? "checkmark.circle.fill" : "arrow.clockwise"
+                    )
+                }
+
+                Button {
+                    DebugSubscriptionControls.resetPaywallPromoFlags()
+                    entitlementManager.consumePostTrialWinBackOffer()
+                } label: {
+                    Label("Reset paywall promo flags", systemImage: "arrow.counterclockwise.circle")
+                }
+
+                Button {
+                    DebugSubscriptionControls.resetLibraryFreemiumSession()
+                } label: {
+                    Label(
+                        "Reset library swipe lock",
+                        systemImage: libraryFreemiumSession.isLockedForSession ? "checkmark.circle.fill" : "arrow.counterclockwise"
+                    )
+                }
+            }
+
+            Section("Insights") {
+                Button {
+                    DebugInsightsControls.showPlaceholderData()
+                } label: {
+                    Label(
+                        "Use placeholder insights",
+                        systemImage: DebugInsightsControls.useMockValues ? "checkmark.circle.fill" : "chart.bar.doc.horizontal"
+                    )
+                }
+
+                Button {
+                    DebugInsightsControls.showLiveData()
+                } label: {
+                    Label(
+                        "Use live insights data",
+                        systemImage: !DebugInsightsControls.useMockValues ? "checkmark.circle.fill" : "chart.bar.xaxis"
+                    )
                 }
             }
 
@@ -246,7 +526,7 @@ private struct AppRootView: View {
                 .font(.system(size: 13, weight: .semibold))
                 .foregroundStyle(HubPalette.espresso)
                 .frame(width: 34, height: 34)
-                .background(.thinMaterial, in: Circle())
+                .background { GlanceAdaptiveGlassCircle(diameter: 34) }
                 .overlay(
                     Circle()
                         .strokeBorder(Color.white.opacity(0.58), lineWidth: 1)
@@ -263,6 +543,7 @@ private struct AppRootView: View {
 
 private struct RootTabBar: View {
     @Binding var selectedTab: RootTab
+    var onSelectTab: (RootTab) -> Void
 
     var body: some View {
         GeometryReader { proxy in
@@ -289,9 +570,7 @@ private struct RootTabBar: View {
                 HStack(spacing: 0) {
                     ForEach(tabs, id: \.self) { tab in
                         Button {
-                            withAnimation(.easeInOut(duration: 0.22)) {
-                                selectedTab = tab
-                            }
+                            onSelectTab(tab)
                         } label: {
                             VStack(spacing: 3) {
                                 Image(systemName: tab.systemImage)
@@ -310,10 +589,10 @@ private struct RootTabBar: View {
                 .padding(.horizontal, horizontalPadding)
             }
         }
-        .frame(height: 54)
-        .padding(.horizontal, 18)
-        .padding(.top, 6)
-        .padding(.bottom, 4)
+        .frame(height: RootTabBarLayout.capsuleHeight)
+        .padding(.horizontal, RootTabBarLayout.horizontalPadding)
+        .padding(.top, RootTabBarLayout.topPadding)
+        .padding(.bottom, RootTabBarLayout.bottomPadding)
         .background(HubPalette.linen.ignoresSafeArea(edges: .bottom))
     }
 }
@@ -321,6 +600,15 @@ private struct RootTabBar: View {
 @main
 struct GlanceSATApp: App {
     @UIApplicationDelegateAdaptor(GlanceSATAppDelegate.self) private var appDelegate
+
+    init() {
+        GlanceNavigationBarAppearance.configure()
+        EntitlementManager.configureIfNeeded()
+        #if DEBUG
+        LibraryPagerDiagnostics.isEnabled = true
+        print("[LibraryPager] diagnostics enabled — filter console with “LibraryPager”")
+        #endif
+    }
 
     var sharedModelContainer: ModelContainer = {
         do {
@@ -332,7 +620,7 @@ struct GlanceSATApp: App {
 
     var body: some Scene {
         WindowGroup {
-            AppRootView()
+            AppLaunchGate()
                 .background(HubPalette.linen.ignoresSafeArea())
         }
         .modelContainer(sharedModelContainer)

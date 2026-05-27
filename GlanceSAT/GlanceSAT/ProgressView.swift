@@ -6,46 +6,19 @@
 import SwiftData
 import SwiftUI
 
-// MARK: - Design system — colors
+// MARK: - Layout
 
-extension Color {
-    static let linen = HubPalette.linen
-    static let linenDeep = HubPalette.oatmeal
-    static let charcoal = HubPalette.espresso
-    static let warmMid = HubPalette.espressoMuted
-    static let warmFaint = HubPalette.espressoFaint
-    static let positiveGreen = HubPalette.ember
-}
-
-private enum ProgressScreenMetrics {
-    static let horizontalPadding: CGFloat = 22
-    static let sectionTopPadding: CGFloat = 26
-    static let sectionLabelToContent: CGFloat = 10
-    static let cardSpacing: CGFloat = 8
-    static let cardPadding: CGFloat = 16
-    static let cornerRadiusStat: CGFloat = 24
-    /// Extra bottom inset so the Recent Quizzes card clears the tab bar when scrolled.
-    static let bottomSafePadding: CGFloat = 72
-}
-
-/// Distinct ring accents for the Insights progress card.
-private enum InsightsRingAccent {
-    /// Banana yellow
-    static let glanced = Color(red: 0.96, green: 0.86, blue: 0.38)
-    /// Grey-blue
-    static let absorbed = Color(red: 0.55, green: 0.64, blue: 0.76)
-    /// Same fill as **Start Daily Quiz** on Today (`HubPalette.plantPot` at 0.86).
-    static let quizAccuracy = HubPalette.plantPot.opacity(0.86)
-}
-
-private enum InsightsProgressRingMetrics {
-    static let wordTrackWidth: CGFloat = 18
-    static let wordProgressWidth: CGFloat = 18
-    static let quizTrackWidth: CGFloat = 16
-    static let quizProgressWidth: CGFloat = 16
-    static let wordRingSize: CGFloat = 118
-    static let quizRingSize: CGFloat = 118
-    static let titleFontSize: CGFloat = 16
+private enum InsightsLayout {
+    static let horizontalInset: CGFloat = 20
+    static let sectionSpacing: CGFloat = 28
+    static let cardCornerRadius: CGFloat = 28
+    static let innerPadding: CGFloat = 20
+    static let rowSpacing: CGFloat = 14
+    static let gridSpacing: CGFloat = 0
+    static let trajectoryHeight: CGFloat = 200
+    static let bottomPadding: CGFloat = RootTabBarLayout.scrollBottomPadding
+    /// Terracotta accent from Today’s **Start Daily Quiz** button.
+    static let iconTint = HubPalette.plantPot
 }
 
 private struct InsightsDisplayData {
@@ -56,6 +29,7 @@ private struct InsightsDisplayData {
     var weeklyAbsorbedDelta: Int
     var quizAccuracy: Int?
     var monthlyQuizAccuracyDelta: Int
+    var bestCheckInStreak: Int
     var categories: [CategoryAccuracy]
     var recentQuizTrend: [QuizTrendPoint]
     var trendUnlocked: Bool
@@ -63,9 +37,6 @@ private struct InsightsDisplayData {
 
 private enum InsightsPresentation {
     #if DEBUG
-    // Flip to false in debug builds to preview live Insights data.
-    static let useMockValues = true
-
     static let mockData = InsightsDisplayData(
         totalWordGoal: 1000,
         wordsGlanced: 186,
@@ -74,6 +45,7 @@ private enum InsightsPresentation {
         weeklyAbsorbedDelta: 9,
         quizAccuracy: 82,
         monthlyQuizAccuracyDelta: 6,
+        bestCheckInStreak: 12,
         categories: [
             CategoryAccuracy(name: "People & society", accuracy: 0.78),
             CategoryAccuracy(name: "Self & character", accuracy: 0.84),
@@ -95,27 +67,30 @@ private enum InsightsPresentation {
         ],
         trendUnlocked: true
     )
-    #else
-    static let useMockValues = false
     #endif
 }
 
-// MARK: - View
+// MARK: - Screen
 
 /// Analytics / Progress tab. Named distinctly from `SwiftUI.ProgressView` (linear spinner / gauge).
 struct GlanceSATProgressScreen: View {
     @Environment(\.colorScheme) private var colorScheme
-    @Query private var words: [Word]
+    @Environment(\.modelContext) private var modelContext
+    @Environment(InsightsRefreshCoordinator.self) private var insightsCoordinator
+    @EnvironmentObject private var entitlementManager: EntitlementManager
+    @EnvironmentObject private var paywallPresenter: PaywallPresenter
     @Query(sort: \QuizSession.startedAt, order: .reverse) private var sessions: [QuizSession]
     @StateObject private var viewModel = ProgressViewModel()
     @State private var appeared = false
-    /// 0…1: rings, category bars, and quiz sparkline draw from empty when the screen loads or data refreshes.
     @State private var insightsChartReveal: CGFloat = 0
     @State private var categoryBarFractions: [CGFloat] = []
+    #if DEBUG
+    @AppStorage(DebugInsightsControls.useMockValuesKey) private var debugInsightsUseMockValues = false
+    #endif
 
     private var displayData: InsightsDisplayData {
         #if DEBUG
-        if InsightsPresentation.useMockValues {
+        if debugInsightsUseMockValues {
             return InsightsPresentation.mockData
         }
         #endif
@@ -128,151 +103,334 @@ struct GlanceSATProgressScreen: View {
             weeklyAbsorbedDelta: viewModel.weeklyMasteredDelta,
             quizAccuracy: viewModel.quizAccuracy,
             monthlyQuizAccuracyDelta: viewModel.monthlyQuizAccuracyDelta,
+            bestCheckInStreak: viewModel.bestStreak,
             categories: viewModel.categories,
             recentQuizTrend: viewModel.recentQuizTrend,
             trendUnlocked: viewModel.isTrendReady()
         )
     }
 
-    private var refreshSignature: String {
-        let totalAttempts = words.reduce(0) { $0 + $1.totalAttempts }
-        let totalRecalls = words.reduce(0) { $0 + $1.successfulRecalls }
+    private var sessionRefreshSignature: String {
         let totalCorrect = sessions.reduce(0) { $0 + $1.correctAnswers }
-        return "\(words.count)-\(sessions.count)-\(totalAttempts)-\(totalRecalls)-\(totalCorrect)"
-    }
-
-    private var insightsGlassFill: LinearGradient {
-        let topLift = colorScheme == .dark ? 0.52 : 0.78
-        let depth = colorScheme == .dark ? 0.14 : 0.28
-        return LinearGradient(
-            colors: [
-                Color.white.opacity(topLift),
-                HubPalette.oatmeal.opacity(depth),
-                HubPalette.amberAccent.opacity(colorScheme == .dark ? 0.06 : 0.12),
-            ],
-            startPoint: .topLeading,
-            endPoint: .bottomTrailing
-        )
-    }
-
-    private var insightsGlassStroke: LinearGradient {
-        LinearGradient(
-            colors: [
-                Color.white.opacity(colorScheme == .dark ? 0.22 : 0.82),
-                HubPalette.ember.opacity(0.12),
-                Color.black.opacity(colorScheme == .dark ? 0.12 : 0.03),
-            ],
-            startPoint: .topLeading,
-            endPoint: .bottomTrailing
-        )
-    }
-
-    @ViewBuilder
-    private func insightsFrostedCard(cornerRadius: CGFloat) -> some View {
-        RoundedRectangle(cornerRadius: cornerRadius, style: .continuous)
-            .fill(.ultraThinMaterial)
-            .overlay(
-                RoundedRectangle(cornerRadius: cornerRadius, style: .continuous)
-                    .fill(insightsGlassFill)
-            )
-            .overlay(
-                RoundedRectangle(cornerRadius: cornerRadius, style: .continuous)
-                    .fill(
-                        LinearGradient(
-                            colors: [
-                                Color.white.opacity(colorScheme == .dark ? 0.08 : 0.38),
-                                Color.clear,
-                            ],
-                            startPoint: .top,
-                            endPoint: .center
-                        )
-                    )
-                    .frame(maxHeight: .infinity, alignment: .top)
-                    .mask(
-                        RoundedRectangle(cornerRadius: cornerRadius, style: .continuous)
-                    )
-            )
-            .overlay(
-                RoundedRectangle(cornerRadius: cornerRadius, style: .continuous)
-                    .strokeBorder(insightsGlassStroke, lineWidth: 1)
-            )
-            .shadow(color: Color.black.opacity(0.04), radius: 1, y: 1)
-            .shadow(color: Color.black.opacity(colorScheme == .dark ? 0.45 : 0.08), radius: 28, y: 16)
-    }
-
-    @ViewBuilder
-    private var insightsAmbientBackground: some View {
-        ZStack {
-            HubPalette.linen
-            if colorScheme == .light {
-                RadialGradient(
-                    colors: [
-                        Color.white.opacity(0.55),
-                        Color.clear,
-                    ],
-                    center: UnitPoint(x: 0.92, y: -0.05),
-                    startRadius: 4,
-                    endRadius: 340
-                )
-                .blendMode(.softLight)
-            }
-            LinearGradient(
-                colors: [
-                    HubPalette.amberAccent.opacity(colorScheme == .dark ? 0.06 : 0.1),
-                    Color.clear,
-                    HubPalette.oatmeal.opacity(colorScheme == .dark ? 0.4 : 0.18),
-                ],
-                startPoint: .topLeading,
-                endPoint: .bottomTrailing
-            )
-        }
-        .ignoresSafeArea()
+        return "\(sessions.count)-\(totalCorrect)-\(sessions.first?.startedAt.timeIntervalSince1970 ?? 0)"
     }
 
     var body: some View {
         NavigationStack {
-            ScrollView(.vertical, showsIndicators: false) {
-                VStack(alignment: .leading, spacing: 0) {
-                    sectionLabel("Progress")
-                        .padding(.top, 10)
+            GeometryReader { proxy in
+                ScrollView(.vertical, showsIndicators: false) {
+                    VStack(alignment: .leading, spacing: InsightsLayout.sectionSpacing) {
+                        overviewSection
 
-                    progressOverviewCard
+                        if !entitlementManager.hasPremiumAccess {
+                            seeMoreInsightsButton
+                        }
 
-                    sectionLabel("Strengths by Category")
-                        .padding(.top, ProgressScreenMetrics.sectionTopPadding)
-
-                    strengthsByCategoryCard
-
-                    sectionLabel("Recent Quizzes")
-                        .padding(.top, ProgressScreenMetrics.sectionTopPadding)
-
-                    recentQuizzesTrendCard
-                        .opacity(appeared ? 1 : 0)
-                        .offset(y: appeared ? 0 : 12)
-                        .animation(.easeOut(duration: 0.25).delay(0.1), value: appeared)
+                        if entitlementManager.hasPremiumAccess {
+                            categoriesSection
+                            trajectorySection
+                        } else {
+                            lockedInsightsSections
+                        }
+                    }
+                    .padding(.horizontal, InsightsLayout.horizontalInset)
+                    .padding(.top, insightsTopContentInset(safeAreaTop: proxy.safeAreaInsets.top))
+                    .padding(.bottom, InsightsLayout.bottomPadding)
                 }
-                .padding(.horizontal, ProgressScreenMetrics.horizontalPadding)
-                .padding(.bottom, ProgressScreenMetrics.bottomSafePadding)
+                .scrollContentBackground(.hidden)
+                .background(HubPalette.linen.ignoresSafeArea())
             }
-            .background { insightsAmbientBackground }
-            .navigationTitle("Glance")
-            .navigationBarTitleDisplayMode(.large)
-            .toolbarBackground(HubPalette.linen, for: .navigationBar)
-            .toolbarBackground(.visible, for: .navigationBar)
-            .toolbarColorScheme(colorScheme, for: .navigationBar)
-            .tint(HubPalette.espresso)
+            .glanceNavigationBarChrome(colorScheme: colorScheme, isHidden: true)
         }
         .onAppear {
-            viewModel.refresh(words: words, sessions: sessions)
+            insightsCoordinator.applyCached(to: viewModel, sessions: sessions)
             withAnimation(.easeOut(duration: 0.4)) {
                 appeared = true
             }
             playInsightsChartRevealAnimation()
+            insightsCoordinator.scheduleRefresh(
+                container: modelContext.container,
+                sessions: sessions,
+                force: false
+            )
         }
-        .onChange(of: refreshSignature) { _, _ in
-            viewModel.refresh(words: words, sessions: sessions)
+        .onChange(of: sessionRefreshSignature) { _, _ in
+            insightsCoordinator.scheduleRefresh(
+                container: modelContext.container,
+                sessions: sessions,
+                force: true
+            )
+        }
+        .onReceive(NotificationCenter.default.publisher(for: .insightsWordStatsDidUpdate)) { _ in
+            guard let stats = insightsCoordinator.cachedWordStats else { return }
+            insightsCoordinator.handleWordStatsUpdated(stats, viewModel: viewModel, sessions: sessions)
+            categoryBarFractions = viewModel.categories.map { CGFloat(max(0, min(1, $0.accuracy))) }
             playInsightsChartRevealAnimation()
         }
+        .onReceive(NotificationCenter.default.publisher(for: .wordDatabaseDidChange)) { _ in
+            insightsCoordinator.scheduleRefresh(
+                container: modelContext.container,
+                sessions: sessions,
+                force: true
+            )
+        }
+    }
+
+    private func insightsTopContentInset(safeAreaTop: CGFloat) -> CGFloat {
+        GlanceDeviceLayout.heightFraction(0.02) + safeAreaTop
+    }
+
+    // MARK: - Sections
+
+    private var overviewSection: some View {
+        VStack(alignment: .leading, spacing: InsightsLayout.rowSpacing) {
+            insightsSectionHeader(
+                title: "Overview",
+                subtitle: "Your vocabulary at a glance"
+            )
+
+            InsightsGlassCard(
+                cornerRadius: InsightsLayout.cardCornerRadius,
+                fillGradient: insightsHeroFillGradient,
+                strokeGradient: insightsHeroStrokeGradient
+            ) {
+                VStack(spacing: 0) {
+                    HStack(spacing: 0) {
+                        glancedMetricCell
+                        InsightsGridDivider(axis: .vertical)
+                        quizAccuracyMetricCell
+                    }
+
+                    InsightsGridDivider(axis: .horizontal)
+
+                    HStack(spacing: 0) {
+                        streakMetricCell
+                        InsightsGridDivider(axis: .vertical)
+                        absorbedMetricCell
+                    }
+                }
+            }
+        }
+        .opacity(appeared ? 1 : 0)
+        .offset(y: appeared ? 0 : 12)
+        .animation(.easeOut(duration: 0.35), value: appeared)
+    }
+
+    private var seeMoreInsightsButton: some View {
+        Button {
+            paywallPresenter.presentPaywall()
+        } label: {
+            Text("See more insights")
+                .font(GlanceHubFont.semibold(17))
+                .foregroundStyle(HubPalette.linen)
+                .frame(maxWidth: .infinity)
+                .padding(.vertical, 16)
+                .background(HubPalette.plantPot.opacity(0.86), in: Capsule(style: .continuous))
+        }
+        .buttonStyle(.plain)
+        .opacity(appeared ? 1 : 0)
+        .animation(.easeOut(duration: 0.32).delay(0.04), value: appeared)
+    }
+
+    private var lockedInsightsSections: some View {
+        VStack(alignment: .leading, spacing: InsightsLayout.sectionSpacing) {
+            categoriesSection
+            trajectorySection
+        }
+        .allowsHitTesting(false)
+        .blur(radius: 10)
+    }
+
+    private var categoriesSection: some View {
+        VStack(alignment: .leading, spacing: InsightsLayout.rowSpacing) {
+            insightsSectionHeader(
+                title: "Strengths by category",
+                subtitle: categorySectionTrailing
+            )
+
+            InsightsGlassCard {
+                VStack(spacing: 18) {
+                    ForEach(Array(displayData.categories.enumerated()), id: \.offset) { index, category in
+                        if index > 0 {
+                            Divider()
+                                .overlay(HubPalette.espressoFaint.opacity(0.35))
+                        }
+
+                        InsightsCategoryRow(
+                            category: category,
+                            fillFraction: categoryBarFractions.indices.contains(index)
+                                ? categoryBarFractions[index]
+                                : 0,
+                            revealProgress: insightsChartReveal,
+                            isReady: categoryIsReady(category.name)
+                        )
+                    }
+                }
+            }
+            .opacity(appeared ? 1 : 0)
+            .offset(y: appeared ? 0 : 10)
+            .animation(.easeOut(duration: 0.32).delay(0.06), value: appeared)
+        }
+    }
+
+    private var trajectorySection: some View {
+        VStack(alignment: .leading, spacing: InsightsLayout.rowSpacing) {
+            insightsSectionHeader(
+                title: "Quiz trajectory",
+                subtitle: trendSectionTrailing
+            )
+
+            InsightsGlassCard {
+                VStack(alignment: .leading, spacing: 16) {
+                    Text(displayData.trendUnlocked
+                        ? "Daily quiz score · previous 10 days"
+                        : "Your line appears after 3 active quiz days")
+                        .font(GlanceHubFont.medium(15))
+                        .foregroundStyle(HubPalette.espressoMuted)
+                        .fixedSize(horizontal: false, vertical: true)
+
+                    quizSparkline(height: InsightsLayout.trajectoryHeight, showAxes: true)
+
+                    if !displayData.trendUnlocked {
+                        Label {
+                            Text("Keep your evening check-in — the trajectory fills in quickly.")
+                                .font(GlanceHubFont.regular(13))
+                                .foregroundStyle(HubPalette.espressoMuted)
+                        } icon: {
+                            Image(systemName: "calendar.badge.clock")
+                                .font(.system(size: 14, weight: .semibold))
+                                .foregroundStyle(InsightsLayout.iconTint)
+                        }
+                        .labelStyle(.titleAndIcon)
+                    }
+                }
+            }
+        }
+        .opacity(appeared ? 1 : 0)
+        .offset(y: appeared ? 0 : 12)
+        .animation(.easeOut(duration: 0.28).delay(0.12), value: appeared)
+    }
+
+    // MARK: - Metric cells
+
+    private var glancedMetricCell: some View {
+        InsightsMetricCell(
+            label: "Words glanced",
+            systemImage: "eye.fill",
+            iconTint: InsightsLayout.iconTint
+        ) {
+            InsightsGlancedRing(
+                count: displayData.wordsGlanced,
+                cap: displayData.totalWordGoal,
+                revealProgress: insightsChartReveal
+            )
+            .frame(width: 76, height: 76)
+            .frame(maxWidth: .infinity)
+            .frame(height: 76)
+        }
+    }
+
+    private var quizAccuracyMetricCell: some View {
+        InsightsMetricCell(
+            label: "Quiz accuracy",
+            systemImage: "chart.line.uptrend.xyaxis",
+            iconTint: InsightsLayout.iconTint
+        ) {
+            Group {
+                if let percent = displayData.quizAccuracy {
+                    Text("\(percent)%")
+                        .font(GlanceHubFont.bold(36))
+                        .monospacedDigit()
+                        .foregroundStyle(HubPalette.espresso)
+                        .minimumScaleFactor(0.7)
+                        .lineLimit(1)
+                } else {
+                    Text("—")
+                        .font(GlanceHubFont.bold(36))
+                        .foregroundStyle(HubPalette.espressoFaint)
+                }
+            }
+            .frame(maxWidth: .infinity)
+            .frame(height: 76)
+        }
+    }
+
+    private var streakMetricCell: some View {
+        InsightsMetricCell(
+            label: "Longest streak",
+            systemImage: "flame.fill",
+            iconTint: InsightsLayout.iconTint,
+            usesPlantGlyph: true,
+            streakDays: displayData.bestCheckInStreak
+        ) {
+            HStack(alignment: .lastTextBaseline, spacing: 8) {
+                Text("\(displayData.bestCheckInStreak)")
+                    .font(GlanceHubFont.bold(36))
+                    .monospacedDigit()
+                    .foregroundStyle(HubPalette.espresso)
+
+                Text("days")
+                    .font(GlanceHubFont.medium(15))
+                    .foregroundStyle(HubPalette.espressoMuted)
+            }
+            .frame(maxWidth: .infinity)
+            .frame(height: 76, alignment: .leading)
+        }
+    }
+
+    private var absorbedMetricCell: some View {
+        let cap = max(displayData.totalWordGoal, 1)
+        let count = displayData.wordsAbsorbed
+        let fillFraction = min(1, CGFloat(count) / CGFloat(cap)) * insightsChartReveal
+
+        return InsightsMetricCell(
+            label: "Words absorbed",
+            systemImage: "checkmark.seal.fill",
+            iconTint: InsightsLayout.iconTint
+        ) {
+            HStack(alignment: .bottom, spacing: 12) {
+                InsightsAbsorbedMeter(fillFraction: fillFraction)
+                    .frame(width: 14, height: 76)
+
+                VStack(alignment: .leading, spacing: 2) {
+                    Text("\(count)")
+                        .font(GlanceHubFont.bold(32))
+                        .monospacedDigit()
+                        .foregroundStyle(HubPalette.espresso)
+                    Text("of \(cap)")
+                        .font(GlanceHubFont.medium(14))
+                        .foregroundStyle(HubPalette.espressoMuted)
+                }
+            }
+            .frame(maxWidth: .infinity, alignment: .center)
+            .frame(height: 76, alignment: .bottom)
+        }
+    }
+
+    // MARK: - Helpers
+
+    private var insightsHeroFillGradient: LinearGradient {
+        LinearGradient(
+            colors: [
+                Color.white.opacity(0.62),
+                HubPalette.linen.opacity(0.38),
+                HubPalette.amberAccent.opacity(0.10),
+            ],
+            startPoint: .topLeading,
+            endPoint: .bottomTrailing
+        )
+    }
+
+    private var insightsHeroStrokeGradient: LinearGradient {
+        LinearGradient(
+            colors: [
+                Color.white.opacity(0.78),
+                HubPalette.ember.opacity(0.18),
+                Color.black.opacity(0.04),
+            ],
+            startPoint: .topLeading,
+            endPoint: .bottomTrailing
+        )
     }
 
     private func playInsightsChartRevealAnimation() {
@@ -302,17 +460,17 @@ struct GlanceSATProgressScreen: View {
     }
 
     private func quizTrendLinePath(cgPoints: [CGPoint?]) -> Path {
-        Path { p in
+        Path { path in
             var segmentStarted = false
-            for pt in cgPoints {
-                guard let pt else {
+            for point in cgPoints {
+                guard let point else {
                     segmentStarted = false
                     continue
                 }
                 if segmentStarted {
-                    p.addLine(to: pt)
+                    path.addLine(to: point)
                 } else {
-                    p.move(to: pt)
+                    path.move(to: point)
                     segmentStarted = true
                 }
             }
@@ -320,23 +478,23 @@ struct GlanceSATProgressScreen: View {
     }
 
     private func quizTrendAreaPath(cgPoints: [CGPoint?], plotFloor: CGFloat) -> Path {
-        Path { p in
+        Path { path in
             var segment: [CGPoint] = []
             func flushSegment() {
                 guard let first = segment.first, let last = segment.last else { return }
-                p.move(to: CGPoint(x: first.x, y: plotFloor))
-                p.addLine(to: first)
-                for pt in segment.dropFirst() {
-                    p.addLine(to: pt)
+                path.move(to: CGPoint(x: first.x, y: plotFloor))
+                path.addLine(to: first)
+                for point in segment.dropFirst() {
+                    path.addLine(to: point)
                 }
-                p.addLine(to: CGPoint(x: last.x, y: plotFloor))
-                p.closeSubpath()
+                path.addLine(to: CGPoint(x: last.x, y: plotFloor))
+                path.closeSubpath()
                 segment.removeAll(keepingCapacity: true)
             }
 
-            for pt in cgPoints {
-                if let pt {
-                    segment.append(pt)
+            for point in cgPoints {
+                if let point {
+                    segment.append(point)
                 } else {
                     flushSegment()
                 }
@@ -345,424 +503,376 @@ struct GlanceSATProgressScreen: View {
         }
     }
 
-    private func sectionLabel(_ title: String) -> some View {
-        HStack(alignment: .center, spacing: 10) {
-            RoundedRectangle(cornerRadius: 2, style: .continuous)
-                .fill(
-                    LinearGradient(
-                        colors: [
-                            HubPalette.plantDeep.opacity(0.9),
-                            HubPalette.ember.opacity(0.45),
-                        ],
-                        startPoint: .top,
-                        endPoint: .bottom
-                    )
-                )
-                .frame(width: 3, height: 15)
+    private var categorySectionTrailing: String? {
+        let ready = displayData.categories.filter { category in
+            #if DEBUG
+            debugInsightsUseMockValues || viewModel.isCategoryReady(category.name)
+            #else
+            viewModel.isCategoryReady(category.name)
+            #endif
+        }
+        guard !ready.isEmpty else { return nil }
+        if let best = ready.max(by: { $0.accuracy < $1.accuracy }) {
+            return "Strongest · \(best.name)"
+        }
+        return nil
+    }
 
+    private var trendSectionTrailing: String? {
+        displayData.trendUnlocked ? "Last 10 days" : "3 days to unlock"
+    }
+
+    private func insightsSectionHeader(title: String, subtitle: String?) -> some View {
+        VStack(alignment: .leading, spacing: 4) {
             Text(title)
-                .font(GlanceHubFont.semibold(12))
-                .tracking(1.0)
-                .textCase(.uppercase)
-                .foregroundStyle(HubPalette.espresso.opacity(0.58))
-        }
-        .padding(.bottom, ProgressScreenMetrics.sectionLabelToContent)
-    }
-
-    // MARK: Progress overview
-
-    private var progressOverviewCard: some View {
-        let cap = displayData.totalWordGoal
-        let glanced = displayData.wordsGlanced
-        let absorbed = displayData.wordsAbsorbed
-
-        return VStack(spacing: 22) {
-            HStack(alignment: .top, spacing: 16) {
-                progressRingColumn(
-                    title: "Words glanced",
-                    count: glanced,
-                    cap: cap,
-                    accent: InsightsRingAccent.glanced
-                )
-
-                progressRingColumn(
-                    title: "Words absorbed",
-                    count: absorbed,
-                    cap: cap,
-                    accent: InsightsRingAccent.absorbed
-                )
-            }
-
-            VStack(spacing: 12) {
-                Text("Quiz accuracy")
-                    .font(GlanceHubFont.semibold(InsightsProgressRingMetrics.titleFontSize))
-                    .tracking(0.25)
-                    .foregroundStyle(HubPalette.espresso.opacity(0.82))
-
-                QuizAccuracyRingView(
-                    percent: displayData.quizAccuracy,
-                    accent: InsightsRingAccent.quizAccuracy,
-                    revealProgress: insightsChartReveal
-                )
-                .frame(width: InsightsProgressRingMetrics.quizRingSize, height: InsightsProgressRingMetrics.quizRingSize)
-            }
-            .frame(maxWidth: .infinity)
-        }
-        .padding(ProgressScreenMetrics.cardPadding)
-        .background {
-            insightsFrostedCard(cornerRadius: ProgressScreenMetrics.cornerRadiusStat)
-        }
-        .clipShape(RoundedRectangle(cornerRadius: ProgressScreenMetrics.cornerRadiusStat, style: .continuous))
-        .opacity(appeared ? 1 : 0)
-        .offset(y: appeared ? 0 : 12)
-        .animation(.easeOut(duration: 0.35), value: appeared)
-    }
-
-    private func progressRingColumn(title: String, count: Int, cap: Int, accent: Color) -> some View {
-        VStack(spacing: 12) {
-            Text(title)
-                .font(GlanceHubFont.semibold(InsightsProgressRingMetrics.titleFontSize))
-                .tracking(0.25)
-                .foregroundStyle(HubPalette.espresso.opacity(0.82))
-                .multilineTextAlignment(.center)
-                .frame(maxWidth: .infinity)
-
-            WordProgressRingView(count: count, cap: cap, accent: accent, revealProgress: insightsChartReveal)
-                .frame(width: InsightsProgressRingMetrics.wordRingSize, height: InsightsProgressRingMetrics.wordRingSize)
-                .frame(maxWidth: .infinity)
-        }
-        .frame(maxWidth: .infinity)
-    }
-
-    // MARK: Strengths by category
-
-    private var strengthsByCategoryCard: some View {
-        let categories = displayData.categories
-
-        return VStack(alignment: .leading, spacing: 0) {
-            ForEach(Array(categories.enumerated()), id: \.offset) { index, cat in
-                categoryRow(
-                    category: cat,
-                    index: index,
-                    fillFraction: categoryBarFractions.indices.contains(index) ? categoryBarFractions[index] : 0,
-                    isReady: {
-                        #if DEBUG
-                        InsightsPresentation.useMockValues || viewModel.isCategoryReady(cat.name)
-                        #else
-                        viewModel.isCategoryReady(cat.name)
-                        #endif
-                    }(),
-                    revealProgress: insightsChartReveal
-                )
-
-                if index < categories.count - 1 {
-                    Rectangle()
-                        .fill(
-                            LinearGradient(
-                                colors: [
-                                    Color.clear,
-                                    HubPalette.espresso.opacity(0.1),
-                                    Color.clear,
-                                ],
-                                startPoint: .leading,
-                                endPoint: .trailing
-                            )
-                        )
-                        .frame(height: 1)
-                }
-            }
-        }
-        .padding(ProgressScreenMetrics.cardPadding)
-        .background {
-            insightsFrostedCard(cornerRadius: ProgressScreenMetrics.cornerRadiusStat)
-        }
-        .clipShape(RoundedRectangle(cornerRadius: ProgressScreenMetrics.cornerRadiusStat, style: .continuous))
-        .opacity(appeared ? 1 : 0)
-        .offset(y: appeared ? 0 : 12)
-        .animation(.easeOut(duration: 0.25).delay(0.1), value: appeared)
-    }
-
-    private func categoryRow(
-        category: CategoryAccuracy,
-        index: Int,
-        fillFraction: CGFloat,
-        isReady: Bool,
-        revealProgress: CGFloat
-    ) -> some View {
-        HStack(alignment: .center, spacing: 8) {
-            Text(category.name)
-                .font(GlanceHubFont.semibold(13))
-                .tracking(0.2)
+                .font(GlanceHubFont.semibold(22))
                 .foregroundStyle(HubPalette.espresso)
-                .frame(minWidth: 80, alignment: .leading)
 
-            GeometryReader { geo in
-                ZStack(alignment: .leading) {
-                    Capsule(style: .continuous)
-                        .fill(HubPalette.espresso.opacity(0.06))
-                        .overlay(
-                            Capsule(style: .continuous)
-                                .strokeBorder(Color.white.opacity(colorScheme == .dark ? 0.06 : 0.35), lineWidth: 0.5)
-                        )
-                        .frame(height: 6)
-
-                    Capsule(style: .continuous)
-                        .fill(
-                            LinearGradient(
-                                colors: [
-                                    HubPalette.plantDeep,
-                                    HubPalette.plantDeep.opacity(0.72),
-                                    HubPalette.ember.opacity(0.35),
-                                ],
-                                startPoint: .leading,
-                                endPoint: .trailing
-                            )
-                        )
-                        .frame(width: max(0, geo.size.width * (isReady ? fillFraction * revealProgress : 0)), height: 6)
-                        .shadow(color: HubPalette.plantDeep.opacity(0.25), radius: 4, y: 1)
-                }
-            }
-            .frame(height: 10)
-
-            HStack(spacing: 6) {
-                Text(isReady ? "\(Int(category.accuracy * 100))%" : "-")
-                    .font(GlanceHubFont.semibold(11))
-                    .monospacedDigit()
-                    .foregroundStyle(Color.warmMid)
-                    .frame(minWidth: 32, alignment: .trailing)
+            if let subtitle {
+                Text(subtitle)
+                    .font(GlanceHubFont.medium(14))
+                    .foregroundStyle(HubPalette.espressoMuted)
+                    .lineLimit(2)
+                    .minimumScaleFactor(0.85)
             }
         }
-        .padding(.vertical, 8)
+        .frame(maxWidth: .infinity, alignment: .leading)
     }
 
-    // MARK: Recent quizzes (line graph)
+    private func categoryIsReady(_ name: String) -> Bool {
+        #if DEBUG
+        debugInsightsUseMockValues || viewModel.isCategoryReady(name)
+        #else
+        viewModel.isCategoryReady(name)
+        #endif
+    }
 
-    private var recentQuizzesTrendCard: some View {
-        VStack(alignment: .leading, spacing: 0) {
-            Text(displayData.trendUnlocked ? "Previous 10 days · score out of 10" : "Quiz trend unlocks after 3 active quiz days")
-                .font(GlanceHubFont.medium(13))
-                .foregroundStyle(HubPalette.espresso.opacity(0.52))
-                .lineSpacing(3)
-                .fixedSize(horizontal: false, vertical: true)
+    @ViewBuilder
+    private func quizSparkline(height: CGFloat, showAxes: Bool) -> some View {
+        GeometryReader { geo in
+            let points = displayData.recentQuizTrend
+            let width = geo.size.width
+            let plotHeight = geo.size.height
+            let leftPad: CGFloat = showAxes ? 28 : 4
+            let bottomPad: CGFloat = showAxes ? 14 : 4
+            let plotW = max(1, width - leftPad)
+            let plotH = max(1, plotHeight - bottomPad)
+            let cgPoints = quizTrendCGPoints(points: points, leftPad: leftPad, plotW: plotW, plotH: plotH)
+            let lineShape = quizTrendLinePath(cgPoints: cgPoints)
+            let areaShape = quizTrendAreaPath(cgPoints: cgPoints, plotFloor: plotH)
+            let trimEnd = appeared && displayData.trendUnlocked ? min(1, max(0, insightsChartReveal)) : 0
 
-            GeometryReader { geo in
-                let points = displayData.recentQuizTrend
-                let width = geo.size.width
-                let height = geo.size.height
-                let leftPad: CGFloat = 24
-                let bottomPad: CGFloat = 12
-                let plotW = max(1, width - leftPad)
-                let plotH = max(1, height - bottomPad)
-                let cgPoints = quizTrendCGPoints(points: points, leftPad: leftPad, plotW: plotW, plotH: plotH)
-                let lineShape = quizTrendLinePath(cgPoints: cgPoints)
-                let areaShape = quizTrendAreaPath(cgPoints: cgPoints, plotFloor: plotH)
-                let trimEnd = appeared && displayData.trendUnlocked ? min(1, max(0, insightsChartReveal)) : 0
-
-                ZStack(alignment: .topLeading) {
-                    // y-axis labels (10 … 5 … 0)
-                    Text("10")
-                        .font(GlanceHubFont.medium(9))
-                        .monospacedDigit()
-                        .foregroundStyle(HubPalette.espressoFaint)
-                        .position(x: 8, y: 6)
-
-                    Text("5")
-                        .font(GlanceHubFont.medium(9))
-                        .monospacedDigit()
-                        .foregroundStyle(HubPalette.espressoFaint)
-                        .position(x: 6, y: plotH / 2)
-
-                    Text("0")
-                        .font(GlanceHubFont.medium(9))
-                        .monospacedDigit()
-                        .foregroundStyle(HubPalette.espressoFaint)
-                        .position(x: 6, y: plotH)
-
-                    // grid lines
-                    Path { p in
-                        p.move(to: CGPoint(x: leftPad, y: 0))
-                        p.addLine(to: CGPoint(x: width, y: 0))
-                        p.move(to: CGPoint(x: leftPad, y: plotH / 2))
-                        p.addLine(to: CGPoint(x: width, y: plotH / 2))
-                        p.move(to: CGPoint(x: leftPad, y: plotH))
-                        p.addLine(to: CGPoint(x: width, y: plotH))
-                    }
-                    .stroke(HubPalette.espresso.opacity(0.07), lineWidth: 0.5)
-
-                    areaShape
-                        .trim(from: 0, to: trimEnd)
-                        .fill(
-                            LinearGradient(
-                                colors: [
-                                    HubPalette.plantDeep.opacity(0.28),
-                                    HubPalette.plantDeep.opacity(0.1),
-                                    HubPalette.plantDeep.opacity(0.02),
-                                ],
-                                startPoint: .top,
-                                endPoint: .bottom
+            ZStack(alignment: .topLeading) {
+                if showAxes {
+                    ForEach(Array(["10", "5", "0"].enumerated()), id: \.offset) { index, label in
+                        Text(label)
+                            .font(GlanceHubFont.medium(10))
+                            .monospacedDigit()
+                            .foregroundStyle(HubPalette.espressoFaint)
+                            .position(
+                                x: 10,
+                                y: index == 0 ? 6 : (index == 1 ? plotH / 2 : plotH)
                             )
-                        )
-                        .animation(.easeOut(duration: 0.95), value: insightsChartReveal)
-                        .animation(.easeOut(duration: 0.95), value: appeared)
+                    }
 
-                    lineShape
-                        .trim(from: 0, to: trimEnd)
-                        .stroke(
-                            LinearGradient(
-                                colors: [
-                                    HubPalette.plantDeep,
-                                    HubPalette.plantDeep.opacity(0.78),
-                                    HubPalette.ember.opacity(0.5),
-                                ],
-                                startPoint: .leading,
-                                endPoint: .trailing
-                            ),
-                            style: StrokeStyle(lineWidth: 2.5, lineCap: .round, lineJoin: .round)
-                        )
-                        .animation(.easeOut(duration: 0.95), value: insightsChartReveal)
-                        .animation(.easeOut(duration: 0.95), value: appeared)
+                    Path { path in
+                        path.move(to: CGPoint(x: leftPad, y: 0))
+                        path.addLine(to: CGPoint(x: width, y: 0))
+                        path.move(to: CGPoint(x: leftPad, y: plotH / 2))
+                        path.addLine(to: CGPoint(x: width, y: plotH / 2))
+                        path.move(to: CGPoint(x: leftPad, y: plotH))
+                        path.addLine(to: CGPoint(x: width, y: plotH))
+                    }
+                    .stroke(HubPalette.espresso.opacity(0.08), lineWidth: 0.5)
+                }
 
+                areaShape
+                    .trim(from: 0, to: trimEnd)
+                    .fill(
+                        LinearGradient(
+                            colors: [
+                                HubPalette.plantDeep.opacity(0.22),
+                                HubPalette.plantDeep.opacity(0.06),
+                                HubPalette.plantDeep.opacity(0.01),
+                            ],
+                            startPoint: .top,
+                            endPoint: .bottom
+                        )
+                    )
+
+                lineShape
+                    .trim(from: 0, to: trimEnd)
+                    .stroke(
+                        HubPalette.plantDeep,
+                        style: StrokeStyle(lineWidth: showAxes ? 2.5 : 2, lineCap: .round, lineJoin: .round)
+                    )
+
+                if showAxes {
                     ForEach(
                         Array(cgPoints.enumerated().compactMap { index, point -> (Int, CGPoint)? in
                             guard let point else { return nil }
                             return (index, point)
                         }),
                         id: \.0
-                    ) { _, pt in
-                        ZStack {
-                            Circle()
-                                .fill(Color.white.opacity(0.95))
-                                .frame(width: 8, height: 8)
-                                .shadow(color: HubPalette.plantDeep.opacity(0.2), radius: 2, y: 1)
-                            Circle()
-                                .fill(HubPalette.ember)
-                                .frame(width: 5, height: 5)
-                        }
-                        .opacity(displayData.trendUnlocked && appeared ? insightsChartReveal : 0)
-                        .animation(.easeOut(duration: 0.95), value: insightsChartReveal)
-                        .position(x: pt.x, y: pt.y)
+                    ) { _, point in
+                        Circle()
+                            .fill(HubPalette.linen)
+                            .frame(width: 9, height: 9)
+                            .overlay(
+                                Circle()
+                                    .strokeBorder(HubPalette.plantDeep, lineWidth: 2)
+                            )
+                            .opacity(displayData.trendUnlocked && appeared ? insightsChartReveal : 0)
+                            .position(x: point.x, y: point.y)
                     }
                 }
             }
-            .frame(height: 172)
-            .padding(.top, 14)
-
-            if !displayData.trendUnlocked {
-                Text("Keep going. Your line appears once you have activity on 3 different days.")
-                    .font(GlanceHubFont.regular(12))
-                    .foregroundStyle(HubPalette.espresso.opacity(0.52))
-                    .padding(.top, 8)
-            }
+            .compositingGroup()
         }
-        .padding(ProgressScreenMetrics.cardPadding)
-        .background {
-            insightsFrostedCard(cornerRadius: ProgressScreenMetrics.cornerRadiusStat)
-        }
-        .clipShape(RoundedRectangle(cornerRadius: ProgressScreenMetrics.cornerRadiusStat, style: .continuous))
+        .frame(height: height)
     }
 }
 
-private struct WordProgressRingView: View {
-    @Environment(\.colorScheme) private var colorScheme
+// MARK: - Components
+
+private struct InsightsGlassCard<Content: View>: View {
+    var cornerRadius: CGFloat = InsightsLayout.cardCornerRadius
+    var fillGradient: LinearGradient?
+    var strokeGradient: LinearGradient?
+    @ViewBuilder var content: () -> Content
+
+    var body: some View {
+        content()
+            .padding(InsightsLayout.innerPadding)
+            .frame(maxWidth: .infinity, alignment: .leading)
+            .background {
+                GlanceAdaptiveGlassBackground(
+                    cornerRadius: cornerRadius,
+                    fillGradient: fillGradient,
+                    strokeGradient: strokeGradient
+                )
+            }
+    }
+}
+
+private struct InsightsGridDivider: View {
+    enum Axis {
+        case horizontal
+        case vertical
+    }
+
+    let axis: Axis
+
+    var body: some View {
+        Group {
+            switch axis {
+            case .horizontal:
+                Rectangle()
+                    .fill(HubPalette.espresso.opacity(0.08))
+                    .frame(height: 1)
+            case .vertical:
+                Rectangle()
+                    .fill(HubPalette.espresso.opacity(0.08))
+                    .frame(width: 1)
+            }
+        }
+    }
+}
+
+private struct InsightsMetricCell<Metric: View>: View {
+    let label: String
+    let systemImage: String
+    let iconTint: Color
+    var usesPlantGlyph: Bool = false
+    var streakDays: Int = 0
+    @ViewBuilder let metric: () -> Metric
+
+    var body: some View {
+        VStack(alignment: .leading, spacing: 12) {
+            HStack(spacing: 8) {
+                ZStack {
+                    Circle()
+                        .fill(HubPalette.oatmealDeep.opacity(0.35))
+                        .frame(width: 28, height: 28)
+
+                    if usesPlantGlyph {
+                        InsightsStreakPlantGlyph(streakDays: streakDays, tint: iconTint)
+                            .frame(width: 16, height: 16)
+                    } else {
+                        Image(systemName: systemImage)
+                            .font(.system(size: 12, weight: .semibold))
+                            .foregroundStyle(iconTint)
+                    }
+                }
+
+                Text(label)
+                    .font(GlanceHubFont.semibold(13))
+                    .foregroundStyle(HubPalette.espressoMuted)
+                    .lineLimit(2)
+                    .minimumScaleFactor(0.85)
+
+                Spacer(minLength: 0)
+            }
+
+            metric()
+        }
+        .padding(16)
+        .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .topLeading)
+    }
+}
+
+private struct InsightsGlancedRing: View {
     let count: Int
     let cap: Int
-    let accent: Color
     var revealProgress: CGFloat = 1
 
-    private var frac: CGFloat {
+    private var fraction: CGFloat {
         guard cap > 0 else { return 0 }
         return min(1, CGFloat(count) / CGFloat(cap))
     }
 
     private var drawnFraction: CGFloat {
-        frac * min(1, max(0, revealProgress))
+        fraction * min(1, max(0, revealProgress))
     }
 
     var body: some View {
         ZStack {
             Circle()
-                .stroke(HubPalette.espresso.opacity(0.11), lineWidth: InsightsProgressRingMetrics.wordTrackWidth)
+                .stroke(HubPalette.oatmealDeep.opacity(0.45), lineWidth: 8)
 
             Circle()
                 .trim(from: 0, to: drawnFraction)
                 .stroke(
-                    LinearGradient(
-                        colors: [
-                            accent.opacity(0.72),
-                            accent,
-                            accent.opacity(0.88),
-                        ],
-                        startPoint: .topLeading,
-                        endPoint: .bottomTrailing
-                    ),
-                    style: StrokeStyle(lineWidth: InsightsProgressRingMetrics.wordProgressWidth, lineCap: .round, lineJoin: .round)
+                    HubPalette.plantDeep,
+                    style: StrokeStyle(lineWidth: 8, lineCap: .round)
                 )
                 .rotationEffect(.degrees(-90))
-                .shadow(color: accent.opacity(colorScheme == .dark ? 0.5 : 0.28), radius: 6, y: 2)
 
-            Text("\(count)")
-                .font(GlanceHubFont.semibold(21))
-                .monospacedDigit()
-                .foregroundStyle(HubPalette.espresso)
-        }
-        .animation(.easeOut(duration: 0.95), value: revealProgress)
-        .animation(.easeOut(duration: 0.95), value: frac)
-    }
-}
-
-private struct QuizAccuracyRingView: View {
-    @Environment(\.colorScheme) private var colorScheme
-    let percent: Int?
-    var accent: Color = InsightsRingAccent.quizAccuracy
-    var revealProgress: CGFloat = 1
-
-    private var frac: CGFloat {
-        guard let percent else { return 0 }
-        return min(1, max(0, CGFloat(percent) / 100))
-    }
-
-    private var drawnFraction: CGFloat {
-        frac * min(1, max(0, revealProgress))
-    }
-
-    var body: some View {
-        ZStack {
-            Circle()
-                .stroke(HubPalette.espresso.opacity(0.11), lineWidth: InsightsProgressRingMetrics.quizTrackWidth)
-
-            if percent != nil {
-                Circle()
-                    .trim(from: 0, to: drawnFraction)
-                    .stroke(
-                        LinearGradient(
-                            colors: [
-                                accent.opacity(0.75),
-                                accent,
-                                accent.opacity(0.92),
-                            ],
-                            startPoint: .topLeading,
-                            endPoint: .bottomTrailing
-                        ),
-                        style: StrokeStyle(lineWidth: InsightsProgressRingMetrics.quizProgressWidth, lineCap: .round, lineJoin: .round)
-                    )
-                    .rotationEffect(.degrees(-90))
-                    .shadow(color: accent.opacity(colorScheme == .dark ? 0.45 : 0.26), radius: 5, y: 2)
-            }
-
-            Group {
-                if let percent {
-                    Text("\(percent)%")
-                        .font(GlanceHubFont.semibold(20))
-                        .monospacedDigit()
-                } else {
-                    Text("-")
-                        .font(GlanceHubFont.semibold(22))
-                }
+            VStack(spacing: 0) {
+                Text("\(count)")
+                    .font(GlanceHubFont.bold(18))
+                    .monospacedDigit()
+                Text("/ \(cap)")
+                    .font(GlanceHubFont.medium(11))
+                    .monospacedDigit()
             }
             .foregroundStyle(HubPalette.espresso)
         }
         .animation(.easeOut(duration: 0.95), value: revealProgress)
-        .animation(.easeOut(duration: 0.95), value: frac)
+    }
+}
+
+private struct InsightsAbsorbedMeter: View {
+    let fillFraction: CGFloat
+
+    var body: some View {
+        GeometryReader { geo in
+            ZStack(alignment: .bottom) {
+                RoundedRectangle(cornerRadius: 7, style: .continuous)
+                    .fill(HubPalette.oatmealDeep.opacity(0.35))
+
+                RoundedRectangle(cornerRadius: 7, style: .continuous)
+                    .fill(
+                        LinearGradient(
+                            colors: [
+                                HubPalette.plantDeep.opacity(0.55),
+                                HubPalette.plantDeep,
+                            ],
+                            startPoint: .bottom,
+                            endPoint: .top
+                        )
+                    )
+                    .frame(height: max(10, geo.size.height * fillFraction))
+            }
+        }
+    }
+}
+
+private struct InsightsCategoryRow: View {
+    let category: CategoryAccuracy
+    let fillFraction: CGFloat
+    let revealProgress: CGFloat
+    let isReady: Bool
+
+    var body: some View {
+        HStack(spacing: 14) {
+            ZStack {
+                RoundedRectangle(cornerRadius: 10, style: .continuous)
+                    .fill(HubPalette.oatmealDeep.opacity(0.35))
+                    .frame(width: 36, height: 36)
+
+                Image(systemName: categoryIcon(for: category.name))
+                    .font(.system(size: 15, weight: .semibold))
+                    .foregroundStyle(InsightsLayout.iconTint)
+            }
+
+            VStack(alignment: .leading, spacing: 8) {
+                HStack(alignment: .firstTextBaseline) {
+                    Text(category.name)
+                        .font(GlanceHubFont.semibold(15))
+                        .foregroundStyle(HubPalette.espresso)
+                        .lineLimit(2)
+                        .minimumScaleFactor(0.85)
+
+                    Spacer(minLength: 8)
+
+                    Text(isReady ? "\(Int(category.accuracy * 100))%" : "—")
+                        .font(GlanceHubFont.semibold(14))
+                        .monospacedDigit()
+                        .foregroundStyle(HubPalette.espressoMuted)
+                }
+
+                GeometryReader { geo in
+                    ZStack(alignment: .leading) {
+                        Capsule(style: .continuous)
+                            .fill(HubPalette.oatmealDeep.opacity(0.35))
+                            .frame(height: 8)
+
+                        Capsule(style: .continuous)
+                            .fill(
+                                LinearGradient(
+                                    colors: [HubPalette.plantDeep, HubPalette.ember.opacity(0.65)],
+                                    startPoint: .leading,
+                                    endPoint: .trailing
+                                )
+                            )
+                            .frame(
+                                width: geo.size.width * (isReady ? max(0, fillFraction * revealProgress) : 0),
+                                height: 8
+                            )
+                    }
+                }
+                .frame(height: 8)
+            }
+        }
+    }
+
+    private func categoryIcon(for name: String) -> String {
+        switch name {
+        case "People & society": return "person.2.fill"
+        case "Self & character": return "figure.stand"
+        case "Ideas & language": return "lightbulb.fill"
+        case "Science & nature": return "leaf.fill"
+        case "Power & culture": return "building.columns.fill"
+        default: return "book.fill"
+        }
+    }
+}
+
+private struct InsightsStreakPlantGlyph: View {
+    let streakDays: Int
+    var tint: Color = InsightsLayout.iconTint
+
+    private var stage: StreakPlantStage {
+        StreakPlantStage(days: max(streakDays, 0))
+    }
+
+    var body: some View {
+        Image(stage.assetName)
+            .renderingMode(.template)
+            .resizable()
+            .scaledToFit()
+            .foregroundStyle(tint)
     }
 }
 
@@ -771,4 +881,6 @@ private struct QuizAccuracyRingView: View {
     let container = try! ModelContainer(for: Word.self, QuizSession.self, configurations: config)
     return GlanceSATProgressScreen()
         .modelContainer(container)
+        .environmentObject(EntitlementManager.shared)
+        .environmentObject(PaywallPresenter())
 }

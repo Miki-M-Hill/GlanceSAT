@@ -52,13 +52,16 @@ struct GlanceSATQuizProvider: TimelineProvider {
     }
 
     func getTimeline(in context: Context, completion: @escaping (Timeline<GlanceSATQuizEntry>) -> Void) {
-        let payload = WidgetPayloadLoader.load()
-        let calendar = Calendar.current
-        let now = Date()
-        let todayKey = WidgetCalendar.dayKey(for: now, calendar: calendar)
-        let nextMidnight = calendar.date(byAdding: .day, value: 1, to: calendar.startOfDay(for: now)) ?? now.addingTimeInterval(86_400)
+        Task {
+            await WidgetReminderNotificationCoordinator.updateWidgetReminderNotification()
 
-        if payload.calendarDayKey != todayKey {
+            let payload = WidgetPayloadLoader.load()
+            let calendar = Calendar.current
+            let now = Date()
+            let todayKey = WidgetCalendar.dayKey(for: now, calendar: calendar)
+            let nextMidnight = calendar.date(byAdding: .day, value: 1, to: calendar.startOfDay(for: now)) ?? now.addingTimeInterval(86_400)
+
+            if payload.calendarDayKey != todayKey {
             let entry = GlanceSATQuizEntry(
                 date: now,
                 word: payload.words.first ?? .placeholder,
@@ -77,6 +80,32 @@ struct GlanceSATQuizProvider: TimelineProvider {
         }
 
         let words = WidgetInteractionStore.visibleWords(from: payload.words)
+
+        if !words.isEmpty {
+            let slotIndex = WidgetSlotClock.slotIndex(for: now, calendar: calendar)
+            let word = WidgetSlotClock.word(atQuizSlot: slotIndex, in: words)
+            let slotKey = WidgetSlotClock.slotKey(calendarDayKey: todayKey, slotIndex: slotIndex)
+
+            if let feedback = WidgetQuizSlotStore.activeFeedback(slotKey: slotKey, wordID: word.id, now: now) {
+                let feedbackEntry = GlanceSATQuizEntry(
+                    date: now,
+                    word: word,
+                    slotKey: slotKey,
+                    displayPhase: .feedback,
+                    selectedOption: feedback.selectedOption,
+                    wasCorrect: feedback.wasCorrect
+                )
+                let vocabEntry = GlanceSATQuizEntry(
+                    date: feedback.endsAt,
+                    word: word,
+                    slotKey: slotKey,
+                    displayPhase: .vocab
+                )
+                completion(Timeline(entries: [feedbackEntry, vocabEntry], policy: .after(feedback.endsAt)))
+                return
+            }
+        }
+
         guard let intervalFloor = WidgetSlotClock.thirtyMinuteFloor(calendar: calendar, date: now) else {
             let slotKey = WidgetSlotClock.slotKey(calendarDayKey: todayKey, slotIndex: 0)
             completion(
@@ -96,7 +125,7 @@ struct GlanceSATQuizProvider: TimelineProvider {
             guard let slotDate = calendar.date(byAdding: .minute, value: offset * step, to: intervalFloor) else {
                 continue
             }
-            let word = words[offset % max(words.count, 1)]
+            let word = WidgetSlotClock.word(atQuizSlot: offset, in: words)
             let slotKey = WidgetSlotClock.slotKey(calendarDayKey: todayKey, slotIndex: offset)
             entries.append(Self.makeEntry(date: slotDate, word: word, slotKey: slotKey, todayKey: todayKey))
 
@@ -124,6 +153,7 @@ struct GlanceSATQuizProvider: TimelineProvider {
             fallback: nextMidnight
         )
         completion(Timeline(entries: entries, policy: .after(reloadDate)))
+        }
     }
 
     private static func entry(for date: Date) -> GlanceSATQuizEntry {
@@ -138,7 +168,7 @@ struct GlanceSATQuizProvider: TimelineProvider {
         let words = WidgetInteractionStore.visibleWords(from: payload.words)
         let slotIndex = WidgetSlotClock.slotIndex(for: date, calendar: calendar)
         let slotKey = WidgetSlotClock.slotKey(calendarDayKey: todayKey, slotIndex: slotIndex)
-        let word = words[slotIndex % max(words.count, 1)]
+        let word = WidgetSlotClock.word(atQuizSlot: slotIndex, in: words)
         return makeEntry(date: date, word: word, slotKey: slotKey, todayKey: todayKey)
     }
 
@@ -150,7 +180,7 @@ struct GlanceSATQuizProvider: TimelineProvider {
     ) -> GlanceSATQuizEntry {
         let evaluationDate = phaseEvaluationDate(forSlotDate: date)
         let phase: WidgetQuizDisplayPhase
-        if !word.hasSynonymQuiz {
+        if !word.hasSentenceQuiz {
             phase = .vocab
         } else {
             phase = WidgetQuizSlotStore.resolvedPhase(slotKey: slotKey, wordID: word.id, now: evaluationDate)
@@ -179,7 +209,7 @@ struct GlanceSATQuizProvider: TimelineProvider {
         guard !words.isEmpty else { return fallback }
         let slotIndex = WidgetSlotClock.slotIndex(for: now, calendar: calendar)
         let slotKey = WidgetSlotClock.slotKey(calendarDayKey: todayKey, slotIndex: slotIndex)
-        let word = words[slotIndex % words.count]
+        let word = WidgetSlotClock.word(atQuizSlot: slotIndex, in: words)
         if let feedbackEnd = WidgetQuizSlotStore.feedbackEndsAt(slotKey: slotKey, wordID: word.id),
            feedbackEnd > now {
             return min(fallback, feedbackEnd)
@@ -197,7 +227,7 @@ struct GlanceSATQuizProvider: TimelineProvider {
         guard !words.isEmpty else { return }
 
         let slotIndex = WidgetSlotClock.slotIndex(for: now, calendar: calendar)
-        let word = words[slotIndex % words.count]
+        let word = WidgetSlotClock.word(atQuizSlot: slotIndex, in: words)
         let slotKey = WidgetSlotClock.slotKey(calendarDayKey: todayKey, slotIndex: slotIndex)
 
         guard WidgetQuizSlotStore.matchingState(slotKey: slotKey, wordID: word.id)?.phase == .feedback else {
@@ -246,7 +276,7 @@ struct GlanceSATQuizWidget: Widget {
                 .glanceWidgetBackground(themeName: WidgetPrefsReader.themeName())
         }
         .configurationDisplayName("Glance Quiz")
-        .description("Synonym quizzes on your Home Screen, then the word card.")
+        .description("Sentence-completion quizzes on your Home Screen, then the word card.")
         .contentMarginsDisabled()
         .supportedFamilies([.systemMedium, .systemLarge])
     }

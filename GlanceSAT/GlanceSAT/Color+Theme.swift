@@ -21,6 +21,9 @@ extension Color {
         /// Light: Deep Slate (#1C1C1E). Dark: Crisp Off-White (#F2F2F7).
         static let textPrimary = Color(dynamicLight: 0x1C1C1E, dark: 0xF2F2F7)
 
+        /// Softer highlight for quiz prompts and answer bubbles in dark mode (easier on the eyes than `textPrimary`).
+        static let softHighlight = Color(dynamicLight: 0x1C1C1E, dark: 0xC8C8D0)
+
         /// Native Apple secondary text color, automatically optimized by iOS.
         static let textSecondary = Color(uiColor: .secondaryLabel)
 
@@ -44,6 +47,49 @@ extension Color {
 
         /// Fill color for grouped controls that should remain readable in both modes.
         static let controlFill = Color(uiColor: .secondarySystemFill)
+
+        // MARK: Quiz & Today feedback (pastel remembered / missed)
+
+        /// Remembered / correct accent — soft green.
+        static let rememberedForeground = Color(dynamicLight: 0x7EA3A0, dark: 0xA8DDD6)
+
+        /// Missed / incorrect accent — dusty rose.
+        static let missedForeground = Color(dynamicLight: 0xB84A45, dark: 0xEA9E99)
+
+        /// Pastel pill background for remembered counts and outcome chips.
+        static let rememberedBackground = Color(uiColor: UIColor { traits in
+            traits.userInterfaceStyle == .dark
+                ? UIColor(red: 0.66, green: 0.86, blue: 0.83, alpha: 0.36)
+                : UIColor(red: 0.49, green: 0.64, blue: 0.63, alpha: 0.22)
+        })
+
+        /// Pastel pill background for missed counts and outcome chips.
+        static let missedBackground = Color(uiColor: UIColor { traits in
+            traits.userInterfaceStyle == .dark
+                ? UIColor(red: 0.90, green: 0.58, blue: 0.55, alpha: 0.40)
+                : UIColor(red: 0.96, green: 0.72, blue: 0.70, alpha: 0.42)
+        })
+
+        /// Revealed correct answer capsule fill (daily quiz).
+        static let quizAnswerCorrectFill = Color(uiColor: UIColor { traits in
+            traits.userInterfaceStyle == .dark
+                ? UIColor(red: 0.58, green: 0.80, blue: 0.76, alpha: 0.52)
+                : UIColor(red: 0.49, green: 0.64, blue: 0.63, alpha: 0.38)
+        })
+
+        /// Revealed incorrect answer capsule fill (daily quiz).
+        static let quizAnswerIncorrectFill = Color(uiColor: UIColor { traits in
+            traits.userInterfaceStyle == .dark
+                ? UIColor(red: 0.78, green: 0.40, blue: 0.37, alpha: 0.54)
+                : UIColor(red: 0.52, green: 0.11, blue: 0.09, alpha: 0.52)
+        })
+
+        /// Stronger green for two-option connotation foils when revealed correct.
+        static let connotationCorrectFill = Color(uiColor: UIColor { traits in
+            traits.userInterfaceStyle == .dark
+                ? UIColor(red: 0.52, green: 0.76, blue: 0.72, alpha: 0.62)
+                : UIColor(red: 0.37, green: 0.56, blue: 0.54, alpha: 0.88)
+        })
     }
 }
 

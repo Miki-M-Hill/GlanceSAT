@@ -7,7 +7,7 @@ import Foundation
 import SwiftData
 
 @Model
-final class Word {
+final class Word: Identifiable {
     @Attribute(.unique) var id: UUID
     var word: String
     var partOfSpeech: String
@@ -276,7 +276,7 @@ enum PassageDomain: String, CaseIterable, Sendable, Identifiable {
     var id: String { rawValue }
 
     /// Stable order for Insights bars and Library filters.
-    static let displayOrder: [PassageDomain] = [
+    nonisolated static let displayOrder: [PassageDomain] = [
         .humanSocial,
         .selfCharacter,
         .thoughtLanguage,
@@ -284,7 +284,7 @@ enum PassageDomain: String, CaseIterable, Sendable, Identifiable {
         .powerCulture,
     ]
 
-    var displayTitle: String {
+    nonisolated var displayTitle: String {
         switch self {
         case .humanSocial: return "People & society"
         case .selfCharacter: return "Self & character"
@@ -294,12 +294,12 @@ enum PassageDomain: String, CaseIterable, Sendable, Identifiable {
         }
     }
 
-    init?(storedValue: String) {
+    nonisolated init?(storedValue: String) {
         let normalized = Self.normalizedRaw(storedValue)
         self.init(rawValue: normalized)
     }
 
-    init(rawStored: String, categorySlug: String) {
+    nonisolated init(rawStored: String, categorySlug: String) {
         if let match = PassageDomain(storedValue: rawStored) {
             self = match
             return
@@ -307,7 +307,7 @@ enum PassageDomain: String, CaseIterable, Sendable, Identifiable {
         self = Self.inferred(fromCategorySlug: categorySlug)
     }
 
-    static func normalizedRaw(_ raw: String) -> String {
+    nonisolated static func normalizedRaw(_ raw: String) -> String {
         let trimmed = raw.trimmingCharacters(in: .whitespacesAndNewlines).lowercased()
         if PassageDomain(rawValue: trimmed) != nil {
             return trimmed
@@ -315,7 +315,7 @@ enum PassageDomain: String, CaseIterable, Sendable, Identifiable {
         return PassageDomain.thoughtLanguage.rawValue
     }
 
-    static func inferred(fromCategorySlug slug: String) -> PassageDomain {
+    nonisolated static func inferred(fromCategorySlug slug: String) -> PassageDomain {
         let c = slug.trimmingCharacters(in: .whitespacesAndNewlines).lowercased()
         if c == "social-behavior" { return .humanSocial }
         if ["emotion-character", "emotional", "emotion"].contains(c) { return .selfCharacter }
@@ -342,7 +342,7 @@ enum WordConnotationPolarity: String, Sendable {
     case positive
     case mixed
 
-    init(raw: String) {
+    nonisolated init(raw: String) {
         self = WordConnotationPolarity(rawValue: raw.trimmingCharacters(in: .whitespacesAndNewlines).lowercased())
             ?? .neutral
     }

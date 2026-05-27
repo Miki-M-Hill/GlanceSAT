@@ -15,4 +15,8 @@ enum WidgetDeepLink {
     static func todayURL() -> URL {
         URL(string: "\(scheme)://today")!
     }
+
+    static func paywallURL() -> URL {
+        URL(string: "\(scheme)://paywall")!
+    }
 }

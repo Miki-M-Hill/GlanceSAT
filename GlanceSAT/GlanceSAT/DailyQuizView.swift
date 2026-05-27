@@ -19,8 +19,11 @@ struct DailyQuizCompletion {
 struct DailyQuizView: View {
     @Environment(\.modelContext) private var modelContext
     @Environment(\.dismiss) private var dismiss
+    @Environment(\.colorScheme) private var colorScheme
 
     let questions: [QuizQuestion]
+    /// When true, shows a redacted quiz layout while questions are still being prepared.
+    var isContentLoading: Bool = false
     /// When non-nil, restores in-progress state once on first appear.
     var resume: PersistedDailyQuiz? = nil
     /// Written into saved progress and completion payload so the hub can treat practice rounds separately.
@@ -40,6 +43,8 @@ struct DailyQuizView: View {
     @State private var rememberedWordIDs: Set<UUID> = []
     @State private var missedWordIDs: Set<UUID> = []
     @State private var didApplyResume = false
+    /// Slide transitions only when advancing; enter/resume stays centered with no motion.
+    @State private var shouldAnimateBetweenQuestions = false
 
     /// Matches `answerOptions` row spacing so the footer sits the same distance below the last answer.
     private static let answerOptionVerticalSpacing: CGFloat = 12
@@ -70,7 +75,9 @@ struct DailyQuizView: View {
 
     var body: some View {
         Group {
-            if questions.isEmpty {
+            if isContentLoading && questions.isEmpty {
+                quizLoadingPlaceholder
+            } else if questions.isEmpty {
                 ContentUnavailableView("No questions", systemImage: "questionmark.circle")
             } else if quizComplete {
                 quizCompleteSummary
@@ -78,13 +85,13 @@ struct DailyQuizView: View {
                 activeQuizContent
             }
         }
-        .animation(.spring(response: 0.45, dampingFraction: 0.88), value: currentQuestionIndex)
         .onDisappear {
             pendingAdvanceWorkItem?.cancel()
             pendingAdvanceWorkItem = nil
             persistInProgressIfNeeded()
         }
         .onAppear {
+            shouldAnimateBetweenQuestions = false
             applyResumeIfNeeded()
             if resume == nil, currentQuestionIndex == 0, !quizComplete {
                 quizStartedAt = Date.now
@@ -98,7 +105,12 @@ struct DailyQuizView: View {
             resetQuestionTimer()
         }
         .onChange(of: questionDeckToken, initial: true) { _, _ in
+            shouldAnimateBetweenQuestions = false
             resetQuestionTimer()
+        }
+        .onChange(of: isContentLoading) { _, isLoading in
+            guard !isLoading else { return }
+            shouldAnimateBetweenQuestions = false
         }
     }
 
@@ -106,46 +118,103 @@ struct DailyQuizView: View {
         questionShownAt = Date.now
     }
 
+    private var questionTransition: AnyTransition {
+        guard shouldAnimateBetweenQuestions else { return .identity }
+        return .asymmetric(
+            insertion: .move(edge: .trailing).combined(with: .opacity),
+            removal: .move(edge: .leading).combined(with: .opacity)
+        )
+    }
+
     // MARK: - Active quiz
 
-    private var activeQuizContent: some View {
-        VStack(spacing: 0) {
-            quizHeader
+    private var quizLoadingPlaceholder: some View {
+        GeometryReader { geo in
+            VStack(spacing: 0) {
+                VStack(alignment: .leading, spacing: 10) {
+                    Capsule(style: .continuous)
+                        .fill(HubPalette.oatmealDeep.opacity(0.35))
+                        .frame(height: 4)
 
-            if let question = currentQuestion {
-                Group {
-                    if question.questionType == .connotationFoil {
-                        connotationFoilBlock(for: question)
-                    } else {
-                        GeometryReader { _ in
+                    Text("Synonym Match")
+                        .font(.caption.bold())
+                        .textCase(.uppercase)
+                        .tracking(0.6)
+                }
+                .padding(.top, 8)
+                .padding(.bottom, 4)
+
+                Spacer(minLength: 0)
+
+                Text("Placeholder vocabulary prompt")
+                    .font(.largeTitle)
+                    .fontWeight(.heavy)
+                    .fontDesign(.rounded)
+                    .multilineTextAlignment(.center)
+                    .frame(maxWidth: .infinity)
+                    .padding(.horizontal, 12)
+
+                Spacer(minLength: 0)
+
+                VStack(spacing: Self.answerOptionVerticalSpacing) {
+                    ForEach(0..<4, id: \.self) { _ in
+                        Text("Placeholder answer option")
+                            .font(.body.weight(.semibold))
+                            .frame(maxWidth: .infinity)
+                            .padding(.vertical, Self.answerCapsuleVerticalPadding)
+                            .padding(.horizontal, Self.answerCapsuleHorizontalPadding)
+                            .background {
+                                Capsule(style: .continuous)
+                                    .fill(HubPalette.oatmealDeep.opacity(0.22))
+                            }
+                    }
+                }
+                .padding(.top, -14)
+                .padding(.bottom, max(8, geo.safeAreaInsets.bottom))
+            }
+            .padding(.horizontal, 20)
+            .frame(width: geo.size.width, height: geo.size.height, alignment: .top)
+            .redacted(reason: .placeholder)
+        }
+        .background(HubPalette.linen)
+    }
+
+    private var activeQuizContent: some View {
+        GeometryReader { geo in
+            let promptMaxHeight = GlanceDeviceLayout.quizPromptMaxHeight(screenHeight: geo.size.height)
+
+            VStack(spacing: 0) {
+                quizHeader
+
+                if let question = currentQuestion {
+                    Group {
+                        if question.questionType == .connotationFoil {
+                            connotationFoilBlock(for: question)
+                        } else {
                             VStack(spacing: 0) {
                                 Spacer(minLength: 0)
-                                questionBlock(for: question)
+
+                                questionBlock(for: question, maxHeight: promptMaxHeight)
+
                                 Spacer(minLength: 0)
+
+                                answerOptions(for: question)
+                                    .padding(.top, -14)
                             }
                             .frame(maxWidth: .infinity, maxHeight: .infinity)
                         }
-                        .frame(maxHeight: .infinity)
-
-                        answerOptions(for: question)
-                            .padding(.top, -14)
                     }
-                }
-                .id(question.id)
-                .transition(
-                    .asymmetric(
-                        insertion: .move(edge: .trailing).combined(with: .opacity),
-                        removal: .move(edge: .leading).combined(with: .opacity)
-                    )
-                )
+                    .id(question.id)
+                    .transition(questionTransition)
 
-                nextQuestionFooter
-                    .padding(.top, Self.answerOptionVerticalSpacing)
-                    .padding(.bottom, 8)
+                    nextQuestionFooter
+                        .padding(.top, Self.answerOptionVerticalSpacing)
+                        .padding(.bottom, max(8, geo.safeAreaInsets.bottom))
+                }
             }
+            .padding(.horizontal, 20)
+            .frame(width: geo.size.width, height: geo.size.height, alignment: .top)
         }
-        .padding(.horizontal, 20)
-        .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .top)
         .background(HubPalette.linen)
     }
 
@@ -185,7 +254,7 @@ struct DailyQuizView: View {
     }
 
     @ViewBuilder
-    private func questionBlock(for question: QuizQuestion) -> some View {
+    private func questionBlock(for question: QuizQuestion, maxHeight: CGFloat) -> some View {
         VStack(spacing: 0) {
             Spacer(minLength: 8)
 
@@ -197,7 +266,7 @@ struct DailyQuizView: View {
                     .fontDesign(.rounded)
                     .multilineTextAlignment(.center)
                     .minimumScaleFactor(0.5)
-                    .foregroundStyle(.primary)
+                    .foregroundStyle(questionHighlightColor)
 
             case .sentenceCompletion:
                 Group {
@@ -206,7 +275,7 @@ struct DailyQuizView: View {
                 .font(.title3)
                 .fontWeight(.regular)
                 .multilineTextAlignment(.center)
-                .foregroundStyle(.primary)
+                .foregroundStyle(questionHighlightColor)
 
             case .connotationFoil:
                 EmptyView()
@@ -215,7 +284,7 @@ struct DailyQuizView: View {
             Spacer(minLength: 8)
         }
         .frame(maxWidth: .infinity)
-        .frame(minHeight: 180, maxHeight: 280)
+        .frame(minHeight: min(180, maxHeight), maxHeight: maxHeight)
     }
 
     private func sentencePromptView(_ prompt: String) -> Text {
@@ -254,7 +323,7 @@ struct DailyQuizView: View {
             Text(title)
                 .font(.body.weight(.semibold))
                 .multilineTextAlignment(.center)
-                .foregroundStyle(optionLabelForeground())
+                .foregroundStyle(optionLabelForeground(isCorrect: isCorrect, isSelected: isSelected))
                 .frame(maxWidth: .infinity)
                 .padding(.vertical, Self.answerCapsuleVerticalPadding)
                 .padding(.horizontal, Self.answerCapsuleHorizontalPadding)
@@ -305,29 +374,32 @@ struct DailyQuizView: View {
         }
     }
 
-    /// Matches the back chip on the quiz navigation bar (white, not gray).
     private var answerCapsuleIdleFill: Color {
-        DailyQuizChrome.capsuleFill
+        DailyQuizChrome.answerCapsuleFill(for: colorScheme)
     }
 
     private var answerCapsuleIdleStroke: Color {
-        DailyQuizChrome.capsuleStroke
+        DailyQuizChrome.answerCapsuleStroke(for: colorScheme)
     }
 
     private var incorrectAnswerRed: Color {
-        Color(red: 0.52, green: 0.11, blue: 0.09).opacity(0.52)
+        HubPalette.quizAnswerIncorrectFill
     }
 
     private var correctAnswerGreen: Color {
-        HubPalette.ember.opacity(0.38)
+        HubPalette.quizAnswerCorrectFill
     }
 
-    private func optionLabelForeground() -> Color {
-        Color.primary
+    private var questionHighlightColor: Color {
+        DailyQuizChrome.questionHighlightColor(for: colorScheme)
+    }
+
+    private func optionLabelForeground(isCorrect: Bool, isSelected: Bool) -> Color {
+        DailyQuizChrome.answerLabelColor(for: colorScheme)
     }
 
     private var quizFooterButtonTint: Color {
-        DailyQuizChrome.nextButtonTint
+        DailyQuizChrome.nextButtonFill(for: colorScheme)
     }
 
     /// Same fill as `Start Daily Quiz` on the Today hub.
@@ -357,7 +429,12 @@ struct DailyQuizView: View {
                                 .fill(quizFooterButtonTint)
                                 .overlay(
                                     Capsule(style: .continuous)
-                                        .strokeBorder(Color.white.opacity(0.22), lineWidth: 1)
+                                        .strokeBorder(
+                                            colorScheme == .dark
+                                                ? Color.white.opacity(0.14)
+                                                : Color.white.opacity(0.22),
+                                            lineWidth: 1
+                                        )
                                 )
                         }
                 }
@@ -429,7 +506,7 @@ struct DailyQuizView: View {
 
         let correct = Self.normalized(option) == Self.normalized(question.correctAnswer)
 
-        UIImpactFeedbackGenerator(style: .medium).impactOccurred()
+        GlanceHaptics.light()
 
         selectedAnswer = option
         isAnswerRevealed = true
@@ -470,6 +547,7 @@ struct DailyQuizView: View {
             return
         }
 
+        shouldAnimateBetweenQuestions = true
         withAnimation(.spring(response: 0.45, dampingFraction: 0.88)) {
             currentQuestionIndex = nextIndex
             selectedAnswer = nil
@@ -510,15 +588,20 @@ struct DailyQuizView: View {
     private func applyResumeIfNeeded() {
         guard !didApplyResume, let snapshot = resume, !questions.isEmpty else { return }
         didApplyResume = true
+        shouldAnimateBetweenQuestions = false
         let maxIndex = max(0, questions.count - 1)
-        currentQuestionIndex = min(max(0, snapshot.currentQuestionIndex), maxIndex)
-        correctCount = snapshot.correctCount
-        rememberedWordIDs = Set(snapshot.rememberedWordIDs)
-        missedWordIDs = Set(snapshot.missedWordIDs)
-        quizStartedAt = snapshot.quizStartedAt
-        quizCalendarDayKey = DailyWordBatchService.clampedCalendarDayKey(snapshot.calendarDayKey)
-        selectedAnswer = snapshot.selectedAnswer
-        isAnswerRevealed = snapshot.isAnswerRevealed
+        var transaction = Transaction()
+        transaction.disablesAnimations = true
+        withTransaction(transaction) {
+            currentQuestionIndex = min(max(0, snapshot.currentQuestionIndex), maxIndex)
+            correctCount = snapshot.correctCount
+            rememberedWordIDs = Set(snapshot.rememberedWordIDs)
+            missedWordIDs = Set(snapshot.missedWordIDs)
+            quizStartedAt = snapshot.quizStartedAt
+            quizCalendarDayKey = DailyWordBatchService.clampedCalendarDayKey(snapshot.calendarDayKey)
+            selectedAnswer = snapshot.selectedAnswer
+            isAnswerRevealed = snapshot.isAnswerRevealed
+        }
     }
 
     private func persistInProgressIfNeeded() {

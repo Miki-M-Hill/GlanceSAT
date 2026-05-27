@@ -48,6 +48,7 @@ struct WidgetWordSnapshot: Codable, Sendable, Identifiable {
     var exampleSentence: String
     var etymology: String?
     var memoryHookText: String?
+    var sentenceQuizPrompt: String
     var synonymQuizOptions: [String]
     var synonymQuizCorrectAnswer: String
 
@@ -59,6 +60,7 @@ struct WidgetWordSnapshot: Codable, Sendable, Identifiable {
         exampleSentence: String,
         etymology: String?,
         memoryHookText: String? = nil,
+        sentenceQuizPrompt: String = "",
         synonymQuizOptions: [String] = [],
         synonymQuizCorrectAnswer: String = ""
     ) {
@@ -69,6 +71,7 @@ struct WidgetWordSnapshot: Codable, Sendable, Identifiable {
         self.exampleSentence = exampleSentence
         self.etymology = etymology
         self.memoryHookText = memoryHookText
+        self.sentenceQuizPrompt = sentenceQuizPrompt
         self.synonymQuizOptions = synonymQuizOptions
         self.synonymQuizCorrectAnswer = synonymQuizCorrectAnswer
     }
@@ -84,17 +87,20 @@ struct WidgetWordSnapshot: Codable, Sendable, Identifiable {
         exampleSentence = try container.decode(String.self, forKey: .exampleSentence)
         etymology = try container.decodeIfPresent(String.self, forKey: .etymology)
         memoryHookText = try container.decodeIfPresent(String.self, forKey: .memoryHookText)
+        sentenceQuizPrompt = try container.decodeIfPresent(String.self, forKey: .sentenceQuizPrompt) ?? ""
         synonymQuizOptions = try container.decodeIfPresent([String].self, forKey: .synonymQuizOptions) ?? []
         synonymQuizCorrectAnswer = try container.decodeIfPresent(String.self, forKey: .synonymQuizCorrectAnswer) ?? ""
     }
 
     private enum CodingKeys: String, CodingKey {
         case id, word, partOfSpeech, definition, exampleSentence, etymology, memoryHookText
-        case synonymQuizOptions, synonymQuizCorrectAnswer
+        case sentenceQuizPrompt, synonymQuizOptions, synonymQuizCorrectAnswer
     }
 
-    var hasSynonymQuiz: Bool {
-        synonymQuizOptions.count >= 2 && !synonymQuizCorrectAnswer.isEmpty
+    var hasSentenceQuiz: Bool {
+        !sentenceQuizPrompt.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty
+            && synonymQuizOptions.count >= 2
+            && !synonymQuizCorrectAnswer.isEmpty
     }
 
     var abbreviatedPartOfSpeech: String {
@@ -130,26 +136,50 @@ struct WidgetWordSnapshot: Codable, Sendable, Identifiable {
         exampleSentence: "",
         etymology: nil,
         memoryHookText: nil,
+        sentenceQuizPrompt: "She took a quick _______ at the schedule.",
         synonymQuizOptions: ["look", "peek", "scan", "watch"],
         synonymQuizCorrectAnswer: "look"
     )
 }
 
 enum WidgetPayloadLoader {
-    private static let appGroup = "group.com.mikihill.GlanceSAT"
+    private static let appGroup = GlanceSATWidgetConstants.appGroupIdentifier
     private static let snapshotFilename = "widget_words_snapshot.json"
 
+    private static var cachedPayload: WidgetSnapshotPayload?
+    private static var cachedModificationDate: Date?
+
     static func load() -> WidgetSnapshotPayload {
-        guard let dir = FileManager.default.containerURL(forSecurityApplicationGroupIdentifier: appGroup),
-              let data = try? Data(contentsOf: dir.appendingPathComponent(snapshotFilename)),
+        guard let dir = FileManager.default.containerURL(forSecurityApplicationGroupIdentifier: appGroup) else {
+            return fallbackPayload()
+        }
+
+        let url = dir.appendingPathComponent(snapshotFilename)
+        let modificationDate = (try? url.resourceValues(forKeys: [.contentModificationDateKey]))?
+            .contentModificationDate
+
+        if let cachedPayload,
+           let cachedModificationDate,
+           modificationDate == cachedModificationDate {
+            return cachedPayload
+        }
+
+        guard let data = try? Data(contentsOf: url),
               let decoded = try? JSONDecoder().decode(WidgetSnapshotPayload.self, from: data),
               !decoded.words.isEmpty else {
-            return WidgetSnapshotPayload(
-                updatedAt: Date(),
-                calendarDayKey: WidgetCalendar.dayKey(),
-                words: [WidgetWordSnapshot.placeholder]
-            )
+            return fallbackPayload()
         }
+
+        cachedPayload = decoded
+        cachedModificationDate = modificationDate
         return decoded
+    }
+
+    private static func fallbackPayload() -> WidgetSnapshotPayload {
+        WidgetSnapshotPayload(
+            updatedAt: Date(),
+            calendarDayKey: WidgetCalendar.dayKey(),
+            words: [WidgetWordSnapshot.placeholder]
+        )
     }
 }
