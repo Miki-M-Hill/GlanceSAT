@@ -401,28 +401,94 @@ enum DailyWordBatchService {
             return seeded
         }
 
-        var descriptor = FetchDescriptor<Word>(
+        let cap = selectionCap
+        let dayKey = calendarDayKey(for: referenceDate)
+
+        var reviewDescriptor = FetchDescriptor<Word>(
             predicate: #Predicate<Word> { word in
-                word.nextReviewDate <= referenceDate
+                word.nextReviewDate <= referenceDate && word.status != "new"
             },
             sortBy: dueWordSortDescriptors
         )
-        let cap = selectionCap
-        descriptor.fetchLimit = max(cap * 4, cap)
+        reviewDescriptor.fetchLimit = max(cap * 4, cap)
 
-        if var due = try? modelContext.fetch(descriptor), !due.isEmpty {
-            let dayKey = calendarDayKey(for: referenceDate)
-            due = shuffledDailySelection(due, dayKey: dayKey)
-            return Array(due.prefix(cap))
+        var srsReviewWords: [Word] = (try? modelContext.fetch(reviewDescriptor)) ?? []
+        srsReviewWords = shuffledDailySelection(srsReviewWords, dayKey: dayKey + "-review")
+
+        var selected = Array(srsReviewWords.prefix(cap))
+        let selectedIDs = Set(selected.map(\.id))
+
+        if selected.count < cap {
+            let remaining = cap - selected.count
+            let unseenFill = selectShuffledUnseenWords(
+                modelContext: modelContext,
+                limit: remaining,
+                excluding: selectedIDs,
+                dayKey: dayKey
+            )
+            selected.append(contentsOf: unseenFill)
         }
 
-        let dayKey = calendarDayKey(for: referenceDate)
+        if selected.count >= cap {
+            return Array(selected.prefix(cap))
+        }
+
+        let exclusionSet = Set(selected.map(\.id))
+        let fallback = selectCatalogFallbackBatch(
+            modelContext: modelContext,
+            limit: cap - selected.count,
+            excluding: exclusionSet,
+            dayKey: dayKey
+        )
+        selected.append(contentsOf: fallback)
+        if !selected.isEmpty {
+            return Array(selected.prefix(cap))
+        }
+
         return selectCatalogFallbackBatch(
             modelContext: modelContext,
             limit: cap,
             excluding: [],
             dayKey: dayKey
         )
+    }
+
+    /// Unseen fill: SQLite orders by `randomSortHash` so A12 devices avoid alphabetical index bias.
+    @MainActor
+    private static func selectShuffledUnseenWords(
+        modelContext: ModelContext,
+        limit: Int,
+        excluding: Set<UUID>,
+        dayKey: String
+    ) -> [Word] {
+        guard limit > 0 else { return [] }
+        _ = dayKey
+
+        var descriptor = FetchDescriptor<Word>(
+            predicate: #Predicate<Word> { word in
+                word.status == "new"
+            },
+            sortBy: [SortDescriptor(\.randomSortHash)]
+        )
+        descriptor.fetchLimit = limit + excluding.count
+
+        guard var unseenRows = try? modelContext.fetch(descriptor), !unseenRows.isEmpty else {
+            return []
+        }
+
+        if !excluding.isEmpty {
+            unseenRows.removeAll { excluding.contains($0.id) }
+        }
+
+        return Array(unseenRows.prefix(limit))
+    }
+
+    @MainActor
+    private static func shuffledDailyIDs(_ ids: [UUID], dayKey: String) -> [UUID] {
+        var copy = ids
+        var rng = DayKeyedRNG(dayKey: dayKey)
+        copy.shuffle(using: &rng)
+        return copy
     }
 
     /// Randomizes selection order so unseen / Level-0 words are not served alphabetically.
@@ -456,7 +522,10 @@ enum DailyWordBatchService {
 
         var rng = DayKeyedRNG(dayKey: dayKey)
         pool.shuffle(using: &rng)
-        return Array(pool.prefix(limit))
+        let unseenShuffled = shuffledDailySelection(pool.filter { $0.status.lowercased() == "new" }, dayKey: dayKey + "-unseen")
+        let nonUnseen = pool.filter { $0.status.lowercased() != "new" }
+        let prioritized = unseenShuffled + nonUnseen
+        return Array(prioritized.prefix(limit))
     }
 
     private struct DayKeyedRNG: RandomNumberGenerator {
@@ -516,6 +585,18 @@ enum DailyWordBatchService {
             return []
         }
         return batch.wordIDs
+    }
+
+    /// Resolves today's persisted batch without running a full `refresh` (cold-boot handoff from bootstrap).
+    @MainActor
+    static func loadPersistedTodayWords(
+        modelContext: ModelContext,
+        referenceDate: Date = Date(),
+        calendar: Calendar = .current
+    ) -> [Word] {
+        let ids = loadPersistedTodayWordIDs(referenceDate: referenceDate, calendar: calendar)
+        guard !ids.isEmpty else { return [] }
+        return applySubscriptionCap(resolveWords(wordIDs: ids, modelContext: modelContext))
     }
 
     private static func loadPersistedBatch() -> PersistedDailyWordBatch? {

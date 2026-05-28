@@ -105,7 +105,7 @@ actor LibraryCatalogActor {
         context: ModelContext
     ) async throws -> FilteredIDPage {
         let query = filter.searchText.trimmingCharacters(in: .whitespacesAndNewlines).lowercased()
-        var collected: [(id: UUID, word: String)] = []
+        var collected: [(id: UUID, word: String, rank: Int)] = []
         collected.reserveCapacity(limit)
         var dbOffset = resumeFromDBOffset
         var batchIndex = 0
@@ -127,22 +127,16 @@ actor LibraryCatalogActor {
 
             for word in batch {
                 guard passesStructuredFilters(word, filter: filter) else { continue }
-                if !query.isEmpty,
-                   !matchesSearch(
+                let rank = query.isEmpty ? 0 : searchMatchRank(
                        headword: word.word,
-                       category: word.category,
-                       passageDomain: word.passageDomain,
-                       etymology: word.etymology,
-                       memoryHookText: word.memoryHookText,
                        sensesJSON: word.sensesJSON,
-                       partOfSpeech: word.partOfSpeech,
                        definition: word.definition,
-                       exampleSentence: word.exampleSentence,
                        query: query
-                   ) {
+                   )
+                if rank < 0 {
                     continue
                 }
-                collected.append((word.id, word.word))
+                collected.append((word.id, word.word, rank))
                 if collected.count >= limit { break }
             }
 
@@ -159,7 +153,10 @@ actor LibraryCatalogActor {
         }
 
         let ids = collected
-            .sorted { $0.word.localizedCaseInsensitiveCompare($1.word) == .orderedAscending }
+            .sorted { lhs, rhs in
+                if lhs.rank != rhs.rank { return lhs.rank < rhs.rank }
+                return lhs.word.localizedCaseInsensitiveCompare(rhs.word) == .orderedAscending
+            }
             .map(\.id)
 
         let reachedEnd = endOfTable && ids.count < limit
@@ -170,7 +167,7 @@ actor LibraryCatalogActor {
 
     private func fullScanWordIDs(matching filter: LibraryCatalogFilter, context: ModelContext) async throws -> [UUID] {
         let query = filter.searchText.trimmingCharacters(in: .whitespacesAndNewlines).lowercased()
-        var matches: [(id: UUID, word: String)] = []
+        var matches: [(id: UUID, word: String, rank: Int)] = []
         matches.reserveCapacity(512)
         var offset = 0
         var batchIndex = 0
@@ -188,22 +185,16 @@ actor LibraryCatalogActor {
 
             for word in batch {
                 guard passesStructuredFilters(word, filter: filter) else { continue }
-                if !query.isEmpty,
-                   !matchesSearch(
+                let rank = query.isEmpty ? 0 : searchMatchRank(
                        headword: word.word,
-                       category: word.category,
-                       passageDomain: word.passageDomain,
-                       etymology: word.etymology,
-                       memoryHookText: word.memoryHookText,
                        sensesJSON: word.sensesJSON,
-                       partOfSpeech: word.partOfSpeech,
                        definition: word.definition,
-                       exampleSentence: word.exampleSentence,
                        query: query
-                   ) {
+                   )
+                if rank < 0 {
                     continue
                 }
-                matches.append((word.id, word.word))
+                matches.append((word.id, word.word, rank))
             }
 
             offset += batch.count
@@ -216,7 +207,10 @@ actor LibraryCatalogActor {
         }
 
         return matches
-            .sorted { $0.word.localizedCaseInsensitiveCompare($1.word) == .orderedAscending }
+            .sorted { lhs, rhs in
+                if lhs.rank != rhs.rank { return lhs.rank < rhs.rank }
+                return lhs.word.localizedCaseInsensitiveCompare(rhs.word) == .orderedAscending
+            }
             .map(\.id)
     }
 
@@ -236,42 +230,32 @@ actor LibraryCatalogActor {
         return true
     }
 
-    private func matchesSearch(
+    /// Search priority:
+    /// 0 = query in headword
+    /// 1 = query in definition
+    /// -1 = no match
+    /// Notes:
+    /// - Example sentences and hooks are intentionally excluded.
+    /// - Category/domain/etymology/part-of-speech are intentionally excluded.
+    private func searchMatchRank(
         headword: String,
-        category: String,
-        passageDomain: String,
-        etymology: String?,
-        memoryHookText: String?,
         sensesJSON: String?,
-        partOfSpeech: String,
         definition: String,
-        exampleSentence: String,
         query: String
-    ) -> Bool {
-        if headword.lowercased().contains(query) { return true }
-        if category.lowercased().contains(query) { return true }
-        if PassageDomain(rawStored: passageDomain, categorySlug: category)
-            .displayTitle.lowercased().contains(query) {
-            return true
-        }
-        if let etymology, etymology.lowercased().contains(query) { return true }
-        if let memoryHookText, memoryHookText.lowercased().contains(query) { return true }
+    ) -> Int {
+        if headword.lowercased().contains(query) { return 0 }
 
         if let sensesJSON,
            let data = sensesJSON.data(using: .utf8),
            let decoded = try? JSONDecoder().decode([WordSenseBlock].self, from: data),
            !decoded.isEmpty {
             for sense in decoded {
-                if sense.partOfSpeech.lowercased().contains(query) { return true }
-                if sense.definition.lowercased().contains(query) { return true }
-                if sense.exampleSentence.lowercased().contains(query) { return true }
+                if sense.definition.lowercased().contains(query) { return 1 }
             }
-            return false
+            return -1
         }
 
-        if partOfSpeech.lowercased().contains(query) { return true }
-        if definition.lowercased().contains(query) { return true }
-        if exampleSentence.lowercased().contains(query) { return true }
-        return false
+        if definition.lowercased().contains(query) { return 1 }
+        return -1
     }
 }

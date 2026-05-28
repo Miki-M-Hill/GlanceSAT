@@ -56,21 +56,10 @@ struct GlanceSATProvider: TimelineProvider {
             await WidgetReminderNotificationCoordinator.updateWidgetReminderNotification()
 
             let payload = WidgetPayloadLoader.load()
-        let calendar = Calendar.current
-        let now = Date()
-        let todayKey = WidgetCalendar.dayKey(for: now, calendar: calendar)
-        let nextMidnight = calendar.date(byAdding: .day, value: 1, to: calendar.startOfDay(for: now)) ?? now.addingTimeInterval(86_400)
-
-        if payload.calendarDayKey != todayKey {
-            let entry = GlanceSATEntry(
-                date: now,
-                word: payload.words.first ?? .placeholder,
-                isStaleSnapshot: true
-            )
-            let retry = now.addingTimeInterval(15 * 60)
-            completion(Timeline(entries: [entry], policy: .after(retry)))
-            return
-        }
+            let calendar = Calendar.current
+            let now = Date()
+            let todayKey = WidgetCalendar.dayKey(for: now, calendar: calendar)
+            let nextMidnight = calendar.date(byAdding: .day, value: 1, to: calendar.startOfDay(for: now)) ?? now.addingTimeInterval(86_400)
 
         if !WidgetPrefsReader.hasPremiumAccess(),
            WidgetPrefsReader.isFreemiumDailyLimitReached() {
@@ -85,7 +74,8 @@ struct GlanceSATProvider: TimelineProvider {
             return
         }
 
-        let words = WidgetInteractionStore.visibleWords(from: payload.words)
+            let visibleWords = WidgetInteractionStore.visibleWords(from: payload.words)
+            let words = visibleWords.isEmpty ? [.placeholder] : visibleWords.shuffled()
         guard let intervalFloor = WidgetSlotClock.thirtyMinuteFloor(calendar: calendar, date: now) else {
             completion(
                 Timeline(
@@ -109,20 +99,21 @@ struct GlanceSATProvider: TimelineProvider {
             return
         }
 
-        var entries: [GlanceSATEntry] = []
-        let slotCount = GlanceSATWidgetConstants.timelineSlotsPerDay
-        let step = GlanceSATWidgetConstants.rotationIntervalMinutes
-        let streakDays = WidgetPrefsReader.streakDays()
+            var entries: [GlanceSATEntry] = []
+            let slotCount = 48 // Next 2 days, hourly.
+            let stepMinutes = 60
+            let streakDays = WidgetPrefsReader.streakDays()
 
-        for offset in 0 ..< slotCount {
-            guard let slotDate = calendar.date(byAdding: .minute, value: offset * step, to: intervalFloor) else {
-                continue
+            for offset in 0 ..< slotCount {
+                guard let slotDate = calendar.date(byAdding: .minute, value: offset * stepMinutes, to: intervalFloor) else {
+                    continue
+                }
+                let word = words[offset % words.count]
+                entries.append(GlanceSATEntry(date: slotDate, word: word, streakDays: streakDays))
             }
-            let word = words[offset % max(words.count, 1)]
-            entries.append(GlanceSATEntry(date: slotDate, word: word, streakDays: streakDays))
-        }
 
-        completion(Timeline(entries: entries, policy: .after(nextMidnight)))
+            let fallbackReload = entries.last?.date.addingTimeInterval(60 * 60) ?? nextMidnight
+            completion(Timeline(entries: entries, policy: .after(fallbackReload)))
         }
     }
 

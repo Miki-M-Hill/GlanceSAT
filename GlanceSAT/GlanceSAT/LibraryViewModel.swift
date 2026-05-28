@@ -21,6 +21,8 @@ final class LibraryViewModel {
     private var activeFilter = LibraryCatalogFilter()
     private var filteredScanDBOffset = 0
     private var reachedEnd = false
+    private var isHandlingDeepLink = false
+    private var deepLinkTargetID: UUID?
 
     func configure(container: ModelContainer) {
         modelContainer = container
@@ -113,6 +115,23 @@ final class LibraryViewModel {
         wordCache = [:]
     }
 
+    /// Deep-link fast path: hydrate one word synchronously so the pager can render before index rebuild.
+    func prepareDeepLinkWord(id: UUID, modelContext: ModelContext) {
+        isHandlingDeepLink = true
+        deepLinkTargetID = id
+
+        if let word = Self.fetchWord(id: id, modelContext: modelContext) {
+            wordCache[id] = word
+        }
+
+        if orderedWordIDs.isEmpty {
+            orderedWordIDs = [id]
+            isLoadingIndex = false
+        } else if !orderedWordIDs.contains(id) {
+            orderedWordIDs.insert(id, at: 0)
+        }
+    }
+
     /// Indexed main-context fetch (cheap); catalog scans stay on `LibraryCatalogActor`.
     func loadWord(id: UUID, modelContext: ModelContext) async {
         if wordCache[id] != nil { return }
@@ -192,25 +211,38 @@ final class LibraryViewModel {
     }
 
     private func applyFirstPage(_ ids: [UUID], nextDBOffset: Int, reachedEnd: Bool) {
+        let adjustedIDs: [UUID]
+        if isHandlingDeepLink, let target = deepLinkTargetID {
+            if ids.contains(target) {
+                adjustedIDs = [target] + ids.filter { $0 != target }
+            } else {
+                adjustedIDs = [target] + ids
+            }
+            isHandlingDeepLink = false
+            deepLinkTargetID = nil
+        } else {
+            adjustedIDs = ids
+        }
+
         let oldCount = orderedWordIDs.count
         LibraryPagerDiagnostics.logArrayMutation(
             label: "applyFirstPage",
             oldCount: oldCount,
-            newCount: ids.count,
+            newCount: adjustedIDs.count,
             revision: indexRevision,
             scrollPosition: nil
         )
-        LibraryPagerDiagnostics.auditOrderedWordIDs(ids, label: "applyFirstPage", modelContext: nil)
-        let retainedCache = wordCache.filter { Set(ids).contains($0.key) }
+        LibraryPagerDiagnostics.auditOrderedWordIDs(adjustedIDs, label: "applyFirstPage", modelContext: nil)
+        let retainedCache = wordCache.filter { Set(adjustedIDs).contains($0.key) }
         withAnimation(.easeOut(duration: 0.2)) {
-            orderedWordIDs = ids
+            orderedWordIDs = adjustedIDs
             wordCache = retainedCache
             filteredScanDBOffset = nextDBOffset
             self.reachedEnd = reachedEnd
             isLoadingIndex = false
             isLoadingMore = false
         }
-        preloadWords(Array(ids.prefix(3)))
+        preloadWords(Array(adjustedIDs.prefix(3)))
     }
 
     private func appendPage(

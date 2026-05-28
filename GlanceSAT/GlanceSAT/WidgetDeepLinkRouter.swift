@@ -7,6 +7,7 @@ import Foundation
 
 enum WidgetDeepLinkRouter {
     static let scheme = "glancesat"
+    static let legacyScheme = "glance"
 
     private static let pendingWordIDKey = "app.pendingLibraryWordID"
     private static let navigateToTodayKey = "app.widgetNavigateToToday"
@@ -40,7 +41,7 @@ enum WidgetDeepLinkRouter {
 
     @discardableResult
     static func handleIncomingURL(_ url: URL) -> Bool {
-        guard url.scheme?.lowercased() == scheme else { return false }
+        guard matchesSupportedScheme(url) else { return false }
 
         if isTodayHostOrPath(url) {
             UserDefaults.standard.set(true, forKey: navigateToTodayKey)
@@ -81,7 +82,7 @@ enum WidgetDeepLinkRouter {
     }
 
     static func wordID(from url: URL) -> UUID? {
-        guard url.scheme?.lowercased() == scheme else { return nil }
+        guard matchesSupportedScheme(url) else { return nil }
 
         var parts: [String] = []
         if let host = url.host?.trimmingCharacters(in: .whitespacesAndNewlines), !host.isEmpty {
@@ -94,10 +95,19 @@ enum WidgetDeepLinkRouter {
                 .filter { !$0.isEmpty }
         )
 
+        if parts.count >= 2, parts[0] == "word", let directWordID = UUID(uuidString: parts[1]) {
+            return directWordID
+        }
+
         guard let wordIndex = parts.firstIndex(of: "word"), wordIndex + 1 < parts.count else {
             return nil
         }
         return UUID(uuidString: parts[wordIndex + 1])
+    }
+
+    private static func matchesSupportedScheme(_ url: URL) -> Bool {
+        guard let value = url.scheme?.lowercased() else { return false }
+        return value == scheme || value == legacyScheme
     }
 
     static func peekPendingWordID() -> UUID? {

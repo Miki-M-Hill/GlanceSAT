@@ -21,6 +21,8 @@ final class QuizPreparationManager {
     private(set) var state: QuizPreparationState = .notStarted
     /// Pre-hydrated on main after background generation so Start Quiz can present instantly.
     private(set) var hydratedQuestions: [QuizQuestion]?
+    /// Pre-built first daily quiz (Quiz Zero) for instant "Start Daily Quiz".
+    private(set) var preloadedPrimaryQuiz: QuizSessionData?
     /// Pre-built supplemental quiz shown instantly from the post-quiz "Take another quiz" CTA.
     private(set) var preloadedQuiz: QuizSessionData?
     private(set) var preloadedHydratedQuestions: [QuizQuestion]?
@@ -47,6 +49,7 @@ final class QuizPreparationManager {
         scheduledWordIDs = []
         scheduledDayKey = ""
         hydratedQuestions = nil
+        preloadedPrimaryQuiz = nil
         state = .notStarted
         failWaiters(QuizPreparationError.cancelled)
     }
@@ -201,7 +204,7 @@ final class QuizPreparationManager {
 
         let ids = wordIDs
         let dayKey = calendarDayKey
-        preparationTask = Task.detached(priority: .utility) { [weak self] in
+        preparationTask = Task.detached(priority: .userInitiated) { [weak self] in
             await Self.runGeneration(
                 manager: self,
                 modelContainer: modelContainer,
@@ -305,6 +308,13 @@ final class QuizPreparationManager {
         hydratedQuestions?.isEmpty == false
     }
 
+    /// Accepts a prebuilt payload from `AppBootstrapActor` and hydrates immediately.
+    func primePrebuiltPrimaryQuiz(_ payload: QuizSessionData, modelContext: ModelContext) {
+        state = .ready(payload)
+        preloadedPrimaryQuiz = payload
+        beginHydration(payload: payload, modelContext: modelContext)
+    }
+
     // MARK: - Private
 
     private static func runGeneration(
@@ -345,6 +355,7 @@ final class QuizPreparationManager {
             return
         }
         state = .ready(payload)
+        preloadedPrimaryQuiz = payload
         preparationTask = nil
         resumeWaiters(with: payload)
         if let modelContext {
@@ -367,6 +378,7 @@ final class QuizPreparationManager {
         state = .failed(error)
         preparationTask = nil
         hydratedQuestions = nil
+        preloadedPrimaryQuiz = nil
         failWaiters(error)
     }
 

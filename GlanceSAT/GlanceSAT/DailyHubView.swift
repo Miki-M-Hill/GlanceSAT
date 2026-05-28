@@ -109,7 +109,9 @@ struct DailyHubView: View {
     @State private var optimisticDailyResumeCTA = false
     /// Shown after "Take another quiz" presents the cover so "Resume quiz" is delayed the same way.
     @State private var optimisticSupplementalResumeCTA = false
-    @State private var optimisticResumeCTADelayTask: Task<Void, Never>?
+    /// Keeps Remembered/Missed tags visible through the quiz cover transition.
+    @State private var keepPostQuizOutcomesVisibleDuringQuizPresent = false
+    @State private var optimisticResumeCTADelayWorkItem: DispatchWorkItem?
     @State private var todayScrollOffset: CGFloat = 0
     @State private var todayScrollOriginMinY: CGFloat?
 
@@ -272,8 +274,8 @@ struct DailyHubView: View {
         .background(HubPalette.linen)
         .sensoryFeedback(.selection, trigger: scrolledCardID)
         .task {
-            await WordJSONImportService.importIfNeeded(container: modelContext.container)
-            syncDailyWords()
+            await hydrateTodayWordsIfNeeded()
+            prefetchPrimaryQuizIfNeeded()
             if scrolledCardID == nil {
                 scrolledCardID = displayWords.first?.id
             }
@@ -288,7 +290,10 @@ struct DailyHubView: View {
             )
         }
         .onAppear {
-            syncDailyWords()
+            Task {
+                await hydrateTodayWordsIfNeeded()
+                prefetchPrimaryQuizIfNeeded()
+            }
             #if DEBUG
             if debugForcePreQuizToday {
                 applyDebugPreQuizInMemoryState()
@@ -303,17 +308,21 @@ struct DailyHubView: View {
         }
         .onChange(of: scenePhase) { _, phase in
             guard phase == .active else { return }
-            syncDailyWords()
+            Task {
+                await syncDailyWords()
+                prefetchPrimaryQuizIfNeeded()
+            }
             guard didRunInitialStreakReconcile else { return }
             if StreakPlantState.reconcileMissedDays() {
                 triggerWiltFall()
             }
         }
         .onChange(of: entitlementManager.hasPremiumAccess) { _, _ in
-            syncDailyWords()
+            Task { await syncDailyWords() }
         }
         .onChange(of: showDailyQuiz) { _, isPresented in
             if !isPresented {
+                keepPostQuizOutcomesVisibleDuringQuizPresent = false
                 clearAllOptimisticQuizCTAState()
                 refreshPersistedQuizFlagsDeferred()
             }
@@ -403,11 +412,11 @@ struct DailyHubView: View {
         Text("Glance")
             .font(.caption.weight(.bold))
             .tracking(2)
-            .foregroundStyle(HubPalette.ember)
+            .foregroundStyle(Color.primary)
             .textCase(.uppercase)
             .frame(maxWidth: .infinity)
             .padding(.horizontal, metrics.horizontalContentInset)
-            .padding(.top, max(metrics.safeArea.top - metrics.scaled(12), metrics.scaled(2)))
+            .padding(.top, metrics.glanceHeaderTopPadding)
             .padding(.bottom, metrics.scaled(16))
     }
 
@@ -955,6 +964,7 @@ struct DailyHubView: View {
                             }
                         } else if canOfferSupplementalQuiz {
                             postQuizSecondaryQuizButton(title: "Take another quiz") {
+                                keepPostQuizOutcomesVisibleDuringQuizPresent = true
                                 startAnotherDailyQuiz()
                             }
 
@@ -1178,6 +1188,7 @@ struct DailyHubView: View {
             let card = DailyHubWordCapsule(
                 word: word,
                 cardWidth: cardWidth,
+                minCardHeight: isPostQuiz ? nil : metrics.preQuizCardMinHeight,
                 layoutScale: metrics.verticalScale,
                 isRevealed: hasCompletedQuizForDisplay,
                 outcome: outcome(for: word),
@@ -1261,19 +1272,60 @@ struct DailyHubView: View {
 
     private func outcome(for word: Word) -> DailyWordOutcome? {
         guard hasCompletedQuizForDisplay else { return nil }
-        if showDailyQuiz { return nil }
+        if showDailyQuiz, !keepPostQuizOutcomesVisibleDuringQuizPresent { return nil }
         if rememberedWordIDs.contains(word.id) { return .remembered }
         if missedWordIDs.contains(word.id) { return .needsAnotherPass }
         return .returningTomorrow
     }
 
-    private func syncDailyWords() {
-        Task { @MainActor in
-            dailyWords = await DailyWordBatchService.refresh(modelContext: modelContext)
-            triggerQuizPrefetchIfNeeded()
+    /// Cold boot: wait for bootstrap, then consume its persisted batch (no duplicate `refresh`).
+    private func hydrateTodayWordsIfNeeded() async {
+        if !AppLaunchState.isDataLoaded {
+            await waitForBootstrapDataLoaded()
         }
+        if AppLaunchState.hasPerformedInitialFetch {
+            applyBootstrapTodayWords()
+            return
+        }
+        await syncDailyWords()
+    }
+
+    private func waitForBootstrapDataLoaded() async {
+        if AppLaunchState.isDataLoaded { return }
+        await withCheckedContinuation { (continuation: CheckedContinuation<Void, Never>) in
+            var token: NSObjectProtocol?
+            token = NotificationCenter.default.addObserver(
+                forName: AppLaunchState.dataLoadedNotification,
+                object: nil,
+                queue: .main
+            ) { _ in
+                if let token { NotificationCenter.default.removeObserver(token) }
+                continuation.resume()
+            }
+            if AppLaunchState.isDataLoaded {
+                if let token { NotificationCenter.default.removeObserver(token) }
+                continuation.resume()
+            }
+        }
+    }
+
+    private func applyBootstrapTodayWords() {
+        dailyWords = DailyWordBatchService.loadPersistedTodayWords(modelContext: modelContext)
         refreshPersistedQuizFlags()
         restoreTodayQuizCompletionFromWidgetState()
+        triggerQuizPrefetchIfNeeded()
+    }
+
+    private func syncDailyWords() async {
+        dailyWords = await DailyWordBatchService.refresh(modelContext: modelContext)
+        refreshPersistedQuizFlags()
+        restoreTodayQuizCompletionFromWidgetState()
+        triggerQuizPrefetchIfNeeded()
+    }
+
+    /// Builds Quiz Zero in the background as soon as Today data is ready.
+    private func prefetchPrimaryQuizIfNeeded() {
+        triggerQuizPrefetchIfNeeded()
     }
 
     private var shouldPrefetchPrimaryQuiz: Bool {
@@ -1399,15 +1451,13 @@ struct DailyHubView: View {
     }
 
     private func cancelOptimisticResumeCTADelay() {
-        optimisticResumeCTADelayTask?.cancel()
-        optimisticResumeCTADelayTask = nil
+        optimisticResumeCTADelayWorkItem?.cancel()
+        optimisticResumeCTADelayWorkItem = nil
     }
 
     private func scheduleOptimisticResumeCTA(after delayKind: OptimisticResumeDelayKind) {
         cancelOptimisticResumeCTADelay()
-        optimisticResumeCTADelayTask = Task { @MainActor in
-            try? await Task.sleep(nanoseconds: 1_000_000_000)
-            guard !Task.isCancelled else { return }
+        let workItem = DispatchWorkItem {
             var reset = Transaction()
             reset.disablesAnimations = true
             withTransaction(reset) {
@@ -1418,11 +1468,15 @@ struct DailyHubView: View {
                     optimisticSupplementalResumeCTA = true
                 }
             }
+            keepPostQuizOutcomesVisibleDuringQuizPresent = false
         }
+        optimisticResumeCTADelayWorkItem = workItem
+        DispatchQueue.main.asyncAfter(deadline: .now() + 0.4, execute: workItem)
     }
 
     private func clearAllOptimisticQuizCTAState() {
         cancelOptimisticResumeCTADelay()
+        keepPostQuizOutcomesVisibleDuringQuizPresent = false
         var reset = Transaction()
         reset.disablesAnimations = true
         withTransaction(reset) {
@@ -1437,7 +1491,9 @@ struct DailyHubView: View {
             dailyQuizQuestions = []
             showQuizAlert = false
 
-            syncDailyWords()
+            if dailyWords.isEmpty {
+                await syncDailyWords()
+            }
 
             if let saved = DailyQuizPersistence.load(),
                let rebuilt = DailyQuizPersistence.rebuildQuestions(from: saved, modelContext: modelContext),
@@ -1454,23 +1510,12 @@ struct DailyHubView: View {
                 return
             }
 
-            isDailyQuizContentLoading = true
-            showDailyQuiz = true
-            scheduleSupplementalPreload()
-            defer { isDailyQuizContentLoading = false }
-
             DailyQuizPersistence.clear()
             refreshPersistedQuizFlags()
             usedQuestionSlots = []
 
-            let deadline = Date().addingTimeInterval(4.0)
-            while dailyWords.isEmpty && Date() < deadline {
-                try? await Task.sleep(nanoseconds: 200_000_000)
-            }
-
             let due = dailyWords
             guard !due.isEmpty else {
-                showDailyQuiz = false
                 quizAlertTitle = "Nothing due yet"
                 quizAlertMessage = "There are no words available yet. Please try again in a moment."
                 showQuizAlert = true
@@ -1481,13 +1526,37 @@ struct DailyHubView: View {
             let dayKey = DailyWordBatchService.calendarDayKey()
             let wordIDs = due.map(\.id)
 
+            if quizPreparation.hasHydratedQuiz,
+               case .ready(let payload) = quizPreparation.state,
+               payload.calendarDayKey == dayKey,
+               payload.dailyWordIDs == wordIDs {
+                showDailyQuiz = true
+                isDailyQuizContentLoading = false
+                guard presentPreparedPrimaryQuiz() else {
+                    showDailyQuiz = false
+                    quizAlertTitle = "Quiz unavailable"
+                    quizAlertMessage = "Could not build quiz questions from the current list."
+                    showQuizAlert = true
+                    clearAllOptimisticQuizCTAState()
+                    return
+                }
+                return
+            }
+
             if quizPreparation.isReady,
                case .ready(let payload) = quizPreparation.state,
                payload.calendarDayKey == dayKey,
                payload.dailyWordIDs == wordIDs,
                presentPreparedPrimaryQuiz() {
+                showDailyQuiz = true
+                isDailyQuizContentLoading = false
                 return
             }
+
+            isDailyQuizContentLoading = true
+            showDailyQuiz = true
+            scheduleSupplementalPreload()
+            defer { isDailyQuizContentLoading = false }
 
             if case .generating = quizPreparation.state {
                 do {
@@ -1541,11 +1610,7 @@ struct DailyHubView: View {
     private func startAnotherDailyQuiz() {
         Task { @MainActor in
             cancelOptimisticResumeCTADelay()
-            var resetSupplemental = Transaction()
-            resetSupplemental.disablesAnimations = true
-            withTransaction(resetSupplemental) {
-                optimisticSupplementalResumeCTA = false
-            }
+            keepPostQuizOutcomesVisibleDuringQuizPresent = true
             dailyQuizQuestions = []
             showQuizAlert = false
             DailyQuizPersistence.clear()
@@ -1566,11 +1631,12 @@ struct DailyHubView: View {
 
             isDailyQuizContentLoading = true
             showDailyQuiz = true
+            scheduleOptimisticResumeCTA(after: .supplemental)
             scheduleSupplementalPreload()
             defer { isDailyQuizContentLoading = false }
 
             await WordJSONImportService.importIfNeeded(container: modelContext.container)
-            syncDailyWords()
+            await syncDailyWords()
 
             guard let plan = SupplementalQuizPlanner.plan(
                 dailyWords: dailyWords,
@@ -1734,6 +1800,7 @@ private enum DailyWordOutcome {
 private struct DailyHubWordCapsule: View {
     let word: Word
     let cardWidth: CGFloat
+    let minCardHeight: CGFloat?
     var layoutScale: CGFloat = 1
     let isRevealed: Bool
     let outcome: DailyWordOutcome?
@@ -1765,6 +1832,7 @@ private struct DailyHubWordCapsule: View {
         cardBody
             .padding(cardPadding)
             .frame(width: cardWidth, alignment: .topLeading)
+            .frame(minHeight: minCardHeight ?? 0, alignment: .topLeading)
             .fixedSize(horizontal: false, vertical: true)
             .background(wordCardGlassBackground)
             .onChange(of: word.id) { _, _ in

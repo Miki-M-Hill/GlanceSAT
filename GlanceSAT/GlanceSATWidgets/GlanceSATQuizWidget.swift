@@ -87,6 +87,7 @@ struct GlanceSATQuizProvider: TimelineProvider {
             let slotKey = WidgetSlotClock.slotKey(calendarDayKey: todayKey, slotIndex: slotIndex)
 
             if let feedback = WidgetQuizSlotStore.activeFeedback(slotKey: slotKey, wordID: word.id, now: now) {
+                let resultHoldUntil = now.addingTimeInterval(3.0)
                 let feedbackEntry = GlanceSATQuizEntry(
                     date: now,
                     word: word,
@@ -96,12 +97,12 @@ struct GlanceSATQuizProvider: TimelineProvider {
                     wasCorrect: feedback.wasCorrect
                 )
                 let vocabEntry = GlanceSATQuizEntry(
-                    date: feedback.endsAt,
+                    date: resultHoldUntil,
                     word: word,
                     slotKey: slotKey,
                     displayPhase: .vocab
                 )
-                completion(Timeline(entries: [feedbackEntry, vocabEntry], policy: .after(feedback.endsAt)))
+                completion(Timeline(entries: [feedbackEntry, vocabEntry], policy: .after(resultHoldUntil)))
                 return
             }
         }

@@ -5,6 +5,7 @@
 
 import SwiftUI
 import RevenueCat
+import SwiftData
 
 // MARK: - Root
 
@@ -21,6 +22,8 @@ struct OnboardingView: View {
     @AppStorage("dailyQuizReminderHour") private var reminderHour = 19
     @AppStorage("dailyQuizReminderMinute") private var reminderMinute = 0
 
+    @Environment(\.modelContext) private var modelContext
+    @State private var isFinishingOnboarding = false
     @State private var page = 0
     @State private var selectedPaywallPlan: SubscriptionPlan = .annual
     @State private var paywallErrorMessage: String?
@@ -160,7 +163,7 @@ struct OnboardingView: View {
             widgetScreen.tag(8)
         }
         .tabViewStyle(.page(indexDisplayMode: .never))
-        .animation(OnboardingMotion.transition, value: page)
+        .animation(.easeInOut(duration: 0.35), value: page)
     }
 
     // MARK: - Screens
@@ -494,7 +497,13 @@ struct OnboardingView: View {
 
     private var widgetInstallBottomChrome: some View {
         VStack(spacing: 12) {
-            OnboardingPrimaryButton(title: "My widget is live", isEnabled: true, action: finishOnboarding)
+            OnboardingPrimaryButton(
+                title: "My widget is live",
+                isEnabled: !isFinishingOnboarding,
+                isLoading: isFinishingOnboarding,
+                loadingTitle: "Getting your words ready…",
+                action: finishOnboarding
+            )
 
             Button("I'll do this in a minute") {
                 finishOnboarding()
@@ -502,6 +511,9 @@ struct OnboardingView: View {
             .font(.system(size: 15, weight: .medium))
             .foregroundStyle(OnboardingColors.secondaryText)
             .buttonStyle(.plain)
+            .disabled(isFinishingOnboarding)
+            .opacity(isFinishingOnboarding ? 0 : 1)
+            .animation(.easeInOut(duration: 0.18), value: isFinishingOnboarding)
         }
     }
 
@@ -744,12 +756,17 @@ struct OnboardingView: View {
     }
 
     private func finishOnboarding() {
+        guard !isFinishingOnboarding else { return }
+        isFinishingOnboarding = true
         WidgetAppGroup.saveOnboardingCompletionDate()
-        Task {
+        Task { @MainActor in
             await WidgetReminderNotificationCoordinator.updateWidgetReminderNotification()
+            await AppBootstrap.initializeAppData(container: modelContext.container)
+            AppLaunchState.markDataLoaded()
+            hasCompletedOnboarding = true
+            isFinishingOnboarding = false
+            onFinish()
         }
-        hasCompletedOnboarding = true
-        onFinish()
     }
 
     private var formattedReminderTime: String {
@@ -931,12 +948,22 @@ private struct OnboardingPrimaryButton: View {
 
     let title: String
     let isEnabled: Bool
+    var isLoading: Bool = false
+    var loadingTitle: String? = nil
     let action: () -> Void
 
     var body: some View {
         Button(action: action) {
             Group {
-                if dynamicTypeSize.isAccessibilitySize {
+                if isLoading {
+                    HStack(spacing: 8) {
+                        ProgressView()
+                            .tint(.white)
+                            .scaleEffect(0.85)
+                        Text(loadingTitle ?? title)
+                            .lineLimit(1)
+                    }
+                } else if dynamicTypeSize.isAccessibilitySize {
                     Text(title)
                         .lineLimit(nil)
                 } else {
@@ -947,18 +974,19 @@ private struct OnboardingPrimaryButton: View {
                 .foregroundColor(.white)
                 .frame(maxWidth: .infinity)
                 .frame(height: 56)
-                .background(isEnabled ? OnboardingColors.hubOrange : OnboardingColors.hubOrange.opacity(0.38))
+                .background(isEnabled && !isLoading ? OnboardingColors.hubOrange : OnboardingColors.hubOrange.opacity(0.38))
                 .clipShape(Capsule())
                 .shadow(
-                    color: OnboardingColors.hubOrange.opacity(isEnabled ? 0.3 : 0),
+                    color: OnboardingColors.hubOrange.opacity(isEnabled && !isLoading ? 0.3 : 0),
                     radius: 15,
                     x: 0,
                     y: 8
                 )
         }
         .buttonStyle(.plain)
-        .disabled(!isEnabled)
+        .disabled(!isEnabled || isLoading)
         .animation(OnboardingMotion.selection, value: isEnabled)
+        .animation(OnboardingMotion.selection, value: isLoading)
     }
 }
 

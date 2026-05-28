@@ -136,6 +136,13 @@ struct TodayHubLayoutMetrics: Equatable {
     var scrollContentMinHeight: CGFloat { size.height }
 
     var preQuizCarouselHeight: CGFloat { scaled(Self.basePreQuizCarouselHeight) }
+    var preQuizCardMinHeight: CGFloat { GlanceDeviceLayout.heightFraction(0.14, in: size.height) }
+    var glanceHeaderTopPadding: CGFloat {
+        min(
+            max(safeArea.top - scaled(16), scaled(2)),
+            GlanceDeviceLayout.heightFraction(0.05, in: size.height)
+        )
+    }
     var postQuizCarouselHeight: CGFloat { scaled(Self.basePostQuizCarouselHeight) }
     var postQuizGlassSpacing: CGFloat { scaled(Self.basePostQuizGlassSpacing) }
     var headerTopPadding: CGFloat { scaled(Self.baseHeaderTopPadding) }

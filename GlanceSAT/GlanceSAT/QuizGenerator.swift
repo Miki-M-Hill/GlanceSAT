@@ -73,6 +73,7 @@ enum QuizGenerator {
         var slotExclusions = excludedSlots
         var remaining = due
         var foilQuestion: QuizQuestion?
+        var usedDistractorIDs = Set<UUID>()
 
         let bossCandidates = due.enumerated()
             .filter { $0.element.tonalFoilId != nil }
@@ -127,7 +128,13 @@ enum QuizGenerator {
             guard Self.canUseSentenceCompletion(sentence: word.quizCompletionSentence, word: word.word) else {
                 continue
             }
-            sentenceQuestions.append(try makeSentenceCompletionQuestion(for: word, context: context))
+            sentenceQuestions.append(
+                try makeSentenceCompletionQuestion(
+                    for: word,
+                    context: context,
+                    usedDistractorIDs: &usedDistractorIDs
+                )
+            )
             sentenceAssignedIDs.insert(word.id)
         }
 
@@ -139,7 +146,13 @@ enum QuizGenerator {
             .prefix(synonymCap)
         var synonymQuestions: [QuizQuestion] = []
         for word in synonymWords {
-            synonymQuestions.append(try makeSynonymQuestion(for: word, context: context))
+            synonymQuestions.append(
+                try makeSynonymQuestion(
+                    for: word,
+                    context: context,
+                    usedDistractorIDs: &usedDistractorIDs
+                )
+            )
         }
 
         var allQuestions: [QuizQuestion] = []
@@ -201,14 +214,16 @@ enum QuizGenerator {
     ) throws -> QuizQuestion? {
         let synonymSlot = questionSlotKey(targetID: word.id, type: .synonym)
         if !excludedSlots.contains(synonymSlot) {
-            return try makeSynonymQuestion(for: word, context: context)
+            var usedDistractorIDs = Set<UUID>()
+            return try makeSynonymQuestion(for: word, context: context, usedDistractorIDs: &usedDistractorIDs)
         }
 
         let sentenceSlot = questionSlotKey(targetID: word.id, type: .sentenceCompletion)
         if !excludedSlots.contains(sentenceSlot),
            !word.quizCompletionSentence.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty,
            canUseSentenceCompletion(sentence: word.quizCompletionSentence, word: word.word) {
-            return try makeSentenceCompletionQuestion(for: word, context: context)
+            var usedDistractorIDs = Set<UUID>()
+            return try makeSentenceCompletionQuestion(for: word, context: context, usedDistractorIDs: &usedDistractorIDs)
         }
 
         return nil
@@ -285,7 +300,11 @@ enum QuizGenerator {
 
     // MARK: - Level 1 — Synonym
 
-    private static func makeSynonymQuestion(for target: SATWord, context: ModelContext) throws -> QuizQuestion {
+    private static func makeSynonymQuestion(
+        for target: SATWord,
+        context: ModelContext,
+        usedDistractorIDs: inout Set<UUID>
+    ) throws -> QuizQuestion {
         let correct: String
         if let pick = target.quizSynonyms.randomElement(), !pick.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty {
             correct = pick.trimmingCharacters(in: .whitespacesAndNewlines)
@@ -300,7 +319,8 @@ enum QuizGenerator {
             for: target,
             needCount: 3,
             correct: correct,
-            context: context
+            context: context,
+            usedDistractorIDs: &usedDistractorIDs
         ) { synonymLikeAnswer(from: $0) }
 
         let options = shuffledFourOptions(correct: correct, wrong: pick.displayOptions)
@@ -341,11 +361,13 @@ enum QuizGenerator {
         let sentenceBuild = buildSentencePrompt(sentence, word: target.word)
         let correct = inflect(target.word, as: sentenceBuild.inflection)
 
+        var usedDistractorIDs = Set<UUID>()
         let pick = try pickRecencyWrongOptions(
             for: target,
             needCount: 3,
             correct: correct,
-            context: context
+            context: context,
+            usedDistractorIDs: &usedDistractorIDs
         ) { inflect($0.word, as: sentenceBuild.inflection) }
 
         let options = shuffledFourOptions(correct: correct, wrong: pick.displayOptions)
@@ -358,7 +380,11 @@ enum QuizGenerator {
         )
     }
 
-    private static func makeSentenceCompletionQuestion(for target: SATWord, context: ModelContext) throws -> QuizQuestion {
+    private static func makeSentenceCompletionQuestion(
+        for target: SATWord,
+        context: ModelContext,
+        usedDistractorIDs: inout Set<UUID>
+    ) throws -> QuizQuestion {
         let sentenceBuild = Self.buildSentencePrompt(target.quizCompletionSentence, word: target.word)
         let prompt = sentenceBuild.prompt
         let inflection = sentenceBuild.inflection
@@ -368,7 +394,8 @@ enum QuizGenerator {
             for: target,
             needCount: 3,
             correct: correct,
-            context: context
+            context: context,
+            usedDistractorIDs: &usedDistractorIDs
         ) { Self.inflect($0.word, as: inflection) }
 
         let options = shuffledFourOptions(correct: correct, wrong: pick.displayOptions)
@@ -393,59 +420,92 @@ enum QuizGenerator {
         let headwords: [String]
     }
 
+    private static let distractorPoolFetchLimit = 15
+    private static let distractorRecencySort = [SortDescriptor(\Word.lastReviewDate, order: .reverse)]
+
     private static func pickRecencyWrongOptions(
         for target: SATWord,
         needCount: Int,
         correct: String,
         context: ModelContext,
+        usedDistractorIDs: inout Set<UUID>,
         displayText: (SATWord) -> String
     ) throws -> RecencyWrongPick {
         var displayOptions: [String] = []
         var headwords: [String] = []
 
-        func absorb(_ candidates: [SATWord]) {
+        func absorb(_ candidates: [SATWord], ignoringUsed: Bool = false) {
             for word in candidates where displayOptions.count < needCount {
+                if !ignoringUsed, usedDistractorIDs.contains(word.id) { continue }
                 let option = displayText(word)
                 guard isDistinctOption(option, correct: correct, targetWord: target.word, existing: displayOptions) else {
                     continue
                 }
                 displayOptions.append(option)
                 headwords.append(word.word)
+                usedDistractorIDs.insert(word.id)
             }
         }
 
-        let low = target.difficulty - 1
-        let high = target.difficulty + 1
+        let targetTier = resolvedDistractorTier(for: target)
 
-        let posDifficultyBand = try fetchWords(
-            excluding: target.id,
-            partOfSpeech: target.partOfSpeech,
-            difficultyMin: low,
-            difficultyMax: high,
-            context: context
+        let tierPool = try fetchWordsByDistractorTier(targetTier, context: context)
+        absorb(
+            filterDistractorCandidates(
+                tierPool,
+                targetID: target.id,
+                usedDistractorIDs: usedDistractorIDs,
+                ignoringUsed: false
+            )
         )
-        absorb(sortByRecency(posDifficultyBand))
 
         if displayOptions.count < needCount {
-            let posOnly = try fetchWords(
-                excluding: target.id,
-                partOfSpeech: target.partOfSpeech,
-                difficultyMin: nil,
-                difficultyMax: nil,
-                context: context
+            let posPool = try fetchWordsByPartOfSpeech(target.partOfSpeech, context: context)
+            absorb(
+                filterDistractorCandidates(
+                    posPool,
+                    targetID: target.id,
+                    usedDistractorIDs: usedDistractorIDs,
+                    ignoringUsed: false
+                )
             )
-            absorb(sortByRecency(posOnly))
         }
 
         if displayOptions.count < needCount {
-            let anyPOS = try fetchAllWords(excluding: target.id, context: context)
-            absorb(sortByRecency(anyPOS))
+            let catalogPool = try fetchDistractorCatalogPool(context: context)
+            absorb(
+                filterDistractorCandidates(
+                    catalogPool,
+                    targetID: target.id,
+                    usedDistractorIDs: usedDistractorIDs,
+                    ignoringUsed: false
+                )
+            )
+        }
+
+        // If we run out of options due to strict uniqueness, reset and refill.
+        if displayOptions.count < needCount, !usedDistractorIDs.isEmpty {
+            usedDistractorIDs.removeAll()
+            let catalogPool = try fetchDistractorCatalogPool(context: context)
+            absorb(
+                filterDistractorCandidates(
+                    catalogPool,
+                    targetID: target.id,
+                    usedDistractorIDs: usedDistractorIDs,
+                    ignoringUsed: true
+                )
+            )
         }
 
         if displayOptions.count < needCount {
             var suffix = 0
-            let anyPOS = try fetchAllWords(excluding: target.id, context: context)
-            for word in sortByRecency(anyPOS) where displayOptions.count < needCount {
+            let catalogPool = try fetchDistractorCatalogPool(context: context)
+            for word in filterDistractorCandidates(
+                catalogPool,
+                targetID: target.id,
+                usedDistractorIDs: usedDistractorIDs,
+                ignoringUsed: true
+            ) where displayOptions.count < needCount {
                 let alternate = "\(displayText(word)) (\(suffix))"
                 suffix += 1
                 guard isDistinctOption(alternate, correct: correct, targetWord: target.word, existing: displayOptions) else {
@@ -459,18 +519,20 @@ enum QuizGenerator {
         return RecencyWrongPick(displayOptions: displayOptions, headwords: headwords)
     }
 
-    private static func sortByRecency(_ words: [SATWord]) -> [SATWord] {
-        words.sorted { lhs, rhs in
-            switch (lhs.lastReviewDate, rhs.lastReviewDate) {
-            case let (left?, right?):
-                return left > right
-            case (_?, nil):
-                return true
-            case (nil, _?):
-                return false
-            case (nil, nil):
-                return false
-            }
+    private static func resolvedDistractorTier(for target: SATWord) -> String {
+        let trimmed = target.distractorTier.trimmingCharacters(in: .whitespacesAndNewlines)
+        if !trimmed.isEmpty { return trimmed }
+        return WordDistractorTier.make(partOfSpeech: target.partOfSpeech, difficulty: target.difficulty)
+    }
+
+    private static func filterDistractorCandidates(
+        _ words: [SATWord],
+        targetID: UUID,
+        usedDistractorIDs: Set<UUID>,
+        ignoringUsed: Bool
+    ) -> [SATWord] {
+        words.filter { word in
+            word.id != targetID && (ignoringUsed || !usedDistractorIDs.contains(word.id))
         }
     }
 
@@ -516,45 +578,38 @@ enum QuizGenerator {
         return ordered
     }
 
-    // MARK: - SwiftData
+    // MARK: - SwiftData (distractor pools)
 
-    private static func fetchWords(
-        excluding excludedID: UUID,
-        partOfSpeech pos: String,
-        difficultyMin: Int?,
-        difficultyMax: Int?,
-        context: ModelContext
-    ) throws -> [SATWord] {
-        let excluded = excludedID
-        let minD = difficultyMin
-        let maxD = difficultyMax
-
-        let predicate: Predicate<SATWord>
-        if let minD, let maxD {
-            predicate = #Predicate<SATWord> { w in
-                w.partOfSpeech == pos && w.id != excluded && w.difficulty >= minD && w.difficulty <= maxD
-            }
-        } else {
-            predicate = #Predicate<SATWord> { w in
-                w.partOfSpeech == pos && w.id != excluded
-            }
-        }
-
-        var descriptor = FetchDescriptor<SATWord>(predicate: predicate)
-        descriptor.fetchLimit = 240
+    /// Pool A: same precomputed POS + difficulty tier (`noun_tier2`, etc.).
+    private static func fetchWordsByDistractorTier(_ tier: String, context: ModelContext) throws -> [SATWord] {
+        let tierValue = tier
+        var descriptor = FetchDescriptor<SATWord>(
+            predicate: #Predicate<SATWord> { word in
+                word.distractorTier == tierValue
+            },
+            sortBy: distractorRecencySort
+        )
+        descriptor.fetchLimit = distractorPoolFetchLimit
         return try context.fetch(descriptor)
     }
 
-    private static func fetchAllWords(excluding excludedID: UUID, context: ModelContext) throws -> [SATWord] {
-        let excluded = excludedID
-        let predicate = #Predicate<SATWord> { w in
-            w.id != excluded
-        }
+    /// Pool B: same part of speech, any difficulty tier.
+    private static func fetchWordsByPartOfSpeech(_ partOfSpeech: String, context: ModelContext) throws -> [SATWord] {
+        let posValue = partOfSpeech
         var descriptor = FetchDescriptor<SATWord>(
-            predicate: predicate,
-            sortBy: [SortDescriptor(\.lastReviewDate, order: .reverse)]
+            predicate: #Predicate<SATWord> { word in
+                word.partOfSpeech == posValue
+            },
+            sortBy: distractorRecencySort
         )
-        descriptor.fetchLimit = 320
+        descriptor.fetchLimit = distractorPoolFetchLimit
+        return try context.fetch(descriptor)
+    }
+
+    /// Pool C: catalog-wide recency slice; exclusions applied in memory after fetch.
+    private static func fetchDistractorCatalogPool(context: ModelContext) throws -> [SATWord] {
+        var descriptor = FetchDescriptor<SATWord>(sortBy: distractorRecencySort)
+        descriptor.fetchLimit = distractorPoolFetchLimit
         return try context.fetch(descriptor)
     }
 

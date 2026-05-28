@@ -82,14 +82,19 @@ struct ExploreView: View {
     @discardableResult
     private func prepareLibraryDeepLink(wordID: UUID) -> Bool {
         searchText = ""
+        appliedSearchText = ""
         selectedStatus = nil
         selectedCategory = nil
         selectedConnotation = nil
         showLibraryFilters = false
         isSearchFocused = false
-        rebuildLibraryIndex()
 
-        guard libraryViewModel.orderedWordIDs.contains(wordID) else { return false }
+        libraryViewModel.prepareDeepLinkWord(id: wordID, modelContext: modelContext)
+        guard libraryViewModel.word(for: wordID) != nil else { return false }
+
+        currentVisibleWordId = wordID
+        trackedScrollPosition = wordID
+        libraryViewModel.rebuildIndex(filter: currentCatalogFilter)
         return true
     }
 
@@ -333,6 +338,9 @@ struct ExploreView: View {
             }
             .onChange(of: pendingLibraryWordID, initial: true) { _, wordID in
                 guard let wordID else { return }
+                libraryViewModel.prepareDeepLinkWord(id: wordID, modelContext: modelContext)
+                currentVisibleWordId = wordID
+                trackedScrollPosition = wordID
                 scheduleLibraryDeepLink(wordID: wordID)
             }
             .onChange(of: libraryViewModel.indexRevision) { oldRevision, newRevision in
@@ -581,7 +589,7 @@ private struct LibraryWordPager: View {
             .frame(width: pageWidth, height: pageHeight)
             .coordinateSpace(name: LibraryPagerCoordinateSpace.scroll)
             .scrollTargetBehavior(.paging)
-            .scrollPosition(id: $currentVisibleWordId)
+            .scrollPosition(id: $currentVisibleWordId, anchor: .center)
             .scrollIndicators(.hidden)
             .scrollBounceBehavior(.basedOnSize, axes: .vertical)
             .onAppear {
@@ -739,102 +747,108 @@ private struct ExploreWordPageCard: View {
         active: WordSenseBlock?
     ) -> some View {
         VStack(alignment: .leading, spacing: 0) {
-            HStack(alignment: .center, spacing: 8) {
-                Group {
-                    if usesAccessibilityLayout {
-                        Text(word.word)
-                            .lineLimit(nil)
-                    } else {
-                        Text(word.word)
-                            .lineLimit(2)
-                    }
-                }
-                .font(GlanceHubFont.semibold(34))
-                .minimumScaleFactor(0.85)
-                .foregroundStyle(HubPalette.espresso)
+            Spacer(minLength: 0)
 
-                Spacer(minLength: 0)
-            }
-            .frame(maxWidth: .infinity, alignment: .leading)
-
-            if senses.count > 1 {
-                HStack(spacing: 8) {
-                    ForEach(Array(senses.enumerated()), id: \.offset) { index, sense in
-                        Button {
-                            GlanceHaptics.light()
-                            withAnimation(.spring(response: 0.32, dampingFraction: 0.78)) {
-                                sensePage = index
-                            }
-                        } label: {
-                            partOfSpeechChip(sense.partOfSpeech, isSelected: index == sensePage)
+            VStack(alignment: .leading, spacing: 0) {
+                HStack(alignment: .center, spacing: 8) {
+                    Group {
+                        if usesAccessibilityLayout {
+                            Text(word.word)
+                                .lineLimit(nil)
+                        } else {
+                            Text(word.word)
+                                .lineLimit(2)
                         }
-                        .buttonStyle(.plain)
                     }
-
-                    WordConnotationRow(word: word, compact: true)
-                        .layoutPriority(1)
+                    .font(GlanceHubFont.semibold(34))
+                    .minimumScaleFactor(0.85)
+                    .foregroundStyle(HubPalette.espresso)
 
                     Spacer(minLength: 0)
                 }
-                .padding(.top, 12)
-            } else if let only = senses.first {
-                HStack(alignment: .center, spacing: 6) {
-                    partOfSpeechChip(only.partOfSpeech, isSelected: true)
-                    WordConnotationRow(word: word, compact: true)
-                    Spacer(minLength: 0)
+                .frame(maxWidth: .infinity, alignment: .leading)
+
+                if senses.count > 1 {
+                    HStack(spacing: 8) {
+                        ForEach(Array(senses.enumerated()), id: \.offset) { index, sense in
+                            Button {
+                                GlanceHaptics.light()
+                                withAnimation(.spring(response: 0.32, dampingFraction: 0.78)) {
+                                    sensePage = index
+                                }
+                            } label: {
+                                partOfSpeechChip(sense.partOfSpeech, isSelected: index == sensePage)
+                            }
+                            .buttonStyle(.plain)
+                        }
+
+                        WordConnotationRow(word: word, compact: true)
+                            .layoutPriority(1)
+
+                        Spacer(minLength: 0)
+                    }
+                    .padding(.top, 12)
+                } else if let only = senses.first {
+                    HStack(alignment: .center, spacing: 6) {
+                        partOfSpeechChip(only.partOfSpeech, isSelected: true)
+                        WordConnotationRow(word: word, compact: true)
+                        Spacer(minLength: 0)
+                    }
+                    .padding(.top, 12)
                 }
-                .padding(.top, 12)
+
+                Divider()
+                    .background(HubPalette.espressoFaint)
+                    .padding(.vertical, 12)
+
+                if let active {
+                    Text("Definition")
+                        .font(GlanceHubFont.semibold(12))
+                        .tracking(0.6)
+                        .foregroundStyle(HubPalette.plantDeep)
+
+                    definitionText(active.definition)
+                        .padding(.top, 6)
+
+                    Text("Example")
+                        .font(GlanceHubFont.semibold(12))
+                        .tracking(0.6)
+                        .foregroundStyle(HubPalette.plantDeep)
+                        .padding(.top, 14)
+
+                    bodyText(active.exampleSentence, italic: true)
+                        .padding(.top, 6)
+                }
+
+                if let body = originOrHookBody {
+                    Text(originOrHookTitle)
+                        .font(GlanceHubFont.semibold(12))
+                        .tracking(0.6)
+                        .foregroundStyle(HubPalette.plantDeep)
+                        .padding(.top, 14)
+
+                    bodyText(body, italic: false)
+                        .lineSpacing(3)
+                        .padding(.top, 6)
+                }
             }
+            .frame(maxWidth: .infinity, alignment: .topLeading)
 
-            Divider()
-                .background(HubPalette.espressoFaint)
-                .padding(.vertical, 12)
-
-            if let active {
-                Text("Definition")
-                    .font(GlanceHubFont.semibold(12))
-                    .tracking(0.6)
-                    .foregroundStyle(HubPalette.plantDeep)
-
-                definitionText(active.definition)
-                    .padding(.top, 6)
-
-                Text("Example")
-                    .font(GlanceHubFont.semibold(12))
-                    .tracking(0.6)
-                    .foregroundStyle(HubPalette.plantDeep)
-                    .padding(.top, 14)
-
-                bodyText(active.exampleSentence, italic: true)
-                    .padding(.top, 6)
-            }
-
-            if let body = originOrHookBody {
-                Text(originOrHookTitle)
-                    .font(GlanceHubFont.semibold(12))
-                    .tracking(0.6)
-                    .foregroundStyle(HubPalette.plantDeep)
-                    .padding(.top, 14)
-
-                bodyText(body, italic: false)
-                    .lineSpacing(3)
-                    .padding(.top, 6)
-            }
+            Spacer(minLength: 0)
         }
         .padding(22)
-        .frame(maxWidth: .infinity, alignment: .topLeading)
     }
 
     @ViewBuilder
     private func definitionText(_ text: String) -> some View {
         if usesAccessibilityLayout {
             Text(text)
-                .font(GlanceHubFont.medium(17))
+                .font(GlanceHubFont.medium(19))
                 .foregroundStyle(HubPalette.espresso)
                 .lineLimit(nil)
         } else {
             Text(text)
-                .font(GlanceHubFont.medium(17))
+                .font(GlanceHubFont.medium(19))
                 .foregroundStyle(HubPalette.espresso)
         }
     }
@@ -843,13 +857,13 @@ private struct ExploreWordPageCard: View {
     private func bodyText(_ text: String, italic: Bool) -> some View {
         if usesAccessibilityLayout {
             Text(text)
-                .font(GlanceHubFont.regular(16))
+                .font(GlanceHubFont.regular(18))
                 .italic(italic)
                 .foregroundStyle(HubPalette.espresso)
                 .lineLimit(nil)
         } else {
             Text(text)
-                .font(GlanceHubFont.regular(16))
+                .font(GlanceHubFont.regular(18))
                 .italic(italic)
                 .foregroundStyle(HubPalette.espresso)
         }

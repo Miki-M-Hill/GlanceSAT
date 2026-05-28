@@ -38,7 +38,7 @@ struct GlanceSATQuizWidgetRootView: View {
                 }
             }
         }
-        .widgetURL(WidgetDeepLink.todayURL())
+        .widgetURL(WidgetDeepLink.libraryURL(wordID: entry.word.id))
     }
 }
 
@@ -48,7 +48,15 @@ private struct GlanceSATQuizPromptView: View {
 
     private var palette: WidgetPalette { WidgetPalette.named(WidgetPrefsReader.themeName()) }
     private var scale: CGFloat { WidgetPrefsReader.typographyScale() }
-    private var isFeedback: Bool { entry.displayPhase == .feedback }
+    private var interactiveFeedbackState: WidgetQuizSlotState? {
+        WidgetQuizSlotStore.matchingState(slotKey: entry.slotKey, wordID: entry.word.id)
+    }
+    private var isFeedback: Bool {
+        if let state = interactiveFeedbackState {
+            return state.phase == .feedback
+        }
+        return entry.displayPhase == .feedback
+    }
 
     var body: some View {
         GeometryReader { proxy in
@@ -153,8 +161,10 @@ private struct GlanceSATQuizPromptView: View {
         }
 
         let correctAnswer = entry.word.synonymQuizCorrectAnswer
+        let selectedOption = interactiveFeedbackState?.selectedOption ?? entry.selectedOption
+        let wasCorrect = interactiveFeedbackState?.wasCorrect ?? entry.wasCorrect
         let isCorrectAnswer = WidgetQuizSlotStore.isCorrect(selected: option, expected: correctAnswer)
-        let isSelectedAnswer = entry.selectedOption.map {
+        let isSelectedAnswer = selectedOption.map {
             WidgetQuizSlotStore.isCorrect(selected: option, expected: $0)
         } ?? false
 
@@ -167,7 +177,7 @@ private struct GlanceSATQuizPromptView: View {
             )
         }
 
-        if isSelectedAnswer, entry.wasCorrect == false {
+        if isSelectedAnswer, wasCorrect == false {
             return OptionStyle(
                 fill: WidgetQuizChrome.incorrectFill,
                 showsStroke: false,

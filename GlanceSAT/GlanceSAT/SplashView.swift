@@ -7,15 +7,12 @@ import SwiftUI
 
 struct SplashView: View {
     var body: some View {
-        ZStack {
-            HubPalette.dailyHubGreen
-                .ignoresSafeArea()
-
-            Text("GLANCE")
-                .font(.system(size: 34, weight: .semibold, design: .rounded))
-                .tracking(4)
-                .foregroundStyle(HubPalette.linen)
-        }
-        .accessibilityLabel("Glance")
+        Image("LaunchBackground")
+            .resizable()
+            .scaledToFill()
+            .frame(maxWidth: .infinity, maxHeight: .infinity)
+            .clipped()
+            .ignoresSafeArea()
+            .accessibilityLabel("Glance")
     }
 }

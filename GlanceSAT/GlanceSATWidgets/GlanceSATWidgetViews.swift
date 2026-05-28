@@ -29,7 +29,7 @@ struct GlanceSATWidgetRootView: View {
                 }
             }
         }
-        .widgetURL(entry.isDailyLimitLocked ? WidgetDeepLink.paywallURL() : WidgetDeepLink.todayURL())
+        .widgetURL(entry.isDailyLimitLocked ? WidgetDeepLink.paywallURL() : WidgetDeepLink.libraryURL(wordID: entry.word.id))
     }
 }
 
@@ -471,45 +471,42 @@ private struct GlanceSATLockFamiliesView: View {
             ZStack {
                 AccessoryWidgetBackground()
                 Text(monogram)
-                    .font(.system(size: 21, weight: .semibold, design: .default))
+                    .font(.title3.weight(.semibold))
                     .foregroundColor(.primary)
-                    .minimumScaleFactor(0.5)
+                    .minimumScaleFactor(0.3)
                     .widgetAccentable()
             }
 
         case .accessoryRectangular:
-            GeometryReader { proxy in
-                let wordFontSize = min(proxy.size.width * 0.14, proxy.size.height * 0.44)
-                let definitionFontSize = min(proxy.size.width * 0.105, proxy.size.height * 0.34)
-
+            GeometryReader { _ in
                 VStack(alignment: .center, spacing: 1) {
                     Text(entry.word.word)
-                        .font(.system(size: max(13, wordFontSize), weight: .semibold, design: .default))
+                        .font(.title3.weight(.semibold))
                         .foregroundColor(.primary)
                         .multilineTextAlignment(.center)
                         .widgetAccentable()
                         .lineLimit(1)
-                        .minimumScaleFactor(0.5)
+                        .minimumScaleFactor(0.3)
                         .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .center)
 
                     Text(entry.word.widgetDefinitionWithPartOfSpeech)
-                        .font(.system(size: max(10, definitionFontSize), weight: .regular, design: .default))
+                        .font(.headline)
                         .foregroundColor(.primary)
                         .multilineTextAlignment(.center)
                         .widgetAccentable()
                         .lineLimit(3)
-                        .minimumScaleFactor(0.5)
+                        .minimumScaleFactor(0.3)
                         .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .center)
                 }
                 .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .center)
             }
 
         case .accessoryInline:
-            GeometryReader { proxy in
+            GeometryReader { _ in
                 Text("\(entry.word.word) (\(entry.word.widgetPartOfSpeechLabel))")
-                    .font(.system(size: max(12, min(proxy.size.width * 0.09, proxy.size.height * 0.85)), weight: .semibold, design: .default))
+                    .font(.headline)
                     .foregroundColor(.primary)
-                    .minimumScaleFactor(0.5)
+                    .minimumScaleFactor(0.3)
                     .lineLimit(1)
                     .widgetAccentable()
                     .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .center)

@@ -163,6 +163,18 @@ actor WordImportActor {
             changed = true
         }
 
+        let difficultyValue = record.difficulty ?? record.difficultyLevel ?? word.difficulty
+        if word.difficulty != difficultyValue {
+            word.difficulty = difficultyValue
+            changed = true
+        }
+
+        let tier = WordDistractorTier.make(partOfSpeech: word.partOfSpeech, difficulty: word.difficulty)
+        if word.distractorTier != tier {
+            word.distractorTier = tier
+            changed = true
+        }
+
         return changed
     }
 
@@ -435,7 +447,12 @@ struct WordJSONRecord: Decodable, Sendable {
             lastReviewDate: lastReview,
             successfulRecalls: recalls,
             consecutiveCorrect: consecutive,
-            totalAttempts: attempts
+            totalAttempts: attempts,
+            randomSortHash: Int.random(in: 1...1_000_000),
+            distractorTier: WordDistractorTier.make(
+                partOfSpeech: lexical.partOfSpeech,
+                difficulty: difficultyValue
+            )
         )
     }
 

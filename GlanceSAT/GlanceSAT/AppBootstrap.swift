@@ -7,20 +7,26 @@ import SwiftData
 
 /// Cold-launch data preparation run before the main UI appears.
 enum AppBootstrap {
-    /// Runs heavy I/O off the main actor; only hops to main for SwiftData / entitlement work.
+    /// Two-phase bootstrap: quickly hydrate today's batch, then defer heavier services.
     static func initializeAppData(container: ModelContainer) async {
         await Task.detached(priority: .userInitiated) {
             await WordJSONImportService.importIfNeeded(container: container)
-            await performMainActorServices(container: container)
+            await performCriticalMainActorServices(container: container)
+            await scheduleDeferredServices(container: container)
         }.value
     }
 
     @MainActor
-    private static func performMainActorServices(container: ModelContainer) async {
+    private static func performCriticalMainActorServices(container: ModelContainer) async {
         EntitlementManager.shared.start()
         let context = ModelContext(container)
         _ = await DailyWordBatchService.refresh(modelContext: context)
-        await WidgetSnapshotWriter.refresh(modelContext: context)
-        await NotificationManager.scheduleStandardDailyReminders()
+        AppLaunchState.markInitialFetchPerformed()
+    }
+
+    private static func scheduleDeferredServices(container: ModelContainer) async {
+        Task { @MainActor in
+            await NotificationManager.scheduleStandardDailyReminders()
+        }
     }
 }

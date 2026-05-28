@@ -45,6 +45,10 @@ final class Word: Identifiable {
     var successfulRecalls: Int = 0
     var consecutiveCorrect: Int = 0
     var totalAttempts: Int = 0
+    /// Stable pseudo-random key for SQLite `ORDER BY` (daily unseen selection).
+    var randomSortHash: Int = Int.random(in: 1...1_000_000)
+    /// Precomputed `\(partOfSpeech)_tierN` bucket for fast quiz distractor Pool A queries.
+    var distractorTier: String = ""
 
     init(
         id: UUID,
@@ -74,7 +78,9 @@ final class Word: Identifiable {
         lastSuccessfulReviewDate: Date? = nil,
         successfulRecalls: Int = 0,
         consecutiveCorrect: Int = 0,
-        totalAttempts: Int = 0
+        totalAttempts: Int = 0,
+        randomSortHash: Int = Int.random(in: 1...1_000_000),
+        distractorTier: String = ""
     ) {
         self.id = id
         self.word = word
@@ -104,6 +110,36 @@ final class Word: Identifiable {
         self.successfulRecalls = successfulRecalls
         self.consecutiveCorrect = consecutiveCorrect
         self.totalAttempts = totalAttempts
+        self.randomSortHash = randomSortHash
+        if distractorTier.isEmpty {
+            self.distractorTier = WordDistractorTier.make(
+                partOfSpeech: partOfSpeech,
+                difficulty: difficulty
+            )
+        } else {
+            self.distractorTier = distractorTier
+        }
+    }
+}
+
+// MARK: - Quiz distractor tiers (POS + difficulty band)
+
+enum WordDistractorTier {
+    /// Maps bundled difficulty 1–10 into three SQLite-friendly buckets.
+    static func difficultyBand(for difficulty: Int) -> String {
+        switch difficulty {
+        case 1 ... 3:
+            return "tier1"
+        case 4 ... 7:
+            return "tier2"
+        default:
+            return "tier3"
+        }
+    }
+
+    static func make(partOfSpeech: String, difficulty: Int) -> String {
+        let pos = partOfSpeech.trimmingCharacters(in: .whitespacesAndNewlines)
+        return "\(pos)_\(difficultyBand(for: difficulty))"
     }
 }
 

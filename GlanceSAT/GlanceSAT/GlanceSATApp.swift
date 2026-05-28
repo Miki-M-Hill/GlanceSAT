@@ -1,5 +1,6 @@
 import SwiftData
 import SwiftUI
+import WidgetKit
 
 private enum RootTab: Int, CaseIterable, Hashable {
     case today
@@ -39,19 +40,29 @@ private struct AppLaunchGate: View {
                     .zIndex(1)
             }
         }
+        .onAppear {
+            if WidgetDeepLinkRouter.peekPendingWordID() != nil {
+                dismissSplashImmediately()
+            }
+        }
         .task {
             let container = modelContext.container
             await Task.detached(priority: .userInitiated) {
                 await AppBootstrap.initializeAppData(container: container)
             }.value
-            AppLaunchState.isDataLoaded = true
-            try? await Task.sleep(for: .milliseconds(300))
-            withAnimation(.easeInOut(duration: 0.6)) {
+            AppLaunchState.markDataLoaded()
+            try? await Task.sleep(for: .milliseconds(500))
+            withAnimation(.easeInOut(duration: 0.3)) {
                 splashOpacity = 0
             }
-            try? await Task.sleep(for: .milliseconds(600))
+            try? await Task.sleep(for: .milliseconds(300))
             showSplashOverlay = false
         }
+    }
+
+    private func dismissSplashImmediately() {
+        splashOpacity = 0
+        showSplashOverlay = false
     }
 }
 
@@ -94,9 +105,7 @@ private struct AppRootView: View {
                     .transition(.opacity.combined(with: .scale(scale: 0.985)))
             } else {
                 OnboardingView {
-                    withAnimation(.easeInOut(duration: 0.32)) {
-                        hasCompletedOnboarding = true
-                    }
+                    withAnimation(.easeInOut(duration: 0.32)) { }
                 }
                 .transition(.opacity)
             }
@@ -116,6 +125,9 @@ private struct AppRootView: View {
             case .background:
                 Task(priority: .utility) {
                     await WidgetReminderNotificationCoordinator.updateWidgetReminderNotification()
+                    await MainActor.run {
+                        WidgetCenter.shared.reloadAllTimelines()
+                    }
                 }
             default:
                 break
@@ -136,6 +148,9 @@ private struct AppRootView: View {
         }
         .onOpenURL { url in
             guard WidgetDeepLinkRouter.handleIncomingURL(url) else { return }
+            if WidgetDeepLinkRouter.peekPendingWordID() != nil {
+                AppLaunchState.markDataLoaded()
+            }
             if WidgetDeepLinkRouter.consumeNavigateToPaywallFromWidget() {
                 paywallPresenter.presentPaywall()
                 return
@@ -200,6 +215,15 @@ private struct AppRootView: View {
             shouldPrefetch: true,
             modelContext: modelContext
         )
+
+        Task.detached(priority: .background) {
+            let actor = AppBootstrapActor(modelContainer: container)
+            let payload = try? await actor.prebuildQuiz()
+            guard let payload else { return }
+            await MainActor.run {
+                self.quizPreparationManager.primePrebuiltPrimaryQuiz(payload, modelContext: self.modelContext)
+            }
+        }
 
         insightsCoordinator.scheduleRefresh(
             container: container,

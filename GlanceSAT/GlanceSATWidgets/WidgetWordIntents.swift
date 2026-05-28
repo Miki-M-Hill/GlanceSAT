@@ -47,22 +47,17 @@ struct AnswerWidgetQuizIntent: AppIntent {
             answeredAt: answeredAt
         )
 
-        let handoffSlotKey = slotKey
-        let holdDuration = WidgetQuizSlotStore.feedbackHoldDuration(wasCorrect: wasCorrect)
-
-        // Heavy work off the hot path: pending SRS log + timeline reload + vocab handoff.
+        // Heavy work off the hot path: pending SRS log only.
+        // Timeline handoff to vocab is scheduled by the provider, not this intent.
         Task.detached(priority: .userInitiated) {
             WidgetPendingEventsStore.appendQuizAnswer(
                 wordID: id,
                 wasCorrect: wasCorrect,
                 date: answeredAt
             )
-            await WidgetIntentReload.reloadQuizTimelines()
-
-            try? await Task.sleep(nanoseconds: UInt64(holdDuration * 1_000_000_000))
-            WidgetQuizSlotStore.advanceToVocab(slotKey: handoffSlotKey, wordID: id)
-            await WidgetIntentReload.reloadQuizTimelines()
         }
+
+        await WidgetIntentReload.reloadQuizTimelines()
 
         return .result()
     }
