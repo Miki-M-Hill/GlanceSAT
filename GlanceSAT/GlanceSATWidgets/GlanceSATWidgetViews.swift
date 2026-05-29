@@ -12,24 +12,108 @@ struct GlanceSATWidgetRootView: View {
 
     @Environment(\.widgetFamily) private var family
 
+    private var deepLinkURL: URL? {
+        guard !entry.isDailyLimitLocked else { return WidgetDeepLink.paywallURL() }
+        guard !entry.isCelebrating else { return nil }
+        return WidgetDeepLink.libraryURL(wordID: entry.word.id)
+    }
+
     var body: some View {
         Group {
             if entry.isStaleSnapshot {
-                GlanceSATWidgetStaleView(family: family)
+                GlanceSATWidgetStaleView(family: family, deepLinkURL: deepLinkURL)
             } else if entry.isDailyLimitLocked {
-                GlanceSATWidgetLockedView(family: family)
+                GlanceSATWidgetLockedView(family: family, deepLinkURL: WidgetDeepLink.paywallURL())
+            } else if entry.isCelebrating {
+                GlanceSATWidgetCelebrationView(family: family)
             } else if entry.isResting {
-                GlanceSATWidgetRestView(entry: entry, family: family)
+                GlanceSATWidgetRestView(entry: entry, family: family, deepLinkURL: deepLinkURL)
             } else {
                 switch family {
                 case .accessoryInline, .accessoryRectangular, .accessoryCircular:
-                    GlanceSATLockFamiliesView(entry: entry, family: family)
+                    GlanceSATLockFamiliesView(entry: entry, family: family, deepLinkURL: deepLinkURL)
                 default:
-                    GlanceSATHomeFamiliesView(entry: entry, family: family)
+                    GlanceSATHomeFamiliesView(entry: entry, family: family, deepLinkURL: deepLinkURL)
                 }
             }
         }
-        .widgetURL(entry.isDailyLimitLocked ? WidgetDeepLink.paywallURL() : WidgetDeepLink.libraryURL(wordID: entry.word.id))
+    }
+}
+
+// MARK: - Post-quiz celebration (5 minutes after primary quiz)
+
+struct GlanceSATWidgetCelebrationView: View {
+    let family: WidgetFamily
+
+    private let message = "Well done on completing today's recall! Time to see today's words in context."
+
+    var body: some View {
+        switch family {
+        case .accessoryInline:
+            Label("Quiz complete", systemImage: "checkmark.seal.fill")
+                .font(.system(.footnote, design: .default, weight: .medium))
+                .lineLimit(nil)
+                .minimumScaleFactor(0.4)
+                .foregroundStyle(.primary)
+                .widgetAccentable()
+
+        case .accessoryCircular:
+            ZStack {
+                AccessoryWidgetBackground()
+                Image(systemName: "checkmark.seal.fill")
+                    .font(.system(size: 20, weight: .semibold))
+                    .foregroundStyle(.primary)
+                    .widgetAccentable()
+            }
+
+        case .accessoryRectangular:
+            GeometryReader { proxy in
+                let metrics = WidgetLockCardMetrics.compute(
+                    contentSize: proxy.size,
+                    word: "Well done!",
+                    subtitle: "Today's recall is complete."
+                )
+                VStack(alignment: .leading, spacing: metrics.spacing) {
+                    Text("Well done!")
+                        .font(.system(size: metrics.wordSize, weight: .semibold, design: .default))
+                        .foregroundStyle(.primary)
+                        .lineLimit(1)
+                        .minimumScaleFactor(0.5)
+                        .widgetAccentable()
+                    Text("Today's recall is complete.")
+                        .font(.system(size: metrics.bodySize, weight: .regular, design: .default))
+                        .foregroundStyle(.secondary)
+                        .lineLimit(nil)
+                        .minimumScaleFactor(0.45)
+                        .fixedSize(horizontal: false, vertical: true)
+                }
+                .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .leading)
+            }
+
+        default:
+            GeometryReader { proxy in
+                let metrics = WidgetLockCardMetrics.compute(
+                    contentSize: proxy.size,
+                    word: "Quiz complete",
+                    subtitle: message
+                )
+                VStack(spacing: metrics.spacing) {
+                    Image(systemName: "checkmark.seal.fill")
+                        .font(.system(size: min(36, metrics.wordSize * 1.15), weight: .semibold))
+                        .foregroundStyle(.primary)
+                        .widgetAccentable()
+                    Text(message)
+                        .font(.system(size: metrics.bodySize, weight: .medium, design: .default))
+                        .multilineTextAlignment(.center)
+                        .lineLimit(nil)
+                        .minimumScaleFactor(0.45)
+                        .fixedSize(horizontal: false, vertical: true)
+                        .foregroundStyle(.primary)
+                }
+                .frame(maxWidth: .infinity, maxHeight: .infinity)
+                .padding(10)
+            }
+        }
     }
 }
 
@@ -37,14 +121,24 @@ struct GlanceSATWidgetRootView: View {
 
 struct GlanceSATWidgetLockedView: View {
     let family: WidgetFamily
+    var deepLinkURL: URL? = WidgetDeepLink.paywallURL()
 
     var body: some View {
+        ZStack {
+            Color.clear
+                .widgetURL(deepLinkURL)
+            lockedContent
+        }
+    }
+
+    @ViewBuilder
+    private var lockedContent: some View {
         switch family {
         case .accessoryInline:
             Label("Daily limit reached", systemImage: "lock.fill")
                 .font(.system(.footnote, design: .default, weight: .medium))
-                .lineLimit(1)
-                .minimumScaleFactor(0.72)
+                .lineLimit(nil)
+                .minimumScaleFactor(0.4)
                 .widgetAccentable()
 
         case .accessoryCircular:
@@ -63,12 +157,13 @@ struct GlanceSATWidgetLockedView: View {
                 VStack(alignment: .leading, spacing: 1) {
                     Text("Daily limit reached.")
                         .font(.system(size: 14, weight: .semibold))
-                        .lineLimit(1)
+                        .lineLimit(nil)
+                        .minimumScaleFactor(0.4)
                     Text("Tap to unlock more.")
                         .font(.system(size: 12, weight: .regular))
                         .foregroundStyle(.secondary)
-                        .lineLimit(1)
-                        .minimumScaleFactor(0.8)
+                        .lineLimit(nil)
+                        .minimumScaleFactor(0.4)
                 }
             }
             .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .leading)
@@ -80,12 +175,14 @@ struct GlanceSATWidgetLockedView: View {
                 Text("Daily limit reached.")
                     .font(.system(size: 16, weight: .semibold))
                     .multilineTextAlignment(.center)
-                    .lineLimit(2)
-                    .minimumScaleFactor(0.85)
+                    .lineLimit(nil)
+                    .minimumScaleFactor(0.4)
                 Text("Tap to unlock more.")
                     .font(.system(size: 13, weight: .regular))
                     .foregroundStyle(.secondary)
                     .multilineTextAlignment(.center)
+                    .lineLimit(nil)
+                    .minimumScaleFactor(0.4)
             }
             .frame(maxWidth: .infinity, maxHeight: .infinity)
             .padding(12)
@@ -97,8 +194,18 @@ struct GlanceSATWidgetLockedView: View {
 
 struct GlanceSATWidgetStaleView: View {
     let family: WidgetFamily
+    var deepLinkURL: URL? = nil
 
     var body: some View {
+        ZStack {
+            Color.clear
+                .widgetURL(deepLinkURL)
+            staleContent
+        }
+    }
+
+    @ViewBuilder
+    private var staleContent: some View {
         switch family {
         case .accessoryInline:
             Text("Open GlanceSAT")
@@ -138,6 +245,7 @@ struct GlanceSATWidgetStaleView: View {
 struct GlanceSATWidgetRestView: View {
     let entry: GlanceSATEntry
     let family: WidgetFamily
+    var deepLinkURL: URL? = nil
 
     private var plantStage: WidgetStreakPlantStage {
         WidgetStreakPlantStage(days: entry.streakDays)
@@ -146,11 +254,17 @@ struct GlanceSATWidgetRestView: View {
     private var palette: WidgetPalette { WidgetPalette.named(WidgetPrefsReader.themeName()) }
 
     var body: some View {
-        switch family {
-        case .accessoryInline, .accessoryRectangular, .accessoryCircular:
-            lockRestBody
-        default:
-            homeRestBody
+        ZStack {
+            Color.clear
+                .widgetURL(deepLinkURL)
+            Group {
+                switch family {
+                case .accessoryInline, .accessoryRectangular, .accessoryCircular:
+                    lockRestBody
+                default:
+                    homeRestBody
+                }
+            }
         }
     }
 
@@ -269,12 +383,14 @@ struct GlanceSATWidgetRestView: View {
 struct GlanceSATHomeFamiliesView: View {
     let entry: GlanceSATEntry
     let family: WidgetFamily
+    var deepLinkURL: URL? = nil
 
     private var palette: WidgetPalette { WidgetPalette.named(WidgetPrefsReader.themeName()) }
     private var scale: CGFloat { WidgetPrefsReader.typographyScale() }
     private var isExampleRevealed: Bool { WidgetInteractionStore.isExampleRevealed(wordID: entry.word.id) }
     private var isHookRevealed: Bool { WidgetInteractionStore.isHookRevealed(wordID: entry.word.id) }
-    private var isSmallFamily: Bool { family == .systemSmall }
+    private var sizeTier: WidgetHomeSizeTier { WidgetHomeSizeTier(family: family) }
+    private var isSmallFamily: Bool { sizeTier.isSmall }
 
     private var hasExample: Bool { !entry.word.exampleSentence.isEmpty }
     private var hookOrOriginText: String? { entry.word.widgetHookOrOriginText }
@@ -302,62 +418,69 @@ struct GlanceSATHomeFamiliesView: View {
     }
 
     var body: some View {
-        GeometryReader { proxy in
-            let contentSize = CGSize(
-                width: proxy.size.width - insets.leading - insets.trailing,
-                height: proxy.size.height - insets.top - insets.bottom
-            )
-            let metrics = WidgetHomeCardMetrics.compute(
-                contentSize: contentSize,
-                scale: scale,
-                word: entry.word.word,
-                definitionWithPartOfSpeech: entry.word.widgetDefinitionWithPartOfSpeech,
-                detailText: activeDetailText,
-                isDetailRevealed: isAnyDetailRevealed,
-                includeAction: !isSmallFamily,
-                isSmallFamily: isSmallFamily
-            )
+        ZStack(alignment: .center) {
+            Color.clear
+                .widgetURL(deepLinkURL)
 
-            VStack(alignment: .center, spacing: 0) {
-                Spacer(minLength: 0)
+            GeometryReader { proxy in
+                let contentSize = CGSize(
+                    width: proxy.size.width - insets.leading - insets.trailing,
+                    height: proxy.size.height - insets.top - insets.bottom
+                )
+                let metrics = WidgetHomeCardMetrics.compute(
+                    contentSize: contentSize,
+                    scale: scale,
+                    sizeTier: sizeTier,
+                    word: entry.word.word,
+                    definitionWithPartOfSpeech: entry.word.widgetDefinitionWithPartOfSpeech,
+                    detailText: activeDetailText,
+                    isDetailRevealed: isAnyDetailRevealed,
+                    includeAction: !isSmallFamily && !entry.isPostQuizCompletedDay
+                )
 
-                VStack(alignment: .center, spacing: metrics.clusterSpacing) {
-                    Text(entry.word.word)
-                        .font(.system(size: metrics.wordSize, weight: .semibold, design: .default))
-                        .foregroundStyle(palette.primary)
-                        .multilineTextAlignment(.center)
-                        .lineLimit(1)
-                        .minimumScaleFactor(0.72)
-                        .frame(maxWidth: .infinity)
-                        .widgetAccentable()
+                VStack(alignment: .center, spacing: 0) {
+                    Spacer(minLength: 0)
 
-                    Text(entry.word.widgetDefinitionWithPartOfSpeech)
-                        .font(.system(size: metrics.bodySize, weight: .regular, design: .rounded))
-                        .foregroundStyle(palette.secondary)
-                        .multilineTextAlignment(.center)
-                        .lineLimit(metrics.definitionLineLimit)
-                        .minimumScaleFactor(0.82)
-                        .fixedSize(horizontal: false, vertical: true)
-                        .frame(maxWidth: .infinity)
+                    VStack(alignment: .center, spacing: metrics.clusterSpacing) {
+                        Text(entry.word.word)
+                            .font(.system(size: metrics.wordSize, weight: .semibold, design: .default))
+                            .foregroundStyle(palette.primary)
+                            .multilineTextAlignment(.center)
+                            .lineLimit(isSmallFamily ? 1 : nil)
+                            .minimumScaleFactor(isSmallFamily ? 0.35 : 0.4)
+                            .fixedSize(horizontal: false, vertical: true)
+                            .frame(maxWidth: .infinity)
+                            .widgetURL(deepLinkURL)
+                            .widgetAccentable()
+
+                        Text(entry.word.widgetDefinitionWithPartOfSpeech)
+                            .font(.system(size: metrics.bodySize, weight: .regular, design: .rounded))
+                            .foregroundStyle(palette.secondary)
+                            .multilineTextAlignment(.center)
+                            .lineLimit(metrics.definitionLineLimit)
+                            .minimumScaleFactor(0.4)
+                            .fixedSize(horizontal: false, vertical: true)
+                            .frame(maxWidth: .infinity)
+                    }
+
+                    if showsHookDetail, let hook = hookOrOriginText {
+                        revealedHookBlock(hook: hook, metrics: metrics)
+                            .padding(.top, metrics.sectionSpacing)
+                    } else if showsExampleDetail {
+                        revealedExampleBlock(metrics: metrics)
+                            .padding(.top, metrics.sectionSpacing)
+                    }
+
+                    Spacer(minLength: 0)
+
+                    if !isSmallFamily, !entry.isPostQuizCompletedDay {
+                        homeActionTray
+                            .padding(.top, metrics.sectionSpacing)
+                    }
                 }
-
-                if showsHookDetail, let hook = hookOrOriginText {
-                    revealedHookBlock(hook: hook, metrics: metrics)
-                        .padding(.top, metrics.sectionSpacing)
-                } else if showsExampleDetail {
-                    revealedExampleBlock(metrics: metrics)
-                        .padding(.top, metrics.sectionSpacing)
-                }
-
-                Spacer(minLength: 0)
-
-                if !isSmallFamily {
-                    homeActionTray
-                        .padding(.top, metrics.sectionSpacing)
-                }
+                .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .center)
+                .padding(insets)
             }
-            .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .center)
-            .padding(insets)
         }
     }
 
@@ -396,8 +519,8 @@ struct GlanceSATHomeFamiliesView: View {
             .font(font)
             .foregroundStyle(palette.secondary)
             .multilineTextAlignment(.leading)
-            .lineLimit(4)
-            .minimumScaleFactor(0.82)
+            .lineLimit(nil)
+            .minimumScaleFactor(0.4)
             .fixedSize(horizontal: false, vertical: true)
         }
         .frame(maxWidth: .infinity, alignment: .leading)
@@ -448,14 +571,8 @@ struct GlanceSATHomeFamiliesView: View {
     }
 
     private var insets: EdgeInsets {
-        switch family {
-        case .systemSmall:
-            return EdgeInsets(top: 11, leading: 11, bottom: 11, trailing: 11)
-        case .systemMedium:
-            return EdgeInsets(top: 13, leading: 14, bottom: 13, trailing: 14)
-        default:
-            return EdgeInsets(top: 16, leading: 16, bottom: 16, trailing: 16)
-        }
+        let pad = sizeTier.homeContentPadding
+        return EdgeInsets(top: pad, leading: pad, bottom: pad, trailing: pad)
     }
 }
 
@@ -464,57 +581,72 @@ struct GlanceSATHomeFamiliesView: View {
 private struct GlanceSATLockFamiliesView: View {
     let entry: GlanceSATEntry
     let family: WidgetFamily
+    var deepLinkURL: URL? = nil
 
     var body: some View {
+        ZStack {
+            Color.clear
+                .widgetURL(deepLinkURL)
+
+            lockContent
+        }
+    }
+
+    @ViewBuilder
+    private var lockContent: some View {
         switch family {
         case .accessoryCircular:
             ZStack {
                 AccessoryWidgetBackground()
                 Text(monogram)
-                    .font(.title3.weight(.semibold))
-                    .foregroundColor(.primary)
-                    .minimumScaleFactor(0.3)
+                    .font(.title2.weight(.bold))
+                    .foregroundStyle(.primary)
+                    .lineLimit(1)
+                    .minimumScaleFactor(0.5)
                     .widgetAccentable()
             }
 
         case .accessoryRectangular:
-            GeometryReader { _ in
-                VStack(alignment: .center, spacing: 1) {
+            GeometryReader { proxy in
+                let metrics = WidgetLockCardMetrics.compute(
+                    contentSize: proxy.size,
+                    word: entry.word.word,
+                    subtitle: entry.word.widgetDefinitionWithPartOfSpeech
+                )
+                VStack(alignment: .leading, spacing: metrics.spacing) {
                     Text(entry.word.word)
-                        .font(.title3.weight(.semibold))
-                        .foregroundColor(.primary)
-                        .multilineTextAlignment(.center)
-                        .widgetAccentable()
+                        .font(.system(size: metrics.wordSize, weight: .semibold, design: .default))
+                        .foregroundStyle(.primary)
                         .lineLimit(1)
-                        .minimumScaleFactor(0.3)
-                        .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .center)
+                        .minimumScaleFactor(0.45)
+                        .widgetAccentable()
 
                     Text(entry.word.widgetDefinitionWithPartOfSpeech)
-                        .font(.headline)
-                        .foregroundColor(.primary)
-                        .multilineTextAlignment(.center)
-                        .widgetAccentable()
-                        .lineLimit(3)
-                        .minimumScaleFactor(0.3)
-                        .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .center)
+                        .font(.system(size: metrics.bodySize, weight: .regular, design: .default))
+                        .foregroundStyle(.primary)
+                        .lineLimit(nil)
+                        .minimumScaleFactor(0.45)
+                        .fixedSize(horizontal: false, vertical: true)
                 }
-                .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .center)
+                .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .leading)
             }
 
         case .accessoryInline:
-            GeometryReader { _ in
-                Text("\(entry.word.word) (\(entry.word.widgetPartOfSpeechLabel))")
-                    .font(.headline)
-                    .foregroundColor(.primary)
-                    .minimumScaleFactor(0.3)
-                    .lineLimit(1)
-                    .widgetAccentable()
-                    .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .center)
-            }
+            Text(inlineText)
+                .font(.headline.weight(.semibold))
+                .foregroundStyle(.primary)
+                .minimumScaleFactor(0.45)
+                .lineLimit(1)
+                .widgetAccentable()
+                .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .leading)
 
         default:
             EmptyView()
         }
+    }
+
+    private var inlineText: String {
+        "\(entry.word.word) · \(entry.word.widgetDefinitionWithPartOfSpeech)"
     }
 
     private var monogram: String {

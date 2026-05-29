@@ -45,6 +45,9 @@ private struct AppLaunchGate: View {
                 dismissSplashImmediately()
             }
         }
+        .onReceive(NotificationCenter.default.publisher(for: AppLaunchState.splashDismissNotification)) { _ in
+            dismissSplashImmediately()
+        }
         .task {
             let container = modelContext.container
             await Task.detached(priority: .userInitiated) {
@@ -148,24 +151,30 @@ private struct AppRootView: View {
         }
         .onOpenURL { url in
             guard WidgetDeepLinkRouter.handleIncomingURL(url) else { return }
-            if WidgetDeepLinkRouter.peekPendingWordID() != nil {
-                AppLaunchState.markDataLoaded()
-            }
+            AppLaunchState.markDataLoaded()
+            AppLaunchState.dismissSplashImmediately()
             if WidgetDeepLinkRouter.consumeNavigateToPaywallFromWidget() {
                 paywallPresenter.presentPaywall()
+                return
+            }
+            if WidgetDeepLinkRouter.consumeNavigateToSettingsFromWidget() {
+                applyWidgetSettingsDeepLinkRouting()
                 return
             }
             applyWidgetDeepLinkRouting()
         }
         .onAppear {
+            SATExamDateStore.migrateToAppGroupIfNeeded()
             if WidgetDeepLinkRouter.consumeNavigateToPaywallFromWidget() {
                 paywallPresenter.presentPaywall()
+            } else if WidgetDeepLinkRouter.consumeNavigateToSettingsFromWidget() {
+                applyWidgetSettingsDeepLinkRouting()
             }
         }
         .environmentObject(entitlementManager)
         .environmentObject(paywallPresenter)
         .environmentObject(libraryFreemiumSession)
-        .modifier(AppPaywallChrome(paywallPresenter: paywallPresenter))
+        .modifier(AppPaywallChrome(paywallPresenter: paywallPresenter, entitlementManager: entitlementManager))
     }
 
     private func applyWidgetDeepLinkRouting() {
@@ -192,6 +201,16 @@ private struct AppRootView: View {
                 selectedTab = .library
             }
         }
+    }
+
+    private func applyWidgetSettingsDeepLinkRouting() {
+        var transaction = Transaction()
+        transaction.disablesAnimations = true
+        withTransaction(transaction) {
+            selectedTab = .library
+            pendingLibraryWordID = nil
+        }
+        NotificationCenter.default.post(name: .openGlanceSettingsFromWidget, object: nil)
     }
 
     private func refreshWidgetDataFromHost() async {

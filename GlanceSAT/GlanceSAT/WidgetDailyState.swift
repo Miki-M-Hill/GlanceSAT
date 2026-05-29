@@ -9,13 +9,15 @@ import WidgetKit
 /// App Group flags for widget "rest until tomorrow" after the primary daily quiz.
 enum WidgetDailyState {
     private static let primaryQuizCompletedDayKey = "widget.primaryQuizCompletedDayKey"
+    private static let lastQuizCompletionTimestampKey = "widget.lastQuizCompletionTimestamp"
     private static let streakDaysKey = "widget.streakDays"
 
     static func markPrimaryQuizCompleted(streakDays: Int, dayKey: String = DailyWordBatchService.calendarDayKey()) {
         guard let defaults = WidgetAppGroup.defaults else { return }
         defaults.set(dayKey, forKey: primaryQuizCompletedDayKey)
         defaults.set(streakDays, forKey: streakDaysKey)
-        WidgetTimelineReloader.scheduleVocabularyReload()
+        defaults.set(Date().timeIntervalSince1970, forKey: lastQuizCompletionTimestampKey)
+        WidgetCenter.shared.reloadAllTimelines()
     }
 
     /// Clears the primary-quiz-done flag when it matches `todayKey` (widget returns to word rotation).
@@ -23,6 +25,7 @@ enum WidgetDailyState {
         guard let defaults = WidgetAppGroup.defaults else { return }
         guard defaults.string(forKey: primaryQuizCompletedDayKey) == todayKey else { return }
         defaults.removeObject(forKey: primaryQuizCompletedDayKey)
+        defaults.removeObject(forKey: lastQuizCompletionTimestampKey)
         defaults.removeObject(forKey: streakDaysKey)
         WidgetTimelineReloader.scheduleVocabularyReload()
     }
@@ -32,6 +35,7 @@ enum WidgetDailyState {
         guard let stored = defaults.string(forKey: primaryQuizCompletedDayKey), !stored.isEmpty else { return }
         guard stored != todayKey else { return }
         defaults.removeObject(forKey: primaryQuizCompletedDayKey)
+        defaults.removeObject(forKey: lastQuizCompletionTimestampKey)
         defaults.removeObject(forKey: streakDaysKey)
     }
 

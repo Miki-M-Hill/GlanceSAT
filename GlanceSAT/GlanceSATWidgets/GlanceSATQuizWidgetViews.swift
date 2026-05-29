@@ -12,10 +12,16 @@ struct GlanceSATQuizWidgetRootView: View {
 
     @Environment(\.widgetFamily) private var family
 
+    private var deepLinkURL: URL {
+        WidgetDeepLink.libraryURL(wordID: entry.word.id)
+    }
+
     var body: some View {
         Group {
             if entry.isStaleSnapshot {
-                GlanceSATWidgetStaleView(family: family)
+                GlanceSATWidgetStaleView(family: family, deepLinkURL: deepLinkURL)
+            } else if entry.isCelebrating {
+                GlanceSATWidgetCelebrationView(family: family)
             } else if entry.isResting {
                 GlanceSATWidgetRestView(
                     entry: GlanceSATEntry(
@@ -24,27 +30,33 @@ struct GlanceSATQuizWidgetRootView: View {
                         isResting: true,
                         streakDays: WidgetPrefsReader.streakDays()
                     ),
-                    family: family
+                    family: family,
+                    deepLinkURL: deepLinkURL
                 )
             } else {
                 switch entry.displayPhase {
                 case .quiz, .feedback:
-                    GlanceSATQuizPromptView(entry: entry, family: family)
+                    GlanceSATQuizPromptView(entry: entry, family: family, deepLinkURL: deepLinkURL)
                 case .vocab:
                     GlanceSATHomeFamiliesView(
-                        entry: GlanceSATEntry(date: entry.date, word: entry.word),
-                        family: family
+                        entry: GlanceSATEntry(
+                            date: entry.date,
+                            word: entry.word,
+                            isPostQuizCompletedDay: entry.isPostQuizCompletedDay
+                        ),
+                        family: family,
+                        deepLinkURL: deepLinkURL
                     )
                 }
             }
         }
-        .widgetURL(WidgetDeepLink.libraryURL(wordID: entry.word.id))
     }
 }
 
 private struct GlanceSATQuizPromptView: View {
     let entry: GlanceSATQuizEntry
     let family: WidgetFamily
+    var deepLinkURL: URL? = nil
 
     private var palette: WidgetPalette { WidgetPalette.named(WidgetPrefsReader.themeName()) }
     private var scale: CGFloat { WidgetPrefsReader.typographyScale() }
@@ -59,31 +71,36 @@ private struct GlanceSATQuizPromptView: View {
     }
 
     var body: some View {
-        GeometryReader { proxy in
-            let insets = contentInsets
-            let contentWidth = proxy.size.width - insets.leading - insets.trailing
+        ZStack(alignment: .center) {
+            Color.clear
+                .widgetURL(deepLinkURL)
 
-            VStack(spacing: 0) {
-                Spacer(minLength: 0)
+            GeometryReader { proxy in
+                let insets = contentInsets
+                let contentWidth = proxy.size.width - insets.leading - insets.trailing
 
-                VStack(spacing: 10 * scale) {
-                    Text(entry.word.sentenceQuizPrompt)
-                        .font(.system(size: promptFontSize, weight: .medium, design: .default))
-                        .foregroundStyle(palette.primary)
-                        .multilineTextAlignment(.center)
-                        .lineLimit(promptLineLimit)
-                        .minimumScaleFactor(0.72)
-                        .fixedSize(horizontal: false, vertical: true)
-                        .frame(maxWidth: .infinity)
-                        .widgetAccentable()
+                VStack(spacing: 0) {
+                    Spacer(minLength: 0)
 
-                    optionGrid(width: contentWidth)
+                    VStack(spacing: 10 * scale) {
+                        Text(entry.word.sentenceQuizPrompt)
+                            .font(.system(size: promptFontSize, weight: .medium, design: .default))
+                            .foregroundStyle(palette.primary)
+                            .multilineTextAlignment(.center)
+                            .lineLimit(nil)
+                            .minimumScaleFactor(0.4)
+                            .fixedSize(horizontal: false, vertical: true)
+                            .frame(maxWidth: .infinity)
+                            .widgetAccentable()
+
+                        optionGrid(width: contentWidth)
+                    }
+
+                    Spacer(minLength: 0)
                 }
-
-                Spacer(minLength: 0)
+                .frame(maxWidth: .infinity, maxHeight: .infinity)
+                .padding(insets)
             }
-            .frame(maxWidth: .infinity, maxHeight: .infinity)
-            .padding(insets)
         }
     }
 
@@ -92,10 +109,6 @@ private struct GlanceSATQuizPromptView: View {
         case .systemLarge: return 15 * scale
         default: return 13.5 * scale
         }
-    }
-
-    private var promptLineLimit: Int {
-        family == .systemLarge ? 4 : 3
     }
 
     @ViewBuilder
@@ -134,8 +147,9 @@ private struct GlanceSATQuizPromptView: View {
             .font(.system(size: 12 * scale, weight: style.fontWeight, design: .rounded))
             .foregroundStyle(WidgetQuizChrome.answerLabel.opacity(style.labelOpacity))
             .multilineTextAlignment(.center)
-            .lineLimit(2)
-            .minimumScaleFactor(0.75)
+            .lineLimit(nil)
+            .minimumScaleFactor(0.4)
+            .fixedSize(horizontal: false, vertical: true)
             .frame(maxWidth: .infinity, minHeight: optionHeight)
             .padding(.horizontal, 8)
             .background(

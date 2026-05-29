@@ -5,6 +5,7 @@
 
 import SwiftData
 import SwiftUI
+import UIKit
 
 // MARK: - Layout
 
@@ -14,11 +15,53 @@ private enum InsightsLayout {
     static let cardCornerRadius: CGFloat = 28
     static let innerPadding: CGFloat = 20
     static let rowSpacing: CGFloat = 14
-    static let gridSpacing: CGFloat = 0
+    static let gridSpacing: CGFloat = 12
     static let trajectoryHeight: CGFloat = 200
     static let bottomPadding: CGFloat = RootTabBarLayout.scrollBottomPadding
     /// Terracotta accent from Today’s **Start Daily Quiz** button.
     static let iconTint = HubPalette.plantPot
+}
+
+/// Uniform one-line overview labels — sized to the narrowest grid cell.
+private enum InsightsOverviewTitleMetrics {
+    static let labels = ["Words glanced", "Quiz accuracy", "Longest streak", "Words absorbed"]
+
+    static func labelTextWidth(inCellWidth cellWidth: CGFloat) -> CGFloat {
+        let horizontalChrome =
+            (InsightsLayout.innerPadding * 2)
+            + (InsightsMetricCellLayout.padding * 2)
+            + InsightsMetricCellLayout.iconWidth
+            + InsightsMetricCellLayout.titleSpacing
+        return max(0, cellWidth - horizontalChrome)
+    }
+
+    static func uniformTitleSize(for availableTextWidth: CGFloat) -> CGFloat {
+        guard availableTextWidth > 0 else { return 11 }
+        let minSize: CGFloat = 9
+        let maxSize: CGFloat = 16
+        var size = maxSize
+        while size > minSize {
+            if labels.allSatisfy({ measuredWidth(for: $0, fontSize: size) <= availableTextWidth }) {
+                break
+            }
+            size -= 0.25
+        }
+        return size
+    }
+
+    private static func measuredWidth(for text: String, fontSize: CGFloat) -> CGFloat {
+        let font = UIFont.systemFont(ofSize: fontSize, weight: .semibold)
+        let rounded = font.fontDescriptor.withDesign(.rounded).map {
+            UIFont(descriptor: $0, size: fontSize)
+        } ?? font
+        return ceil((text as NSString).size(withAttributes: [.font: rounded]).width)
+    }
+}
+
+private enum InsightsMetricCellLayout {
+    static let padding: CGFloat = 12
+    static let iconWidth: CGFloat = 24
+    static let titleSpacing: CGFloat = 6
 }
 
 private struct InsightsDisplayData {
@@ -32,7 +75,7 @@ private struct InsightsDisplayData {
     var bestCheckInStreak: Int
     var categories: [CategoryAccuracy]
     var recentQuizTrend: [QuizTrendPoint]
-    var trendUnlocked: Bool
+    var hasMinimumQuizHistory: Bool
 }
 
 private enum InsightsPresentation {
@@ -65,7 +108,7 @@ private enum InsightsPresentation {
             QuizTrendPoint(dayLabel: "", score: 9),
             QuizTrendPoint(dayLabel: "Today", score: 8),
         ],
-        trendUnlocked: true
+        hasMinimumQuizHistory: true
     )
     #endif
 }
@@ -76,6 +119,7 @@ private enum InsightsPresentation {
 struct GlanceSATProgressScreen: View {
     @Environment(\.colorScheme) private var colorScheme
     @Environment(\.modelContext) private var modelContext
+    @Environment(\.scenePhase) private var scenePhase
     @Environment(InsightsRefreshCoordinator.self) private var insightsCoordinator
     @EnvironmentObject private var entitlementManager: EntitlementManager
     @EnvironmentObject private var paywallPresenter: PaywallPresenter
@@ -84,6 +128,8 @@ struct GlanceSATProgressScreen: View {
     @State private var appeared = false
     @State private var insightsChartReveal: CGFloat = 0
     @State private var categoryBarFractions: [CGFloat] = []
+    @State private var overviewTitleFontSize: CGFloat = 11
+    @State private var satCountdownHeader: String?
     #if DEBUG
     @AppStorage(DebugInsightsControls.useMockValuesKey) private var debugInsightsUseMockValues = false
     #endif
@@ -106,7 +152,7 @@ struct GlanceSATProgressScreen: View {
             bestCheckInStreak: viewModel.bestStreak,
             categories: viewModel.categories,
             recentQuizTrend: viewModel.recentQuizTrend,
-            trendUnlocked: viewModel.isTrendReady()
+            hasMinimumQuizHistory: viewModel.hasMinimumQuizHistory()
         )
     }
 
@@ -118,31 +164,34 @@ struct GlanceSATProgressScreen: View {
     var body: some View {
         NavigationStack {
             GeometryReader { proxy in
-                ScrollView(.vertical, showsIndicators: false) {
-                    VStack(alignment: .leading, spacing: InsightsLayout.sectionSpacing) {
-                        overviewSection
-
-                        if !entitlementManager.hasPremiumAccess {
-                            seeMoreInsightsButton
-                        }
-
-                        if entitlementManager.hasPremiumAccess {
+                ZStack(alignment: .bottom) {
+                    ScrollView(.vertical, showsIndicators: false) {
+                        VStack(alignment: .leading, spacing: InsightsLayout.sectionSpacing) {
+                            if let satCountdownHeader {
+                                satCountdownHeaderSection(satCountdownHeader)
+                            }
+                            overviewSection
                             categoriesSection
                             trajectorySection
-                        } else {
-                            lockedInsightsSections
                         }
+                        .padding(.horizontal, InsightsLayout.horizontalInset)
+                        .padding(.top, insightsTopContentInset(safeAreaTop: proxy.safeAreaInsets.top))
+                        .padding(.bottom, InsightsLayout.bottomPadding)
                     }
-                    .padding(.horizontal, InsightsLayout.horizontalInset)
-                    .padding(.top, insightsTopContentInset(safeAreaTop: proxy.safeAreaInsets.top))
-                    .padding(.bottom, InsightsLayout.bottomPadding)
+                    .scrollContentBackground(.hidden)
+                    .background(HubPalette.linen.ignoresSafeArea())
+                    .blur(radius: entitlementManager.hasPremiumAccess ? 0 : 12)
+                    .allowsHitTesting(entitlementManager.hasPremiumAccess)
+
+                    if !entitlementManager.hasPremiumAccess {
+                        insightsPaywallOverlay
+                    }
                 }
-                .scrollContentBackground(.hidden)
-                .background(HubPalette.linen.ignoresSafeArea())
             }
             .glanceNavigationBarChrome(colorScheme: colorScheme, isHidden: true)
         }
         .onAppear {
+            refreshSATCountdownHeader()
             insightsCoordinator.applyCached(to: viewModel, sessions: sessions)
             withAnimation(.easeOut(duration: 0.4)) {
                 appeared = true
@@ -160,6 +209,14 @@ struct GlanceSATProgressScreen: View {
                 sessions: sessions,
                 force: true
             )
+        }
+        .onChange(of: scenePhase) { _, phase in
+            if phase == .active {
+                refreshSATCountdownHeader()
+            }
+        }
+        .onReceive(NotificationCenter.default.publisher(for: .satExamDateDidChange)) { _ in
+            refreshSATCountdownHeader()
         }
         .onReceive(NotificationCenter.default.publisher(for: .insightsWordStatsDidUpdate)) { _ in
             guard let stats = insightsCoordinator.cachedWordStats else { return }
@@ -180,6 +237,17 @@ struct GlanceSATProgressScreen: View {
         GlanceDeviceLayout.heightFraction(0.02) + safeAreaTop
     }
 
+    private func refreshSATCountdownHeader() {
+        satCountdownHeader = SATExamDateStore.countdownLabel()
+    }
+
+    private func satCountdownHeaderSection(_ text: String) -> some View {
+        Text(insightsPlainText(text))
+            .font(GlanceHubFont.semibold(22))
+            .foregroundStyle(HubPalette.espresso)
+            .frame(maxWidth: .infinity, alignment: .leading)
+    }
+
     // MARK: - Sections
 
     private var overviewSection: some View {
@@ -189,25 +257,27 @@ struct GlanceSATProgressScreen: View {
                 subtitle: "Your vocabulary at a glance"
             )
 
-            InsightsGlassCard(
-                cornerRadius: InsightsLayout.cardCornerRadius,
-                fillGradient: insightsHeroFillGradient,
-                strokeGradient: insightsHeroStrokeGradient
+            LazyVGrid(
+                columns: [
+                    GridItem(.flexible(), spacing: InsightsLayout.gridSpacing),
+                    GridItem(.flexible(), spacing: InsightsLayout.gridSpacing),
+                ],
+                spacing: InsightsLayout.gridSpacing
             ) {
-                VStack(spacing: 0) {
-                    HStack(spacing: 0) {
-                        glancedMetricCell
-                        InsightsGridDivider(axis: .vertical)
-                        quizAccuracyMetricCell
-                    }
-
-                    InsightsGridDivider(axis: .horizontal)
-
-                    HStack(spacing: 0) {
-                        streakMetricCell
-                        InsightsGridDivider(axis: .vertical)
-                        absorbedMetricCell
-                    }
+                overviewMetricSquare { glancedMetricCell }
+                overviewMetricSquare { quizAccuracyMetricCell }
+                overviewMetricSquare { streakMetricCell }
+                overviewMetricSquare { absorbedMetricCell }
+            }
+            .background {
+                GeometryReader { geo in
+                    Color.clear
+                        .onAppear {
+                            updateOverviewTitleFontSize(gridWidth: geo.size.width)
+                        }
+                        .onChange(of: geo.size.width) { _, width in
+                            updateOverviewTitleFontSize(gridWidth: width)
+                        }
                 }
             }
         }
@@ -216,29 +286,62 @@ struct GlanceSATProgressScreen: View {
         .animation(.easeOut(duration: 0.35), value: appeared)
     }
 
-    private var seeMoreInsightsButton: some View {
-        Button {
-            paywallPresenter.presentPaywall()
-        } label: {
-            Text("See more insights")
-                .font(GlanceHubFont.semibold(17))
-                .foregroundStyle(HubPalette.linen)
-                .frame(maxWidth: .infinity)
-                .padding(.vertical, 16)
-                .background(HubPalette.plantPot.opacity(0.86), in: Capsule(style: .continuous))
+    private func updateOverviewTitleFontSize(gridWidth: CGFloat) {
+        guard gridWidth > 0 else { return }
+        let cellWidth = (gridWidth - InsightsLayout.gridSpacing) / 2
+        let textWidth = InsightsOverviewTitleMetrics.labelTextWidth(inCellWidth: cellWidth)
+        let nextSize = InsightsOverviewTitleMetrics.uniformTitleSize(for: textWidth)
+        if abs(nextSize - overviewTitleFontSize) > 0.01 {
+            overviewTitleFontSize = nextSize
         }
-        .buttonStyle(.plain)
-        .opacity(appeared ? 1 : 0)
-        .animation(.easeOut(duration: 0.32).delay(0.04), value: appeared)
     }
 
-    private var lockedInsightsSections: some View {
-        VStack(alignment: .leading, spacing: InsightsLayout.sectionSpacing) {
-            categoriesSection
-            trajectorySection
+    private func overviewMetricSquare<Content: View>(@ViewBuilder content: () -> Content) -> some View {
+        OverviewMetricSquareCell(content: content())
+    }
+
+    private var insightsPaywallOverlay: some View {
+        VStack(spacing: 20) {
+            Spacer(minLength: 0)
+
+            Text("Get access to all insights")
+                .font(GlanceHubFont.bold(22))
+                .foregroundStyle(HubPalette.espresso)
+                .multilineTextAlignment(.center)
+
+            Text(insightsPlainText("See your strengths and weaknesses and latest trends"))
+                .font(GlanceHubFont.regular(16))
+                .foregroundStyle(HubPalette.espressoMuted)
+                .multilineTextAlignment(.center)
+
+            Button {
+                paywallPresenter.presentPaywall()
+            } label: {
+                Text("See all insights")
+                    .font(GlanceHubFont.semibold(17))
+                    .foregroundStyle(HubPalette.linen)
+                    .frame(maxWidth: .infinity)
+                    .padding(.vertical, 16)
+                    .background(HubPalette.plantPot.opacity(0.86), in: Capsule(style: .continuous))
+            }
+            .buttonStyle(.plain)
         }
-        .allowsHitTesting(false)
-        .blur(radius: 10)
+        .padding(.horizontal, 24)
+        .padding(.top, 32)
+        .padding(.bottom, InsightsLayout.bottomPadding)
+        .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .bottom)
+        .background {
+            LinearGradient(
+                colors: [
+                    HubPalette.linen.opacity(0),
+                    HubPalette.linen.opacity(0.94),
+                    HubPalette.linen,
+                ],
+                startPoint: .top,
+                endPoint: .bottom
+            )
+        }
+        .ignoresSafeArea(edges: .bottom)
     }
 
     private var categoriesSection: some View {
@@ -248,23 +351,32 @@ struct GlanceSATProgressScreen: View {
                 subtitle: categorySectionTrailing
             )
 
-            InsightsGlassCard {
-                VStack(spacing: 18) {
-                    ForEach(Array(displayData.categories.enumerated()), id: \.offset) { index, category in
-                        if index > 0 {
-                            Divider()
-                                .overlay(HubPalette.espressoFaint.opacity(0.35))
-                        }
+            InsightsSolidCard {
+                if displayData.hasMinimumQuizHistory {
+                    VStack(spacing: 18) {
+                        ForEach(Array(displayData.categories.enumerated()), id: \.offset) { index, category in
+                            if index > 0 {
+                                Divider()
+                                    .overlay(HubPalette.espressoFaint.opacity(0.35))
+                            }
 
-                        InsightsCategoryRow(
-                            category: category,
-                            fillFraction: categoryBarFractions.indices.contains(index)
-                                ? categoryBarFractions[index]
-                                : 0,
-                            revealProgress: insightsChartReveal,
-                            isReady: categoryIsReady(category.name)
-                        )
+                            InsightsCategoryRow(
+                                category: category,
+                                fillFraction: categoryBarFractions.indices.contains(index)
+                                    ? categoryBarFractions[index]
+                                    : 0,
+                                revealProgress: insightsChartReveal,
+                                isReady: categoryIsReady(category.name)
+                            )
+                        }
                     }
+                } else {
+                    Text(insightsPlainText("Your strengths will appear after 3 quizzes"))
+                        .font(GlanceHubFont.medium(15))
+                        .foregroundStyle(HubPalette.espressoMuted)
+                        .multilineTextAlignment(.center)
+                        .frame(maxWidth: .infinity)
+                        .frame(minHeight: 140)
                 }
             }
             .opacity(appeared ? 1 : 0)
@@ -277,32 +389,19 @@ struct GlanceSATProgressScreen: View {
         VStack(alignment: .leading, spacing: InsightsLayout.rowSpacing) {
             insightsSectionHeader(
                 title: "Quiz trajectory",
-                subtitle: trendSectionTrailing
+                subtitle: displayData.hasMinimumQuizHistory ? "last 10 days" : nil
             )
 
-            InsightsGlassCard {
-                VStack(alignment: .leading, spacing: 16) {
-                    Text(displayData.trendUnlocked
-                        ? "Daily quiz score · previous 10 days"
-                        : "Your line appears after 3 active quiz days")
+            InsightsSolidCard {
+                if displayData.hasMinimumQuizHistory {
+                    quizSparkline(height: InsightsLayout.trajectoryHeight, showAxes: true)
+                } else {
+                    Text(insightsPlainText("Your trajectory will appear after 3 quizzes"))
                         .font(GlanceHubFont.medium(15))
                         .foregroundStyle(HubPalette.espressoMuted)
-                        .fixedSize(horizontal: false, vertical: true)
-
-                    quizSparkline(height: InsightsLayout.trajectoryHeight, showAxes: true)
-
-                    if !displayData.trendUnlocked {
-                        Label {
-                            Text("Keep your evening check-in — the trajectory fills in quickly.")
-                                .font(GlanceHubFont.regular(13))
-                                .foregroundStyle(HubPalette.espressoMuted)
-                        } icon: {
-                            Image(systemName: "calendar.badge.clock")
-                                .font(.system(size: 14, weight: .semibold))
-                                .foregroundStyle(InsightsLayout.iconTint)
-                        }
-                        .labelStyle(.titleAndIcon)
-                    }
+                        .multilineTextAlignment(.center)
+                        .frame(maxWidth: .infinity)
+                        .frame(minHeight: InsightsLayout.trajectoryHeight)
                 }
             }
         }
@@ -317,16 +416,19 @@ struct GlanceSATProgressScreen: View {
         InsightsMetricCell(
             label: "Words glanced",
             systemImage: "eye.fill",
-            iconTint: InsightsLayout.iconTint
+            iconTint: InsightsLayout.iconTint,
+            titleFontSize: overviewTitleFontSize
         ) {
-            InsightsGlancedRing(
-                count: displayData.wordsGlanced,
-                cap: displayData.totalWordGoal,
-                revealProgress: insightsChartReveal
-            )
-            .frame(width: 76, height: 76)
-            .frame(maxWidth: .infinity)
-            .frame(height: 76)
+            GeometryReader { geo in
+                let ringSize = min(geo.size.width, geo.size.height)
+                InsightsGlancedRing(
+                    count: displayData.wordsGlanced,
+                    cap: displayData.totalWordGoal,
+                    revealProgress: insightsChartReveal
+                )
+                .frame(width: ringSize, height: ringSize)
+                .frame(maxWidth: .infinity, maxHeight: .infinity)
+            }
         }
     }
 
@@ -334,24 +436,27 @@ struct GlanceSATProgressScreen: View {
         InsightsMetricCell(
             label: "Quiz accuracy",
             systemImage: "chart.line.uptrend.xyaxis",
-            iconTint: InsightsLayout.iconTint
+            iconTint: InsightsLayout.iconTint,
+            titleFontSize: overviewTitleFontSize
         ) {
-            Group {
-                if let percent = displayData.quizAccuracy {
-                    Text("\(percent)%")
-                        .font(GlanceHubFont.bold(36))
-                        .monospacedDigit()
-                        .foregroundStyle(HubPalette.espresso)
-                        .minimumScaleFactor(0.7)
-                        .lineLimit(1)
-                } else {
-                    Text("—")
-                        .font(GlanceHubFont.bold(36))
-                        .foregroundStyle(HubPalette.espressoFaint)
+            GeometryReader { geo in
+                let valueSize = min(geo.size.height * 0.72, 40)
+                Group {
+                    if let percent = displayData.quizAccuracy {
+                        Text("\(percent)%")
+                            .font(GlanceHubFont.bold(valueSize))
+                            .monospacedDigit()
+                            .foregroundStyle(HubPalette.espresso)
+                            .minimumScaleFactor(0.7)
+                            .lineLimit(1)
+                    } else {
+                        Text("-")
+                            .font(GlanceHubFont.bold(valueSize))
+                            .foregroundStyle(HubPalette.espressoFaint)
+                    }
                 }
+                .frame(maxWidth: .infinity, maxHeight: .infinity)
             }
-            .frame(maxWidth: .infinity)
-            .frame(height: 76)
         }
     }
 
@@ -361,77 +466,62 @@ struct GlanceSATProgressScreen: View {
             systemImage: "flame.fill",
             iconTint: InsightsLayout.iconTint,
             usesPlantGlyph: true,
-            streakDays: displayData.bestCheckInStreak
+            streakDays: displayData.bestCheckInStreak,
+            titleFontSize: overviewTitleFontSize
         ) {
-            HStack(alignment: .lastTextBaseline, spacing: 8) {
-                Text("\(displayData.bestCheckInStreak)")
-                    .font(GlanceHubFont.bold(36))
-                    .monospacedDigit()
-                    .foregroundStyle(HubPalette.espresso)
+            GeometryReader { geo in
+                let valueSize = min(geo.size.height * 0.72, 40)
+                let unitSize = max(12, valueSize * 0.42)
+                HStack(alignment: .lastTextBaseline, spacing: 6) {
+                    Text("\(displayData.bestCheckInStreak)")
+                        .font(GlanceHubFont.bold(valueSize))
+                        .monospacedDigit()
+                        .foregroundStyle(HubPalette.espresso)
 
-                Text("days")
-                    .font(GlanceHubFont.medium(15))
-                    .foregroundStyle(HubPalette.espressoMuted)
+                    Text("days")
+                        .font(GlanceHubFont.medium(unitSize))
+                        .foregroundStyle(HubPalette.espressoMuted)
+                }
+                .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .leading)
             }
-            .frame(maxWidth: .infinity)
-            .frame(height: 76, alignment: .leading)
         }
     }
 
     private var absorbedMetricCell: some View {
-        let cap = max(displayData.totalWordGoal, 1)
-        let count = displayData.wordsAbsorbed
-        let fillFraction = min(1, CGFloat(count) / CGFloat(cap)) * insightsChartReveal
-
-        return InsightsMetricCell(
+        InsightsMetricCell(
             label: "Words absorbed",
             systemImage: "checkmark.seal.fill",
-            iconTint: InsightsLayout.iconTint
+            iconTint: InsightsLayout.iconTint,
+            titleFontSize: overviewTitleFontSize
         ) {
-            HStack(alignment: .bottom, spacing: 12) {
-                InsightsAbsorbedMeter(fillFraction: fillFraction)
-                    .frame(width: 14, height: 76)
+            GeometryReader { geo in
+                let cap = max(displayData.totalWordGoal, 1)
+                let count = displayData.wordsAbsorbed
+                let fillFraction = min(1, CGFloat(count) / CGFloat(cap)) * insightsChartReveal
+                let meterHeight = geo.size.height
+                let valueSize = min(meterHeight * 0.42, 32)
+                let subSize = max(11, valueSize * 0.44)
 
-                VStack(alignment: .leading, spacing: 2) {
-                    Text("\(count)")
-                        .font(GlanceHubFont.bold(32))
-                        .monospacedDigit()
-                        .foregroundStyle(HubPalette.espresso)
-                    Text("of \(cap)")
-                        .font(GlanceHubFont.medium(14))
-                        .foregroundStyle(HubPalette.espressoMuted)
+                HStack(alignment: .bottom, spacing: 10) {
+                    InsightsAbsorbedMeter(fillFraction: fillFraction)
+                        .frame(width: 12, height: meterHeight)
+
+                    VStack(alignment: .leading, spacing: 2) {
+                        Text("\(count)")
+                            .font(GlanceHubFont.bold(valueSize))
+                            .monospacedDigit()
+                            .foregroundStyle(HubPalette.espresso)
+                        Text("of \(cap)")
+                            .font(GlanceHubFont.medium(subSize))
+                            .foregroundStyle(HubPalette.espressoMuted)
+                    }
                 }
+                .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .center)
             }
-            .frame(maxWidth: .infinity, alignment: .center)
-            .frame(height: 76, alignment: .bottom)
         }
     }
 
     // MARK: - Helpers
-
-    private var insightsHeroFillGradient: LinearGradient {
-        LinearGradient(
-            colors: [
-                Color.white.opacity(0.62),
-                HubPalette.linen.opacity(0.38),
-                HubPalette.amberAccent.opacity(0.10),
-            ],
-            startPoint: .topLeading,
-            endPoint: .bottomTrailing
-        )
-    }
-
-    private var insightsHeroStrokeGradient: LinearGradient {
-        LinearGradient(
-            colors: [
-                Color.white.opacity(0.78),
-                HubPalette.ember.opacity(0.18),
-                Color.black.opacity(0.04),
-            ],
-            startPoint: .topLeading,
-            endPoint: .bottomTrailing
-        )
-    }
 
     private func playInsightsChartRevealAnimation() {
         insightsChartReveal = 0
@@ -504,32 +594,25 @@ struct GlanceSATProgressScreen: View {
     }
 
     private var categorySectionTrailing: String? {
-        let ready = displayData.categories.filter { category in
-            #if DEBUG
-            debugInsightsUseMockValues || viewModel.isCategoryReady(category.name)
-            #else
-            viewModel.isCategoryReady(category.name)
-            #endif
+        guard displayData.hasMinimumQuizHistory,
+              let best = displayData.categories.max(by: { $0.accuracy < $1.accuracy }) else {
+            return nil
         }
-        guard !ready.isEmpty else { return nil }
-        if let best = ready.max(by: { $0.accuracy < $1.accuracy }) {
-            return "Strongest · \(best.name)"
-        }
-        return nil
+        return "Strongest: \(best.name)"
     }
 
-    private var trendSectionTrailing: String? {
-        displayData.trendUnlocked ? "Last 10 days" : "3 days to unlock"
+    private func insightsPlainText(_ string: String) -> String {
+        string.replacingOccurrences(of: "—", with: "-")
     }
 
     private func insightsSectionHeader(title: String, subtitle: String?) -> some View {
         VStack(alignment: .leading, spacing: 4) {
-            Text(title)
+            Text(insightsPlainText(title))
                 .font(GlanceHubFont.semibold(22))
                 .foregroundStyle(HubPalette.espresso)
 
             if let subtitle {
-                Text(subtitle)
+                Text(insightsPlainText(subtitle))
                     .font(GlanceHubFont.medium(14))
                     .foregroundStyle(HubPalette.espressoMuted)
                     .lineLimit(2)
@@ -560,7 +643,7 @@ struct GlanceSATProgressScreen: View {
             let cgPoints = quizTrendCGPoints(points: points, leftPad: leftPad, plotW: plotW, plotH: plotH)
             let lineShape = quizTrendLinePath(cgPoints: cgPoints)
             let areaShape = quizTrendAreaPath(cgPoints: cgPoints, plotFloor: plotH)
-            let trimEnd = appeared && displayData.trendUnlocked ? min(1, max(0, insightsChartReveal)) : 0
+            let trimEnd = appeared && displayData.hasMinimumQuizHistory ? min(1, max(0, insightsChartReveal)) : 0
 
             ZStack(alignment: .topLeading) {
                 if showAxes {
@@ -622,7 +705,7 @@ struct GlanceSATProgressScreen: View {
                                 Circle()
                                     .strokeBorder(HubPalette.plantDeep, lineWidth: 2)
                             )
-                            .opacity(displayData.trendUnlocked && appeared ? insightsChartReveal : 0)
+                            .opacity(displayData.hasMinimumQuizHistory && appeared ? insightsChartReveal : 0)
                             .position(x: point.x, y: point.y)
                     }
                 }
@@ -635,47 +718,45 @@ struct GlanceSATProgressScreen: View {
 
 // MARK: - Components
 
-private struct InsightsGlassCard<Content: View>: View {
-    var cornerRadius: CGFloat = InsightsLayout.cardCornerRadius
-    var fillGradient: LinearGradient?
-    var strokeGradient: LinearGradient?
-    @ViewBuilder var content: () -> Content
+private struct OverviewMetricSquareCell<Content: View>: View {
+    let content: Content
 
     var body: some View {
-        content()
-            .padding(InsightsLayout.innerPadding)
-            .frame(maxWidth: .infinity, alignment: .leading)
-            .background {
-                GlanceAdaptiveGlassBackground(
-                    cornerRadius: cornerRadius,
-                    fillGradient: fillGradient,
-                    strokeGradient: strokeGradient
-                )
+        GeometryReader { geo in
+            let side = geo.size.width
+            InsightsSolidCard {
+                content
             }
+            .frame(width: side, height: side)
+        }
+        .aspectRatio(1, contentMode: .fit)
     }
 }
 
-private struct InsightsGridDivider: View {
-    enum Axis {
-        case horizontal
-        case vertical
+private struct InsightsSolidCard<Content: View>: View {
+    var cornerRadius: CGFloat = InsightsLayout.cardCornerRadius
+    let content: Content
+
+    init(
+        cornerRadius: CGFloat = InsightsLayout.cardCornerRadius,
+        @ViewBuilder content: () -> Content
+    ) {
+        self.cornerRadius = cornerRadius
+        self.content = content()
     }
 
-    let axis: Axis
-
     var body: some View {
-        Group {
-            switch axis {
-            case .horizontal:
-                Rectangle()
-                    .fill(HubPalette.espresso.opacity(0.08))
-                    .frame(height: 1)
-            case .vertical:
-                Rectangle()
-                    .fill(HubPalette.espresso.opacity(0.08))
-                    .frame(width: 1)
+        content
+            .padding(InsightsLayout.innerPadding)
+            .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .topLeading)
+            .background {
+                RoundedRectangle(cornerRadius: cornerRadius, style: .continuous)
+                    .fill(HubPalette.oatmeal)
+                    .overlay(
+                        RoundedRectangle(cornerRadius: cornerRadius, style: .continuous)
+                            .strokeBorder(HubPalette.espressoFaint.opacity(0.35), lineWidth: 0.7)
+                    )
             }
-        }
     }
 }
 
@@ -685,38 +766,58 @@ private struct InsightsMetricCell<Metric: View>: View {
     let iconTint: Color
     var usesPlantGlyph: Bool = false
     var streakDays: Int = 0
-    @ViewBuilder let metric: () -> Metric
+    var titleFontSize: CGFloat = 11
+    let metric: Metric
+
+    init(
+        label: String,
+        systemImage: String,
+        iconTint: Color,
+        usesPlantGlyph: Bool = false,
+        streakDays: Int = 0,
+        titleFontSize: CGFloat = 11,
+        @ViewBuilder metric: () -> Metric
+    ) {
+        self.label = label
+        self.systemImage = systemImage
+        self.iconTint = iconTint
+        self.usesPlantGlyph = usesPlantGlyph
+        self.streakDays = streakDays
+        self.titleFontSize = titleFontSize
+        self.metric = metric()
+    }
 
     var body: some View {
-        VStack(alignment: .leading, spacing: 12) {
-            HStack(spacing: 8) {
+        VStack(alignment: .leading, spacing: 8) {
+            HStack(spacing: InsightsMetricCellLayout.titleSpacing) {
                 ZStack {
                     Circle()
                         .fill(HubPalette.oatmealDeep.opacity(0.35))
-                        .frame(width: 28, height: 28)
+                        .frame(width: InsightsMetricCellLayout.iconWidth, height: InsightsMetricCellLayout.iconWidth)
 
                     if usesPlantGlyph {
                         InsightsStreakPlantGlyph(streakDays: streakDays, tint: iconTint)
-                            .frame(width: 16, height: 16)
+                            .frame(width: 14, height: 14)
                     } else {
                         Image(systemName: systemImage)
-                            .font(.system(size: 12, weight: .semibold))
+                            .font(.system(size: max(10, titleFontSize - 1), weight: .semibold))
                             .foregroundStyle(iconTint)
                     }
                 }
 
                 Text(label)
-                    .font(GlanceHubFont.semibold(13))
+                    .font(GlanceHubFont.semibold(titleFontSize))
                     .foregroundStyle(HubPalette.espressoMuted)
-                    .lineLimit(2)
-                    .minimumScaleFactor(0.85)
+                    .lineLimit(1)
+                    .minimumScaleFactor(0.75)
 
                 Spacer(minLength: 0)
             }
 
-            metric()
+            metric
+                .frame(maxWidth: .infinity, maxHeight: .infinity)
         }
-        .padding(16)
+        .padding(InsightsMetricCellLayout.padding)
         .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .topLeading)
     }
 }
@@ -736,27 +837,36 @@ private struct InsightsGlancedRing: View {
     }
 
     var body: some View {
-        ZStack {
-            Circle()
-                .stroke(HubPalette.oatmealDeep.opacity(0.45), lineWidth: 8)
+        GeometryReader { geo in
+            let side = min(geo.size.width, geo.size.height)
+            let stroke = max(6, side * 0.1)
+            let countFont = max(14, side * 0.22)
+            let capFont = max(9, side * 0.13)
 
-            Circle()
-                .trim(from: 0, to: drawnFraction)
-                .stroke(
-                    HubPalette.plantDeep,
-                    style: StrokeStyle(lineWidth: 8, lineCap: .round)
-                )
-                .rotationEffect(.degrees(-90))
+            ZStack {
+                Circle()
+                    .stroke(HubPalette.oatmealDeep.opacity(0.45), lineWidth: stroke)
 
-            VStack(spacing: 0) {
-                Text("\(count)")
-                    .font(GlanceHubFont.bold(18))
-                    .monospacedDigit()
-                Text("/ \(cap)")
-                    .font(GlanceHubFont.medium(11))
-                    .monospacedDigit()
+                Circle()
+                    .trim(from: 0, to: drawnFraction)
+                    .stroke(
+                        HubPalette.plantDeep,
+                        style: StrokeStyle(lineWidth: stroke, lineCap: .round)
+                    )
+                    .rotationEffect(.degrees(-90))
+
+                VStack(spacing: 0) {
+                    Text("\(count)")
+                        .font(GlanceHubFont.bold(countFont))
+                        .monospacedDigit()
+                    Text("/ \(cap)")
+                        .font(GlanceHubFont.medium(capFont))
+                        .monospacedDigit()
+                }
+                .foregroundStyle(HubPalette.espresso)
             }
-            .foregroundStyle(HubPalette.espresso)
+            .frame(width: side, height: side)
+            .frame(maxWidth: .infinity, maxHeight: .infinity)
         }
         .animation(.easeOut(duration: 0.95), value: revealProgress)
     }
@@ -816,7 +926,7 @@ private struct InsightsCategoryRow: View {
 
                     Spacer(minLength: 8)
 
-                    Text(isReady ? "\(Int(category.accuracy * 100))%" : "—")
+                    Text(isReady ? "\(Int(category.accuracy * 100))%" : "-")
                         .font(GlanceHubFont.semibold(14))
                         .monospacedDigit()
                         .foregroundStyle(HubPalette.espressoMuted)

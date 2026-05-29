@@ -76,6 +76,8 @@ struct DailyHubView: View {
     /// Primary quiz outcomes only — frozen for post-quiz pills and word-card tags.
     @State private var rememberedWordIDs: Set<UUID> = []
     @State private var missedWordIDs: Set<UUID> = []
+    /// Frozen primary-quiz outcomes for post-quiz word tags — stable while resuming a quiz.
+    @State private var frozenPostQuizOutcomesByWordID: [UUID: DailyWordOutcome] = [:]
     /// Tracks supplemental rounds without changing the primary display sets above.
     @State private var supplementalRememberedWordIDs: Set<UUID> = []
     @State private var supplementalMissedWordIDs: Set<UUID> = []
@@ -109,8 +111,6 @@ struct DailyHubView: View {
     @State private var optimisticDailyResumeCTA = false
     /// Shown after "Take another quiz" presents the cover so "Resume quiz" is delayed the same way.
     @State private var optimisticSupplementalResumeCTA = false
-    /// Keeps Remembered/Missed tags visible through the quiz cover transition.
-    @State private var keepPostQuizOutcomesVisibleDuringQuizPresent = false
     @State private var optimisticResumeCTADelayWorkItem: DispatchWorkItem?
     @State private var todayScrollOffset: CGFloat = 0
     @State private var todayScrollOriginMinY: CGFloat?
@@ -272,7 +272,6 @@ struct DailyHubView: View {
         }
         .frame(maxWidth: .infinity, maxHeight: .infinity)
         .background(HubPalette.linen)
-        .sensoryFeedback(.selection, trigger: scrolledCardID)
         .task {
             await hydrateTodayWordsIfNeeded()
             prefetchPrimaryQuizIfNeeded()
@@ -322,7 +321,6 @@ struct DailyHubView: View {
         }
         .onChange(of: showDailyQuiz) { _, isPresented in
             if !isPresented {
-                keepPostQuizOutcomesVisibleDuringQuizPresent = false
                 clearAllOptimisticQuizCTAState()
                 refreshPersistedQuizFlagsDeferred()
             }
@@ -367,6 +365,7 @@ struct DailyHubView: View {
                 if !quizCompletedToday {
                     rememberedWordIDs = []
                     missedWordIDs = []
+                    frozenPostQuizOutcomesByWordID = [:]
                     supplementalRememberedWordIDs = []
                     supplementalMissedWordIDs = []
                     postQuizCarouselContentHeight = 0
@@ -525,6 +524,7 @@ struct DailyHubView: View {
                 supplementalRememberedWordIDs = completion.rememberedWordIDs
                 let dailyIDs = Set(dailyWords.map(\.id))
                 supplementalMissedWordIDs = completion.missedWordIDs.intersection(dailyIDs)
+                syncFrozenPostQuizOutcomes()
                 quizCompletedToday = true
                 quizPreparation.clearPrimaryPreparation()
                 #if DEBUG
@@ -964,7 +964,6 @@ struct DailyHubView: View {
                             }
                         } else if canOfferSupplementalQuiz {
                             postQuizSecondaryQuizButton(title: "Take another quiz") {
-                                keepPostQuizOutcomesVisibleDuringQuizPresent = true
                                 startAnotherDailyQuiz()
                             }
 
@@ -1144,22 +1143,27 @@ struct DailyHubView: View {
     @ViewBuilder
     private func wordCarousel(metrics: TodayHubLayoutMetrics, inset: CGFloat) -> some View {
         if hasCompletedQuizForDisplay {
-            postQuizWordCarousel(cardWidth: metrics.cardWidth, metrics: metrics)
+            postQuizWordCarousel(inset: inset, cardWidth: metrics.cardWidth, metrics: metrics)
         } else {
             preQuizWordCarousel(inset: inset, cardWidth: metrics.cardWidth, metrics: metrics)
         }
     }
 
-    private func postQuizWordCarousel(cardWidth: CGFloat, metrics: TodayHubLayoutMetrics) -> some View {
+    private func postQuizWordCarousel(inset: CGFloat, cardWidth: CGFloat, metrics: TodayHubLayoutMetrics) -> some View {
         ScrollView(.horizontal, showsIndicators: false) {
-            HStack(alignment: .top, spacing: 0) {
+            LazyHStack(alignment: .top, spacing: carouselCardSpacing) {
                 wordCarouselCards(cardWidth: cardWidth, isPostQuiz: true, metrics: metrics)
             }
             .scrollTargetLayout()
+            .padding(.horizontal, inset)
         }
-        .scrollTargetBehavior(.paging)
+        .scrollTargetBehavior(.viewAligned)
         .scrollPosition(id: $scrolledCardID, anchor: .center)
-        .clipped()
+        .transaction { transaction in
+            if showDailyQuiz {
+                transaction.disablesAnimations = true
+            }
+        }
     }
 
     private func preQuizWordCarousel(inset: CGFloat, cardWidth: CGFloat, metrics: TodayHubLayoutMetrics) -> some View {
@@ -1195,14 +1199,7 @@ struct DailyHubView: View {
                 isPostQuiz: isPostQuiz
             )
 
-            Group {
-                if isPostQuiz {
-                    card
-                        .containerRelativeFrame(.horizontal, count: 1, spacing: carouselCardSpacing)
-                } else {
-                    card
-                }
-            }
+            card
             .id(word.id)
             .modifier(CarouselCardFocusModifier(isFocused: isFocused, enabled: !isPostQuiz))
         }
@@ -1272,10 +1269,26 @@ struct DailyHubView: View {
 
     private func outcome(for word: Word) -> DailyWordOutcome? {
         guard hasCompletedQuizForDisplay else { return nil }
-        if showDailyQuiz, !keepPostQuizOutcomesVisibleDuringQuizPresent { return nil }
+        if let frozen = frozenPostQuizOutcomesByWordID[word.id] {
+            return frozen
+        }
         if rememberedWordIDs.contains(word.id) { return .remembered }
         if missedWordIDs.contains(word.id) { return .needsAnotherPass }
         return .returningTomorrow
+    }
+
+    private func syncFrozenPostQuizOutcomes() {
+        guard hasCompletedQuizForDisplay else {
+            frozenPostQuizOutcomesByWordID = [:]
+            return
+        }
+        var map = frozenPostQuizOutcomesByWordID
+        for id in rememberedWordIDs { map[id] = .remembered }
+        for id in missedWordIDs { map[id] = .needsAnotherPass }
+        for word in dailyWords where map[word.id] == nil {
+            map[word.id] = .returningTomorrow
+        }
+        frozenPostQuizOutcomesByWordID = map
     }
 
     /// Cold boot: wait for bootstrap, then consume its persisted batch (no duplicate `refresh`).
@@ -1418,6 +1431,7 @@ struct DailyHubView: View {
         quizCompletedToday = false
         rememberedWordIDs = []
         missedWordIDs = []
+        frozenPostQuizOutcomesByWordID = [:]
         supplementalRememberedWordIDs = []
         supplementalMissedWordIDs = []
         usedQuestionSlots = []
@@ -1468,7 +1482,6 @@ struct DailyHubView: View {
                     optimisticSupplementalResumeCTA = true
                 }
             }
-            keepPostQuizOutcomesVisibleDuringQuizPresent = false
         }
         optimisticResumeCTADelayWorkItem = workItem
         DispatchQueue.main.asyncAfter(deadline: .now() + 0.4, execute: workItem)
@@ -1476,7 +1489,6 @@ struct DailyHubView: View {
 
     private func clearAllOptimisticQuizCTAState() {
         cancelOptimisticResumeCTADelay()
-        keepPostQuizOutcomesVisibleDuringQuizPresent = false
         var reset = Transaction()
         reset.disablesAnimations = true
         withTransaction(reset) {
@@ -1488,7 +1500,6 @@ struct DailyHubView: View {
     private func startDailyQuiz() {
         Task { @MainActor in
             cancelOptimisticResumeCTADelay()
-            dailyQuizQuestions = []
             showQuizAlert = false
 
             if dailyWords.isEmpty {
@@ -1510,6 +1521,7 @@ struct DailyHubView: View {
                 return
             }
 
+            dailyQuizQuestions = []
             DailyQuizPersistence.clear()
             refreshPersistedQuizFlags()
             usedQuestionSlots = []
@@ -1610,7 +1622,6 @@ struct DailyHubView: View {
     private func startAnotherDailyQuiz() {
         Task { @MainActor in
             cancelOptimisticResumeCTADelay()
-            keepPostQuizOutcomesVisibleDuringQuizPresent = true
             dailyQuizQuestions = []
             showQuizAlert = false
             DailyQuizPersistence.clear()

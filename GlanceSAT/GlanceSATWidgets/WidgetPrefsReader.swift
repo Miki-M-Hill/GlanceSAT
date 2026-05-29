@@ -11,9 +11,11 @@ enum WidgetPrefsReader {
         static let theme = "widget.prefs.theme"
         static let typography = "widget.prefs.typography"
         static let primaryQuizCompletedDayKey = "widget.primaryQuizCompletedDayKey"
+        static let lastQuizCompletionTimestamp = "widget.lastQuizCompletionTimestamp"
         static let streakDays = "widget.streakDays"
         static let hasPremiumAccess = "widget.subscription.hasPremium"
         static let freemiumDailyLimitReached = "widget.subscription.freemiumLimitReached"
+        static let satExamDateSeconds = "satExamDateSeconds"
     }
 
     private static let appGroup = GlanceSATWidgetConstants.appGroupIdentifier
@@ -46,6 +48,21 @@ enum WidgetPrefsReader {
         defaults?.string(forKey: Keys.primaryQuizCompletedDayKey) == dayKey
     }
 
+    static func lastQuizCompletionTimestamp() -> Date? {
+        guard let raw = defaults?.object(forKey: Keys.lastQuizCompletionTimestamp) as? Double, raw > 0 else {
+            return nil
+        }
+        return Date(timeIntervalSince1970: raw)
+    }
+
+    static func isInQuizCelebrationWindow(now: Date = Date(), calendar: Calendar = .current) -> Bool {
+        guard let completion = lastQuizCompletionTimestamp(),
+              calendar.isDateInToday(completion) else {
+            return false
+        }
+        return now.timeIntervalSince(completion) < WidgetTimelineBuilder.celebrationDuration
+    }
+
     static func streakDays() -> Int {
         defaults?.integer(forKey: Keys.streakDays) ?? 0
     }
@@ -56,5 +73,26 @@ enum WidgetPrefsReader {
 
     static func isFreemiumDailyLimitReached() -> Bool {
         defaults?.bool(forKey: Keys.freemiumDailyLimitReached) ?? false
+    }
+
+    static func satExamDateSeconds() -> Double {
+        defaults?.double(forKey: Keys.satExamDateSeconds) ?? 0
+    }
+
+    static func hasSATExamDate() -> Bool {
+        satExamDateSeconds() > 0
+    }
+
+    static func satExamDate() -> Date? {
+        let seconds = satExamDateSeconds()
+        guard seconds > 0 else { return nil }
+        return Date(timeIntervalSince1970: seconds)
+    }
+
+    static func daysUntilSAT(from referenceDate: Date = Date(), calendar: Calendar = .current) -> Int? {
+        guard let examDate = satExamDate() else { return nil }
+        let start = calendar.startOfDay(for: referenceDate)
+        let examDay = calendar.startOfDay(for: examDate)
+        return calendar.dateComponents([.day], from: start, to: examDay).day
     }
 }

@@ -7,40 +7,11 @@ import SwiftUI
 
 // MARK: - In-app paywall (shared with onboarding styling)
 
-enum AppPaywallPlan: String, CaseIterable {
-    case oneMonth
-    case threeMonth
-    case annual
-
-    var title: String {
-        switch self {
-        case .oneMonth: return "1 month"
-        case .threeMonth: return "3 months"
-        case .annual: return "Annual"
-        }
-    }
-
-    var price: String {
-        switch self {
-        case .oneMonth: return "$9.99 / mo"
-        case .threeMonth: return "$24.99 / 3 mo"
-        case .annual: return "$44.99 / yr"
-        }
-    }
-
-    var savingsPercent: Int {
-        switch self {
-        case .oneMonth: return 0
-        case .threeMonth: return 17
-        case .annual: return 62
-        }
-    }
-}
-
 struct AppPaywallScreen: View {
     var dreamScoreLabel: String?
     var satTestDate: SATTestDate?
-    @Binding var selectedPlan: AppPaywallPlan
+    @Binding var selectedPlan: SubscriptionPlan
+    @ObservedObject var entitlementManager: EntitlementManager
     let onClose: () -> Void
 
     private var paywallTitle: String {
@@ -50,11 +21,8 @@ struct AppPaywallScreen: View {
         return "Your plan is ready"
     }
 
-    private var visiblePlans: [AppPaywallPlan] {
-        if satTestDate == .within90 {
-            return [.oneMonth, .threeMonth, .annual]
-        }
-        return [.oneMonth, .annual]
+    private var visiblePlans: [SubscriptionPlan] {
+        SubscriptionPlan.visiblePlans(satTestWithin90Days: satTestDate == .within90)
     }
 
     var body: some View {
@@ -95,9 +63,11 @@ struct AppPaywallScreen: View {
                     Spacer(minLength: 32)
 
                     VStack(spacing: 12) {
-                        ForEach(visiblePlans, id: \.self) { plan in
+                        ForEach(visiblePlans) { plan in
                             AppPaywallPlanRow(
-                                plan: plan,
+                                title: plan.appPaywallTitle,
+                                priceLabel: entitlementManager.localizedPriceLabel(for: plan),
+                                savingsPercent: entitlementManager.savingsPercent(for: plan, visiblePlans: visiblePlans),
                                 isSelected: selectedPlan == plan,
                                 showsSavings: plan != .oneMonth
                             ) {
@@ -117,7 +87,9 @@ struct AppPaywallScreen: View {
 }
 
 private struct AppPaywallPlanRow: View {
-    let plan: AppPaywallPlan
+    let title: String
+    let priceLabel: String
+    let savingsPercent: Int?
     let isSelected: Bool
     let showsSavings: Bool
     let onSelect: () -> Void
@@ -126,13 +98,13 @@ private struct AppPaywallPlanRow: View {
         Button(action: onSelect) {
             HStack(alignment: .center, spacing: 12) {
                 VStack(alignment: .center, spacing: 4) {
-                    Text(plan.title)
+                    Text(title)
                         .font(.system(size: 17, weight: .semibold))
-                    Text(plan.price)
+                    Text(priceLabel)
                         .font(.system(size: 15, weight: .medium))
                         .foregroundStyle(OnboardingColors.secondaryText)
-                    if showsSavings, plan.savingsPercent > 0 {
-                        Text("Save \(plan.savingsPercent)% vs monthly")
+                    if showsSavings, let savingsPercent, savingsPercent > 0 {
+                        Text("Save \(savingsPercent)% vs monthly")
                             .font(.system(size: 15, weight: .semibold))
                             .foregroundStyle(OnboardingColors.hubOrange)
                     }
@@ -223,12 +195,22 @@ struct InsightsPremiumGateOverlay: View {
 
 struct AppPaywallChrome: ViewModifier {
     @ObservedObject var paywallPresenter: PaywallPresenter
-    @State private var selectedPlan: AppPaywallPlan = .annual
+    @ObservedObject var entitlementManager: EntitlementManager
+    @State private var selectedPlan: SubscriptionPlan = .annual
+    @State private var paywallErrorMessage: String?
+    @State private var showsPaywallError = false
     @AppStorage("onboardingDreamScore") private var onboardingDreamScore = ""
     @AppStorage("onboardingSATTestDate") private var onboardingSATTestDateRaw = ""
 
     private var satTestDate: SATTestDate? {
         SATTestDate(rawValue: onboardingSATTestDateRaw)
+    }
+
+    private var primaryButtonTitle: String {
+        if entitlementManager.isPurchasing {
+            return "Starting trial…"
+        }
+        return "Start my 7-day free trial"
     }
 
     func body(content: Content) -> some View {
@@ -240,26 +222,132 @@ struct AppPaywallChrome: ViewModifier {
                             dreamScoreLabel: onboardingDreamScore.nilIfEmpty,
                             satTestDate: satTestDate,
                             selectedPlan: $selectedPlan,
+                            entitlementManager: entitlementManager,
                             onClose: { paywallPresenter.handlePaywallCloseAttempt() }
                         )
                         Spacer(minLength: 0)
-                        Button {
-                            paywallPresenter.handlePaywallCloseAttempt()
-                        } label: {
-                            Text("Start my 7-day free trial")
+                        VStack(spacing: 12) {
+                            Button {
+                                Task { await startTrialPurchase() }
+                            } label: {
+                                Group {
+                                    if entitlementManager.isPurchasing {
+                                        HStack(spacing: 8) {
+                                            ProgressView()
+                                                .tint(.white)
+                                                .scaleEffect(0.85)
+                                            Text(primaryButtonTitle)
+                                                .lineLimit(1)
+                                        }
+                                    } else {
+                                        Text(primaryButtonTitle)
+                                    }
+                                }
                                 .font(.system(size: 17, weight: .semibold))
                                 .foregroundStyle(.white)
                                 .frame(maxWidth: .infinity)
                                 .frame(height: 56)
-                                .background(OnboardingColors.hubOrange, in: Capsule(style: .continuous))
+                                .background(
+                                    OnboardingColors.hubOrange.opacity(
+                                        entitlementManager.isPurchasing || entitlementManager.isRestoring ? 0.38 : 1
+                                    ),
+                                    in: Capsule(style: .continuous)
+                                )
+                            }
+                            .buttonStyle(.plain)
+                            .disabled(entitlementManager.isPurchasing || entitlementManager.isRestoring)
+
+                            Text("Cancel anytime within 7 days")
+                                .font(.system(size: 11, weight: .regular))
+                                .foregroundStyle(OnboardingColors.secondaryText)
+                                .multilineTextAlignment(.center)
+
+                            Button {
+                                Task { await restorePurchases() }
+                            } label: {
+                                Text("Restore Purchases")
+                                    .font(.system(size: 13, weight: .medium))
+                                    .foregroundStyle(OnboardingColors.secondaryText)
+                                    .redacted(reason: entitlementManager.isRestoring ? .placeholder : [])
+                                    .frame(maxWidth: .infinity)
+                                    .padding(.vertical, 4)
+                            }
+                            .buttonStyle(.plain)
+                            .disabled(entitlementManager.isPurchasing || entitlementManager.isRestoring)
                         }
-                        .buttonStyle(.plain)
                         .padding(.horizontal, 24)
                         .padding(.bottom, 24)
                     }
                     .background(OnboardingColors.linen.ignoresSafeArea())
+                    .environmentObject(entitlementManager)
+                    .task {
+                        await entitlementManager.loadOfferings()
+                        applyDefaultPlanSelection()
+                    }
+                    .alert("Subscription", isPresented: $showsPaywallError) {
+                        Button("OK", role: .cancel) {}
+                    } message: {
+                        Text(paywallErrorMessage ?? "")
+                    }
                 }
             }
+    }
+
+    init(paywallPresenter: PaywallPresenter, entitlementManager: EntitlementManager) {
+        self.paywallPresenter = paywallPresenter
+        self._entitlementManager = ObservedObject(wrappedValue: entitlementManager)
+    }
+
+    private func applyDefaultPlanSelection() {
+        if satTestDate == .within90 {
+            selectedPlan = .threeMonth
+        } else {
+            selectedPlan = .annual
+        }
+    }
+
+    @MainActor
+    private func startTrialPurchase() async {
+        do {
+            let result = try await entitlementManager.purchase(plan: selectedPlan)
+            switch result {
+            case .cancelled:
+                break
+            case .completed(let entitlementActive):
+                if entitlementActive {
+                    paywallPresenter.dismissPaywall()
+                }
+            case .noActiveEntitlement:
+                break
+            }
+        } catch {
+            paywallErrorMessage = error.localizedDescription
+            showsPaywallError = true
+        }
+    }
+
+    @MainActor
+    private func restorePurchases() async {
+        do {
+            let result = try await entitlementManager.restorePurchases()
+            switch result {
+            case .cancelled:
+                break
+            case .completed(let entitlementActive):
+                if entitlementActive {
+                    paywallPresenter.dismissPaywall()
+                } else {
+                    paywallErrorMessage = "No active subscription found."
+                    showsPaywallError = true
+                }
+            case .noActiveEntitlement:
+                paywallErrorMessage = "No active subscription found."
+                showsPaywallError = true
+            }
+        } catch {
+            paywallErrorMessage = error.localizedDescription
+            showsPaywallError = true
+        }
     }
 }
 

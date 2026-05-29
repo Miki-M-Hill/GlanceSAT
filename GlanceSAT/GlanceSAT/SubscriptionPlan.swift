@@ -42,7 +42,7 @@ enum SubscriptionPlan: String, CaseIterable, Identifiable, Sendable {
         switch self {
         case .oneMonth: return "$9.99 / mo"
         case .threeMonth: return "$24.99 / 3 mo"
-        case .annual: return "$44.99 / yr"
+        case .annual: return "$49.99 / yr"
         }
     }
 

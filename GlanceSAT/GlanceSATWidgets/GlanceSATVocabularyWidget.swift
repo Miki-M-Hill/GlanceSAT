@@ -10,6 +10,8 @@ struct GlanceSATEntry: TimelineEntry {
     let date: Date
     let word: WidgetWordSnapshot
     let isResting: Bool
+    let isCelebrating: Bool
+    let isPostQuizCompletedDay: Bool
     let isDailyLimitLocked: Bool
     let streakDays: Int
     /// Snapshot `calendarDayKey` does not match the widget's local today (midnight / timezone).
@@ -19,6 +21,8 @@ struct GlanceSATEntry: TimelineEntry {
         date: Date,
         word: WidgetWordSnapshot,
         isResting: Bool = false,
+        isCelebrating: Bool = false,
+        isPostQuizCompletedDay: Bool = false,
         isDailyLimitLocked: Bool = false,
         streakDays: Int = 0,
         isStaleSnapshot: Bool = false
@@ -26,6 +30,8 @@ struct GlanceSATEntry: TimelineEntry {
         self.date = date
         self.word = word
         self.isResting = isResting
+        self.isCelebrating = isCelebrating
+        self.isPostQuizCompletedDay = isPostQuizCompletedDay
         self.isDailyLimitLocked = isDailyLimitLocked
         self.streakDays = streakDays
         self.isStaleSnapshot = isStaleSnapshot
@@ -59,61 +65,34 @@ struct GlanceSATProvider: TimelineProvider {
             let calendar = Calendar.current
             let now = Date()
             let todayKey = WidgetCalendar.dayKey(for: now, calendar: calendar)
-            let nextMidnight = calendar.date(byAdding: .day, value: 1, to: calendar.startOfDay(for: now)) ?? now.addingTimeInterval(86_400)
 
-        if !WidgetPrefsReader.hasPremiumAccess(),
-           WidgetPrefsReader.isFreemiumDailyLimitReached() {
-            let entry = Self.lockedEntry(date: now, payload: payload)
-            completion(Timeline(entries: [entry], policy: .after(nextMidnight)))
-            return
-        }
-
-        if WidgetPrefsReader.isPrimaryQuizCompleted(for: todayKey) {
-            let entry = Self.restEntry(date: now, payload: payload)
-            completion(Timeline(entries: [entry], policy: .after(nextMidnight)))
-            return
-        }
-
-            let visibleWords = WidgetInteractionStore.visibleWords(from: payload.words)
-            let words = visibleWords.isEmpty ? [.placeholder] : visibleWords.shuffled()
-        guard let intervalFloor = WidgetSlotClock.thirtyMinuteFloor(calendar: calendar, date: now) else {
-            completion(
-                Timeline(
-                    entries: [GlanceSATEntry(date: now, word: words.first ?? .placeholder)],
-                    policy: .after(now.addingTimeInterval(1800))
-                )
-            )
-            return
-        }
-
-        if WidgetInteractionStore.consumeFastVocabularyReload(), !words.isEmpty {
-            completion(
-                Self.fastInteractiveTimeline(
-                    now: now,
-                    words: words,
-                    calendar: calendar,
-                    intervalFloor: intervalFloor,
-                    nextMidnight: nextMidnight
-                )
-            )
-            return
-        }
-
-            var entries: [GlanceSATEntry] = []
-            let slotCount = 48 // Next 2 days, hourly.
-            let stepMinutes = 60
-            let streakDays = WidgetPrefsReader.streakDays()
-
-            for offset in 0 ..< slotCount {
-                guard let slotDate = calendar.date(byAdding: .minute, value: offset * stepMinutes, to: intervalFloor) else {
-                    continue
-                }
-                let word = words[offset % words.count]
-                entries.append(GlanceSATEntry(date: slotDate, word: word, streakDays: streakDays))
+            if !WidgetPrefsReader.hasPremiumAccess(),
+               WidgetPrefsReader.isFreemiumDailyLimitReached() {
+                let entry = Self.lockedEntry(date: now, payload: payload)
+                completion(Timeline(entries: [entry], policy: .atEnd))
+                return
             }
 
-            let fallbackReload = entries.last?.date.addingTimeInterval(60 * 60) ?? nextMidnight
-            completion(Timeline(entries: entries, policy: .after(fallbackReload)))
+            if payload.calendarDayKey != todayKey {
+                let entry = GlanceSATEntry(
+                    date: now,
+                    word: payload.words.first ?? .placeholder,
+                    isStaleSnapshot: true
+                )
+                completion(Timeline(entries: [entry], policy: .atEnd))
+                return
+            }
+
+            let visibleWords = WidgetInteractionStore.visibleWords(from: payload.words)
+            let words = visibleWords.isEmpty ? [.placeholder] : visibleWords
+
+            let entries = WidgetTimelineBuilder.buildVocabularyEntries(
+                now: now,
+                words: words,
+                calendar: calendar
+            )
+
+            completion(Timeline(entries: entries, policy: .atEnd))
         }
     }
 
@@ -121,60 +100,39 @@ struct GlanceSATProvider: TimelineProvider {
         let payload = WidgetPayloadLoader.load()
         let calendar = Calendar.current
         let todayKey = WidgetCalendar.dayKey(for: date, calendar: calendar)
+
         if !WidgetPrefsReader.hasPremiumAccess(),
            WidgetPrefsReader.isFreemiumDailyLimitReached() {
             return lockedEntry(date: date, payload: payload)
         }
-        if WidgetPrefsReader.isPrimaryQuizCompleted(for: todayKey) {
-            return restEntry(date: date, payload: payload)
+
+        if payload.calendarDayKey != todayKey {
+            return GlanceSATEntry(
+                date: date,
+                word: payload.words.first ?? .placeholder,
+                isStaleSnapshot: true
+            )
         }
+
         let words = WidgetInteractionStore.visibleWords(from: payload.words)
         guard !words.isEmpty else {
             return GlanceSATEntry(date: date, word: .placeholder)
         }
-        let slotIndex = WidgetSlotClock.slotIndex(for: date, calendar: calendar)
-        let word = words[slotIndex % words.count]
-        return GlanceSATEntry(
-            date: date,
-            word: word,
-            streakDays: WidgetPrefsReader.streakDays()
-        )
-    }
 
-    /// Two-entry timeline after hook/example taps (current word now, next rotation slot).
-    private static func fastInteractiveTimeline(
-        now: Date,
-        words: [WidgetWordSnapshot],
-        calendar: Calendar,
-        intervalFloor: Date,
-        nextMidnight: Date
-    ) -> Timeline<GlanceSATEntry> {
-        let slotIndex = WidgetSlotClock.slotIndex(for: now, calendar: calendar)
-        let streakDays = WidgetPrefsReader.streakDays()
-        let currentWord = words[slotIndex % words.count]
-
-        var entries = [
-            GlanceSATEntry(date: now, word: currentWord, streakDays: streakDays),
-        ]
-
-        let step = GlanceSATWidgetConstants.rotationIntervalMinutes
-        let nextSlotIndex = slotIndex + 1
-        if nextSlotIndex < GlanceSATWidgetConstants.timelineSlotsPerDay,
-           let nextSlotDate = calendar.date(byAdding: .minute, value: nextSlotIndex * step, to: intervalFloor),
-           nextSlotDate < nextMidnight {
-            let nextWord = words[nextSlotIndex % words.count]
-            entries.append(GlanceSATEntry(date: nextSlotDate, word: nextWord, streakDays: streakDays))
+        if WidgetPrefsReader.isInQuizCelebrationWindow(now: date, calendar: calendar) {
+            return GlanceSATEntry(
+                date: date,
+                word: WidgetTimelineBuilder.word(at: date, in: words, calendar: calendar),
+                isCelebrating: true,
+                streakDays: WidgetPrefsReader.streakDays()
+            )
         }
 
-        let reloadAt = entries.count > 1 ? entries[1].date : nextMidnight
-        return Timeline(entries: entries, policy: .after(reloadAt))
-    }
-
-    private static func restEntry(date: Date, payload: WidgetSnapshotPayload) -> GlanceSATEntry {
-        GlanceSATEntry(
+        let postQuiz = WidgetTimelineBuilder.isPostQuizDisplayDay(now: date, calendar: calendar)
+        return GlanceSATEntry(
             date: date,
-            word: payload.words.first ?? .placeholder,
-            isResting: true,
+            word: WidgetTimelineBuilder.word(at: date, in: words, calendar: calendar),
+            isPostQuizCompletedDay: postQuiz,
             streakDays: WidgetPrefsReader.streakDays()
         )
     }
@@ -187,7 +145,6 @@ struct GlanceSATProvider: TimelineProvider {
             streakDays: WidgetPrefsReader.streakDays()
         )
     }
-
 }
 
 struct GlanceSATVocabularyWidget: Widget {

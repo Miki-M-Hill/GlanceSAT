@@ -182,6 +182,7 @@ struct SettingsView: View {
                 }
                 ToolbarItem(placement: .confirmationAction) {
                     Button("Save") {
+                        SATExamDateStore.save(satDraftDate)
                         satExamDateSeconds = satDraftDate.timeIntervalSince1970
                         showSATDateSheet = false
                     }

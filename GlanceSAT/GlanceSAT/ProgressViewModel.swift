@@ -50,6 +50,7 @@ final class ProgressViewModel: ObservableObject {
     let minAnsweredForAccuracy = 20
     let minCategoryAttempts = 5
     let minTrendDays = 3
+    let minQuizzesForInsights = 3
 
     func refresh(wordStats: InsightsWordStats, sessions: [QuizSession], now: Date = Date()) {
         wordsEncountered = wordStats.wordsEncountered
@@ -77,6 +78,10 @@ final class ProgressViewModel: ObservableObject {
 
     func isTrendReady() -> Bool {
         activeQuizDays >= minTrendDays
+    }
+
+    func hasMinimumQuizHistory() -> Bool {
+        quizCount >= minQuizzesForInsights
     }
 
     func isCategoryReady(_ name: String) -> Bool {

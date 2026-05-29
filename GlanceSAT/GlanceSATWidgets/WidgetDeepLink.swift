@@ -19,4 +19,8 @@ enum WidgetDeepLink {
     static func paywallURL() -> URL {
         URL(string: "\(scheme)://paywall")!
     }
+
+    static func settingsURL() -> URL {
+        URL(string: "\(scheme)://settings")!
+    }
 }

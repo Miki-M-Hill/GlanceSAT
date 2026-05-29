@@ -12,6 +12,7 @@ enum WidgetDeepLinkRouter {
     private static let pendingWordIDKey = "app.pendingLibraryWordID"
     private static let navigateToTodayKey = "app.widgetNavigateToToday"
     private static let navigateToPaywallKey = "app.widgetNavigateToPaywall"
+    private static let navigateToSettingsKey = "app.widgetNavigateToSettings"
 
     static func libraryURL(wordID: UUID) -> URL {
         URL(string: "\(scheme)://library/word/\(wordID.uuidString.lowercased())")!
@@ -23,6 +24,17 @@ enum WidgetDeepLinkRouter {
 
     static func paywallURL() -> URL {
         URL(string: "\(scheme)://paywall")!
+    }
+
+    /// Returns true once if a widget requested Settings (`glancesat://settings`).
+    static func consumeNavigateToSettingsFromWidget() -> Bool {
+        guard UserDefaults.standard.bool(forKey: navigateToSettingsKey) else { return false }
+        UserDefaults.standard.removeObject(forKey: navigateToSettingsKey)
+        return true
+    }
+
+    static func settingsURL() -> URL {
+        URL(string: "\(scheme)://settings")!
     }
 
     /// Returns true once if a widget requested the paywall (`glancesat://paywall`).
@@ -47,6 +59,7 @@ enum WidgetDeepLinkRouter {
             UserDefaults.standard.set(true, forKey: navigateToTodayKey)
             UserDefaults.standard.removeObject(forKey: pendingWordIDKey)
             UserDefaults.standard.removeObject(forKey: navigateToPaywallKey)
+            UserDefaults.standard.removeObject(forKey: navigateToSettingsKey)
             return true
         }
 
@@ -54,6 +67,15 @@ enum WidgetDeepLinkRouter {
             UserDefaults.standard.set(true, forKey: navigateToPaywallKey)
             UserDefaults.standard.removeObject(forKey: pendingWordIDKey)
             UserDefaults.standard.removeObject(forKey: navigateToTodayKey)
+            UserDefaults.standard.removeObject(forKey: navigateToSettingsKey)
+            return true
+        }
+
+        if isSettingsHostOrPath(url) {
+            UserDefaults.standard.set(true, forKey: navigateToSettingsKey)
+            UserDefaults.standard.removeObject(forKey: pendingWordIDKey)
+            UserDefaults.standard.removeObject(forKey: navigateToTodayKey)
+            UserDefaults.standard.removeObject(forKey: navigateToPaywallKey)
             return true
         }
 
@@ -79,6 +101,15 @@ enum WidgetDeepLinkRouter {
         let trimmed = url.path.trimmingCharacters(in: CharacterSet(charactersIn: "/"))
         return trimmed.lowercased() == "today"
             || trimmed.split(separator: "/").contains(where: { $0.lowercased() == "today" })
+    }
+
+    private static func isSettingsHostOrPath(_ url: URL) -> Bool {
+        if url.host?.trimmingCharacters(in: .whitespacesAndNewlines).lowercased() == "settings" {
+            return true
+        }
+        let trimmed = url.path.trimmingCharacters(in: CharacterSet(charactersIn: "/"))
+        return trimmed.lowercased() == "settings"
+            || trimmed.split(separator: "/").contains(where: { $0.lowercased() == "settings" })
     }
 
     static func wordID(from url: URL) -> UUID? {
@@ -118,4 +149,8 @@ enum WidgetDeepLinkRouter {
     static func clearPendingWordID() {
         UserDefaults.standard.removeObject(forKey: pendingWordIDKey)
     }
+}
+
+extension Notification.Name {
+    static let openGlanceSettingsFromWidget = Notification.Name("openGlanceSettingsFromWidget")
 }

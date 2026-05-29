@@ -24,10 +24,8 @@
 	</array>
 	<key>UILaunchScreen</key>
 	<dict>
-		<key>UIImageName</key>
-		<string>LaunchBackground</string>
 		<key>UIColorName</key>
-		<string>LaunchSurface</string>
+		<string>LaunchBackground</string>
 	</dict>
 </dict>
 </plist>
