@@ -65,8 +65,9 @@ struct DailyHubView: View {
     @Query(sort: \QuizSession.startedAt, order: .reverse) private var quizSessions: [QuizSession]
 
     @State private var scrolledCardID: Word.ID?
-    /// Tallest post-quiz card height so the horizontal carousel does not clip long definitions.
-    @State private var postQuizCarouselContentHeight: CGFloat = 0
+    @State private var postQuizCardModels: [DailyHubPostQuizCardModel] = []
+    /// Tallest post-quiz word card — drives carousel min height and scroll bottom inset.
+    @State private var maxPostQuizCardHeight: CGFloat = 0
     @State private var showDailyQuiz = false
     @State private var dailyQuizQuestions: [QuizQuestion] = []
     @State private var quizAlertTitle = ""
@@ -194,6 +195,11 @@ struct DailyHubView: View {
 
     private var streakPlantAccessibilityLabel: String {
         showWiltedPlant ? evolutionPlantStage.wiltedAccessibilityLabel : evolutionPlantStage.accessibilityLabel
+    }
+
+    /// Day 7+ plants are wider in the streak bar and can overlap the centered subtitle.
+    private var streakSubtitleClearsLargePlant: Bool {
+        evolutionPlantStage.evolutionTier >= StreakPlantStage.day7.evolutionTier
     }
 
     private var hasCompletedQuizForDisplay: Bool {
@@ -326,7 +332,6 @@ struct DailyHubView: View {
             }
         }
         .onChange(of: dailyWords.map(\.id)) { _, _ in
-            postQuizCarouselContentHeight = 0
             triggerQuizPrefetchIfNeeded()
             guard let first = displayWords.first?.id else {
                 scrolledCardID = nil
@@ -337,10 +342,11 @@ struct DailyHubView: View {
             }
         }
         .onChange(of: hasCompletedQuizForDisplay) { _, completed in
-            postQuizCarouselContentHeight = 0
             if completed {
                 triggerSupplementalPreloadIfNeeded()
             } else {
+                postQuizCardModels = []
+                maxPostQuizCardHeight = 0
                 quizPreparation.reset()
                 triggerQuizPrefetchIfNeeded()
             }
@@ -368,7 +374,6 @@ struct DailyHubView: View {
                     frozenPostQuizOutcomesByWordID = [:]
                     supplementalRememberedWordIDs = []
                     supplementalMissedWordIDs = []
-                    postQuizCarouselContentHeight = 0
                 }
             }
             Task { await WidgetSnapshotWriter.refresh(modelContext: modelContext) }
@@ -419,10 +424,19 @@ struct DailyHubView: View {
             .padding(.bottom, metrics.scaled(16))
     }
 
-    /// Clears the floating tab bar + card shadow when scrolled to the end of post-quiz content.
+    /// Clears the floating tab bar when scrolled to the end of post-quiz content.
     private func dailyScrollBottomInset(metrics: TodayHubLayoutMetrics) -> CGFloat {
         guard hasCompletedQuizForDisplay else { return max(16, metrics.scaled(16)) }
-        return RootTabBarLayout.scrollBottomPadding
+        let tabBar = RootTabBarLayout.scrollBottomPadding
+        let cardRevealSlack: CGFloat = maxPostQuizCardHeight > 0 ? metrics.scaled(20) : 0
+        return tabBar + cardRevealSlack
+    }
+
+    private func postQuizCarouselMinHeight(metrics: TodayHubLayoutMetrics) -> CGFloat {
+        if maxPostQuizCardHeight > 0 {
+            return maxPostQuizCardHeight
+        }
+        return metrics.postQuizCarouselHeight
     }
 
     private func dailyContent(metrics: TodayHubLayoutMetrics) -> some View {
@@ -535,6 +549,9 @@ struct DailyHubView: View {
                 entitlementManager.syncWidgetSubscriptionState(quizCompletedToday: true)
                 StreakPlantState.markPrimaryQuizCompleted(streakDays: quizStreakDays)
                 Task {
+                    await DailyWordBatchService.flushFutureQueueAndRefresh(modelContext: modelContext)
+                }
+                Task {
                     await NotificationManager.handleQuizCompletedEarly()
                 }
                 triggerSupplementalPreloadIfNeeded()
@@ -569,15 +586,23 @@ struct DailyHubView: View {
     }
 
     private func streakBar(metrics: TodayHubLayoutMetrics) -> some View {
-        ZStack(alignment: .top) {
+        let subtitleClearsPlant = streakSubtitleClearsLargePlant
+        let plantStage = evolutionPlantStage
+        let subtitleFontSize = metrics.scaled(subtitleClearsPlant ? 17 : 18)
+        let subtitleLeadingInset = subtitleClearsPlant
+            ? metrics.streakPlantImageSize(for: plantStage) + metrics.scaled(10)
+            : metrics.scaled(12)
+
+        return ZStack(alignment: .top) {
             Text("\(displayedStreakDays) day streak - \(evolutionPlantStage.message)")
-                .font(GlanceHubFont.semibold(17))
+                .font(GlanceHubFont.semibold(subtitleFontSize))
                 .foregroundStyle(HubPalette.espressoMuted)
                 .lineLimit(1)
-                .minimumScaleFactor(0.72)
-                .multilineTextAlignment(.center)
-                .frame(maxWidth: .infinity, alignment: .center)
-                .padding(.horizontal, 12)
+                .minimumScaleFactor(subtitleClearsPlant ? 0.78 : 0.72)
+                .multilineTextAlignment(subtitleClearsPlant ? .leading : .center)
+                .frame(maxWidth: .infinity, alignment: subtitleClearsPlant ? .leading : .center)
+                .padding(.leading, subtitleLeadingInset)
+                .padding(.trailing, metrics.scaled(12))
 
             HStack(spacing: 16) {
                 streakPlantVisual(metrics: metrics)
@@ -779,10 +804,8 @@ struct DailyHubView: View {
         if WidgetDailyState.isPrimaryQuizCompleted(for: today),
            StreakPlantState.lastPrimaryQuizDayKey == nil {
             StreakPlantState.markPrimaryQuizCompleted(streakDays: quizStreakDays)
-        } else if StreakPlantState.lastPrimaryQuizDayKey != nil,
-                  StreakPlantState.evolutionTier == 0,
-                  quizStreakDays > 0 {
-            StreakPlantState.evolutionTier = StreakPlantStage(days: quizStreakDays).evolutionTier
+        } else {
+            StreakPlantState.syncEvolutionTierToQualifiedStreakDays(quizStreakDays)
         }
     }
 
@@ -1157,8 +1180,24 @@ struct DailyHubView: View {
             .scrollTargetLayout()
             .padding(.horizontal, inset)
         }
+        .frame(minHeight: postQuizCarouselMinHeight(metrics: metrics))
+        .scrollClipDisabled()
         .scrollTargetBehavior(.viewAligned)
         .scrollPosition(id: $scrolledCardID, anchor: .center)
+        .onPreferenceChange(DailyHubPostQuizCardHeightKey.self) { height in
+            if height > 0, abs(height - maxPostQuizCardHeight) > 0.5 {
+                maxPostQuizCardHeight = height
+            }
+        }
+        .onAppear {
+            rebuildPostQuizCardModels(metrics: metrics)
+        }
+        .onChange(of: displayWords.map(\.id)) { _, _ in
+            rebuildPostQuizCardModels(metrics: metrics)
+        }
+        .onChange(of: frozenPostQuizOutcomesByWordID) { _, _ in
+            rebuildPostQuizCardModels(metrics: metrics)
+        }
         .transaction { transaction in
             if showDailyQuiz {
                 transaction.disablesAnimations = true
@@ -1187,28 +1226,66 @@ struct DailyHubView: View {
 
     @ViewBuilder
     private func wordCarouselCards(cardWidth: CGFloat, isPostQuiz: Bool, metrics: TodayHubLayoutMetrics) -> some View {
-        ForEach(displayWords, id: \.id) { word in
-            let isFocused = carouselCardIsFocused(wordID: word.id)
-            let card = DailyHubWordCapsule(
-                word: word,
-                cardWidth: cardWidth,
-                minCardHeight: isPostQuiz ? nil : metrics.preQuizCardMinHeight,
-                layoutScale: metrics.verticalScale,
-                isRevealed: hasCompletedQuizForDisplay,
-                outcome: outcome(for: word),
-                isPostQuiz: isPostQuiz
-            )
-
-            card
-            .id(word.id)
-            .modifier(CarouselCardFocusModifier(isFocused: isFocused, enabled: !isPostQuiz))
+        if isPostQuiz {
+            ForEach(postQuizCardModels) { model in
+                DailyHubPostQuizCard(model: model, cardWidth: cardWidth)
+                    .background {
+                        GeometryReader { geo in
+                            Color.clear.preference(
+                                key: DailyHubPostQuizCardHeightKey.self,
+                                value: geo.size.height
+                            )
+                        }
+                    }
+                    .id(model.id)
+            }
+        } else {
+            ForEach(displayWords, id: \.id) { word in
+                let isFocused = carouselCardIsFocused(wordID: word.id)
+                DailyHubWordCapsule(
+                    word: word,
+                    cardWidth: cardWidth,
+                    minCardHeight: metrics.preQuizCardMinHeight,
+                    layoutScale: metrics.verticalScale,
+                    isRevealed: false,
+                    outcome: nil,
+                    isPostQuiz: false
+                )
+                .id(word.id)
+                .modifier(CarouselCardFocusModifier(isFocused: isFocused, enabled: true))
+            }
         }
     }
 
-    private func carouselViewportHeight(expandsWithContent: Bool, metrics: TodayHubLayoutMetrics) -> CGFloat? {
-        guard expandsWithContent, postQuizCarouselContentHeight > 0 else { return nil }
-        let maxHeight = metrics.scaled(420)
-        return min(postQuizCarouselContentHeight, maxHeight)
+    private func rebuildPostQuizCardModels(metrics: TodayHubLayoutMetrics) {
+        guard hasCompletedQuizForDisplay else {
+            postQuizCardModels = []
+            return
+        }
+
+        let titleSize = max(28, (34 * metrics.verticalScale).rounded(.toNearestOrAwayFromZero))
+        let padding = max(16, (22 * metrics.verticalScale).rounded(.toNearestOrAwayFromZero))
+
+        postQuizCardModels = displayWords.map { word in
+            DailyHubPostQuizCardModel(
+                id: word.id,
+                headword: word.word,
+                titleFontSize: titleSize,
+                cardPadding: padding,
+                layoutScale: metrics.verticalScale,
+                outcome: outcome(for: word),
+                senses: word.displaySenseBlocks.map {
+                    DailyHubPostQuizSenseDisplay(
+                        partOfSpeech: $0.partOfSpeech,
+                        definition: $0.definition,
+                        exampleSentence: $0.exampleSentence
+                    )
+                },
+                originTitle: word.cardOriginOrHookBody == nil ? nil : word.cardOriginOrHookTitle,
+                originBody: word.cardOriginOrHookBody,
+                connotationSource: word
+            )
+        }
     }
 
     private var emptyState: some View {
@@ -1439,7 +1516,7 @@ struct DailyHubView: View {
         resumePayloadForQuiz = nil
         showDailyQuiz = false
         clearAllOptimisticQuizCTAState()
-        postQuizCarouselContentHeight = 0
+        postQuizCardModels = []
     }
     #endif
 
@@ -1775,6 +1852,213 @@ struct DailyHubView: View {
                 handlePlantVisualChange(from: priorToken, to: newToken)
             }
         }
+    }
+}
+
+// MARK: - Post-quiz carousel (precomputed display models)
+
+private struct DailyHubPostQuizSenseDisplay: Equatable {
+    let partOfSpeech: String
+    let definition: String
+    let exampleSentence: String
+}
+
+private struct DailyHubPostQuizCardModel: Identifiable {
+    let id: UUID
+    let headword: String
+    let titleFontSize: CGFloat
+    let cardPadding: CGFloat
+    let layoutScale: CGFloat
+    let outcome: DailyWordOutcome?
+    let senses: [DailyHubPostQuizSenseDisplay]
+    let originTitle: String?
+    let originBody: String?
+    let connotationSource: Word
+}
+
+/// Lightweight post-quiz card — display fields are precomputed before paging.
+private struct DailyHubPostQuizCard: View {
+    let model: DailyHubPostQuizCardModel
+    let cardWidth: CGFloat
+
+    @State private var sensePage = 0
+
+    var body: some View {
+        VStack(alignment: .leading, spacing: 0) {
+            header
+            revealedBody
+        }
+        .padding(model.cardPadding)
+        .frame(width: cardWidth, alignment: .topLeading)
+        .fixedSize(horizontal: false, vertical: true)
+        .background(GlanceGlassCardChrome.background())
+        .onChange(of: model.id) { _, _ in
+            sensePage = 0
+        }
+        .accessibilityElement(children: .contain)
+    }
+
+    private var header: some View {
+        VStack(alignment: .leading, spacing: 10) {
+            HStack(alignment: .center, spacing: 8) {
+                Text(model.headword)
+                    .font(GlanceHubFont.semibold(model.titleFontSize))
+                    .foregroundStyle(HubPalette.espresso)
+                    .lineLimit(1)
+                    .minimumScaleFactor(0.35)
+                    .layoutPriority(-1)
+
+                Spacer(minLength: 8)
+
+                if let outcome = model.outcome {
+                    outcomePill(outcome)
+                        .fixedSize(horizontal: true, vertical: false)
+                }
+            }
+
+            metadataRow
+        }
+    }
+
+    @ViewBuilder
+    private var metadataRow: some View {
+        HStack(alignment: .center, spacing: 6) {
+            if model.senses.count > 1 {
+                ForEach(Array(model.senses.enumerated()), id: \.offset) { index, sense in
+                    Button {
+                        withAnimation(.spring(response: 0.32, dampingFraction: 0.78)) {
+                            sensePage = index
+                        }
+                        UISelectionFeedbackGenerator().selectionChanged()
+                    } label: {
+                        partOfSpeechChip(sense.partOfSpeech, isSelected: index == sensePage)
+                            .lineLimit(1)
+                            .minimumScaleFactor(0.75)
+                    }
+                    .buttonStyle(.plain)
+                    .fixedSize(horizontal: true, vertical: false)
+                    .accessibilityLabel("\(sense.partOfSpeech) meaning")
+                    .accessibilityAddTraits(index == sensePage ? [.isSelected] : [])
+                }
+            } else if let sense = model.senses.first {
+                partOfSpeechChip(sense.partOfSpeech, isSelected: true)
+                    .lineLimit(1)
+                    .minimumScaleFactor(0.75)
+                    .fixedSize(horizontal: true, vertical: false)
+            }
+
+            WordConnotationRow(word: model.connotationSource, compact: true)
+                .fixedSize(horizontal: true, vertical: false)
+
+            Spacer(minLength: 0)
+        }
+        .frame(maxWidth: .infinity, alignment: .leading)
+    }
+
+    @ViewBuilder
+    private var revealedBody: some View {
+        if model.senses.count <= 1, let only = model.senses.first {
+            senseDetail(
+                sense: only,
+                topPadding: 12,
+                originTitle: model.originTitle,
+                originBody: model.originBody
+            )
+            .padding(.bottom, 8)
+        } else if !model.senses.isEmpty {
+            senseDetail(
+                sense: model.senses[sensePage],
+                topPadding: 12,
+                originTitle: model.originTitle,
+                originBody: model.originBody
+            )
+            .padding(.bottom, 8)
+            .id(sensePage)
+        }
+    }
+
+    private func senseDetail(
+        sense: DailyHubPostQuizSenseDisplay,
+        topPadding: CGFloat,
+        originTitle: String?,
+        originBody: String?
+    ) -> some View {
+        VStack(alignment: .leading, spacing: 0) {
+            Text("Definition")
+                .font(GlanceHubFont.semibold(12))
+                .tracking(0.6)
+                .foregroundStyle(HubPalette.plantDeep)
+                .padding(.top, topPadding)
+
+            Text(sense.definition)
+                .font(GlanceHubFont.medium(17))
+                .foregroundStyle(HubPalette.espresso)
+                .fixedSize(horizontal: false, vertical: true)
+                .padding(.top, 6)
+
+            Text("Example")
+                .font(GlanceHubFont.semibold(12))
+                .tracking(0.6)
+                .foregroundStyle(HubPalette.plantDeep)
+                .padding(.top, 14)
+
+            Text(sense.exampleSentence)
+                .font(GlanceHubFont.regular(16))
+                .italic()
+                .foregroundStyle(HubPalette.espresso)
+                .fixedSize(horizontal: false, vertical: true)
+                .padding(.top, 6)
+
+            if let originTitle, let originBody {
+                Text(originTitle)
+                    .font(GlanceHubFont.semibold(12))
+                    .tracking(0.6)
+                    .foregroundStyle(HubPalette.plantDeep)
+                    .padding(.top, 14)
+
+                Text(originBody)
+                    .font(GlanceHubFont.regular(16))
+                    .foregroundStyle(HubPalette.espresso)
+                    .fixedSize(horizontal: false, vertical: true)
+                    .lineSpacing(3)
+                    .padding(.top, 6)
+            }
+        }
+        .frame(maxWidth: .infinity, alignment: .leading)
+    }
+
+    private func outcomePill(_ outcome: DailyWordOutcome) -> some View {
+        Label(outcome.label, systemImage: outcome.systemImage)
+            .font(GlanceHubFont.semibold(12))
+            .foregroundStyle(HubPalette.espresso)
+            .lineLimit(1)
+            .fixedSize(horizontal: true, vertical: false)
+            .padding(.horizontal, 9)
+            .padding(.vertical, 6)
+            .background(TodayFeedbackPalette.background(for: outcome), in: Capsule(style: .continuous))
+            .overlay(
+                Capsule(style: .continuous)
+                    .strokeBorder(Color.white.opacity(0.46), lineWidth: 0.7)
+            )
+    }
+
+    private func partOfSpeechChip(_ label: String, isSelected: Bool) -> some View {
+        Text(label)
+            .font(GlanceHubFont.semibold(12))
+            .foregroundStyle(isSelected ? WordCardChrome.partOfSpeechForeground : WordCardChrome.partOfSpeechInactiveForeground)
+            .padding(.horizontal, 12)
+            .padding(.vertical, 7)
+            .background(
+                Capsule(style: .continuous)
+                    .fill(isSelected ? WordCardChrome.partOfSpeechFill : WordCardChrome.partOfSpeechInactiveFill)
+                    .overlay(
+                        Capsule(style: .continuous)
+                            .strokeBorder(
+                                isSelected ? Color.white.opacity(0.35) : WordCardChrome.partOfSpeechInactiveStroke,
+                                lineWidth: isSelected ? 1 : 0.7
+                            )
+                    )
+            )
     }
 }
 
@@ -2168,21 +2452,21 @@ private struct CarouselCardFocusModifier: ViewModifier {
     }
 }
 
+/// Max measured height of post-quiz carousel cards (drives viewport + scroll inset).
+private struct DailyHubPostQuizCardHeightKey: PreferenceKey {
+    static var defaultValue: CGFloat = 0
+
+    static func reduce(value: inout CGFloat, nextValue: () -> CGFloat) {
+        value = max(value, nextValue())
+    }
+}
+
 /// Tracks vertical scroll offset for the Today tab header fade (iOS 17–compatible).
 private struct TodayScrollOffsetKey: PreferenceKey {
     static var defaultValue: CGFloat = 0
 
     static func reduce(value: inout CGFloat, nextValue: () -> CGFloat) {
         value = nextValue()
-    }
-}
-
-/// Max height reported by post-quiz word cards in the horizontal carousel.
-private struct DailyHubCarouselHeightKey: PreferenceKey {
-    static var defaultValue: CGFloat = 0
-
-    static func reduce(value: inout CGFloat, nextValue: () -> CGFloat) {
-        value = max(value, nextValue())
     }
 }
 

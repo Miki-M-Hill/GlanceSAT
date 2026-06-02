@@ -21,7 +21,7 @@ struct QuizResult {
 
 struct QuizTrendPoint {
     var dayLabel: String
-    /// `nil` when there was no quiz activity that day (sparkline breaks).
+    /// Score out of 10 for that calendar day; `0` when no quiz was taken (shown at the axis baseline).
     var score: Int? // out of 10
 }
 
@@ -138,9 +138,9 @@ final class ProgressViewModel: ObservableObject {
         for offset in stride(from: 9, through: 0, by: -1) {
             let day = cal.startOfDay(for: cal.date(byAdding: .day, value: -offset, to: now) ?? now)
             let daySessions = grouped[day] ?? []
-            let score: Int?
+            let score: Int
             if daySessions.isEmpty {
-                score = nil
+                score = 0
             } else {
                 let ratios = daySessions.map { Double($0.correctAnswers) / Double(max(1, $0.totalQuestions)) }
                 let mean = ratios.reduce(0, +) / Double(ratios.count)

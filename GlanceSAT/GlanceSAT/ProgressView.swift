@@ -22,26 +22,24 @@ private enum InsightsLayout {
     static let iconTint = HubPalette.plantPot
 }
 
-/// Uniform one-line overview labels — sized to the narrowest grid cell.
+/// One-line overview labels under each stat — largest size that fits full width (no truncation).
 private enum InsightsOverviewTitleMetrics {
-    static let labels = ["Words glanced", "Quiz accuracy", "Longest streak", "Words absorbed"]
+    static let labels = ["Words glanced", "Quiz accuracy", "Longest streak", "Words retained"]
 
     static func labelTextWidth(inCellWidth cellWidth: CGFloat) -> CGFloat {
         let horizontalChrome =
             (InsightsLayout.innerPadding * 2)
             + (InsightsMetricCellLayout.padding * 2)
-            + InsightsMetricCellLayout.iconWidth
-            + InsightsMetricCellLayout.titleSpacing
         return max(0, cellWidth - horizontalChrome)
     }
 
-    static func uniformTitleSize(for availableTextWidth: CGFloat) -> CGFloat {
-        guard availableTextWidth > 0 else { return 11 }
-        let minSize: CGFloat = 9
-        let maxSize: CGFloat = 16
+    static func titleSize(for label: String, availableTextWidth: CGFloat) -> CGFloat {
+        guard availableTextWidth > 0 else { return 12 }
+        let minSize: CGFloat = 10
+        let maxSize: CGFloat = 26
         var size = maxSize
         while size > minSize {
-            if labels.allSatisfy({ measuredWidth(for: $0, fontSize: size) <= availableTextWidth }) {
+            if measuredWidth(for: label, fontSize: size) <= availableTextWidth {
                 break
             }
             size -= 0.25
@@ -60,8 +58,18 @@ private enum InsightsOverviewTitleMetrics {
 
 private enum InsightsMetricCellLayout {
     static let padding: CGFloat = 12
-    static let iconWidth: CGFloat = 24
-    static let titleSpacing: CGFloat = 6
+    static let titleTopSpacing: CGFloat = 6
+    /// Extra space above the label on the retained tile (between “of 1000” and “Words retained”).
+    static let retainedTitleTopSpacing: CGFloat = 11
+    static let ringEdgeInset: CGFloat = 2
+
+    /// Largest square ring in the metric area (`GeometryReader` already sits above the title).
+    static func glancedRingDiameter(in size: CGSize) -> CGFloat {
+        let inset = ringEdgeInset * 2
+        let availableW = size.width - inset
+        let availableH = size.height - inset
+        return max(0, min(availableW, availableH))
+    }
 }
 
 private struct InsightsDisplayData {
@@ -128,19 +136,9 @@ struct GlanceSATProgressScreen: View {
     @State private var appeared = false
     @State private var insightsChartReveal: CGFloat = 0
     @State private var categoryBarFractions: [CGFloat] = []
-    @State private var overviewTitleFontSize: CGFloat = 11
+    @State private var overviewTitleFontSizes: [String: CGFloat] = [:]
     @State private var satCountdownHeader: String?
-    #if DEBUG
-    @AppStorage(DebugInsightsControls.useMockValuesKey) private var debugInsightsUseMockValues = false
-    #endif
-
     private var displayData: InsightsDisplayData {
-        #if DEBUG
-        if debugInsightsUseMockValues {
-            return InsightsPresentation.mockData
-        }
-        #endif
-
         return InsightsDisplayData(
             totalWordGoal: 1000,
             wordsGlanced: viewModel.wordsEncountered,
@@ -161,32 +159,22 @@ struct GlanceSATProgressScreen: View {
         return "\(sessions.count)-\(totalCorrect)-\(sessions.first?.startedAt.timeIntervalSince1970 ?? 0)"
     }
 
+    private var hasPremiumInsightsAccess: Bool {
+        entitlementManager.hasPremiumAccess
+    }
+
     var body: some View {
         NavigationStack {
             GeometryReader { proxy in
-                ZStack(alignment: .bottom) {
-                    ScrollView(.vertical, showsIndicators: false) {
-                        VStack(alignment: .leading, spacing: InsightsLayout.sectionSpacing) {
-                            if let satCountdownHeader {
-                                satCountdownHeaderSection(satCountdownHeader)
-                            }
-                            overviewSection
-                            categoriesSection
-                            trajectorySection
-                        }
-                        .padding(.horizontal, InsightsLayout.horizontalInset)
-                        .padding(.top, insightsTopContentInset(safeAreaTop: proxy.safeAreaInsets.top))
-                        .padding(.bottom, InsightsLayout.bottomPadding)
-                    }
-                    .scrollContentBackground(.hidden)
-                    .background(HubPalette.linen.ignoresSafeArea())
-                    .blur(radius: entitlementManager.hasPremiumAccess ? 0 : 12)
-                    .allowsHitTesting(entitlementManager.hasPremiumAccess)
-
-                    if !entitlementManager.hasPremiumAccess {
-                        insightsPaywallOverlay
+                Group {
+                    if hasPremiumInsightsAccess {
+                        premiumInsightsScroll(proxy: proxy)
+                    } else {
+                        freeInsightsLayout(proxy: proxy)
                     }
                 }
+                .scrollContentBackground(.hidden)
+                .background(HubPalette.linen.ignoresSafeArea())
             }
             .glanceNavigationBarChrome(colorScheme: colorScheme, isHidden: true)
         }
@@ -241,78 +229,148 @@ struct GlanceSATProgressScreen: View {
         satCountdownHeader = SATExamDateStore.countdownLabel()
     }
 
+    /// Matches Today tab `todayPageTitle` (uppercase GLANCE chrome).
     private func satCountdownHeaderSection(_ text: String) -> some View {
         Text(insightsPlainText(text))
-            .font(GlanceHubFont.semibold(22))
-            .foregroundStyle(HubPalette.espresso)
-            .frame(maxWidth: .infinity, alignment: .leading)
+            .font(.caption.weight(.bold))
+            .tracking(2)
+            .foregroundStyle(Color.primary)
+            .textCase(.uppercase)
+            .multilineTextAlignment(.center)
+            .frame(maxWidth: .infinity)
+            .padding(.bottom, GlanceDeviceLayout.proportional(16, in: GlanceDeviceLayout.screenHeight))
     }
 
     // MARK: - Sections
 
     private var overviewSection: some View {
+        overviewSectionContent(includeSecondMetricRow: true)
+    }
+
+    /// Free tier: header + first metric row only; paywall panel sits flush below the grid split.
+    private var overviewSectionFirstRowOnly: some View {
+        overviewSectionContent(includeSecondMetricRow: false)
+    }
+
+    private func overviewSectionContent(includeSecondMetricRow: Bool) -> some View {
         VStack(alignment: .leading, spacing: InsightsLayout.rowSpacing) {
             insightsSectionHeader(
                 title: "Overview",
                 subtitle: "Your vocabulary at a glance"
             )
 
-            LazyVGrid(
-                columns: [
-                    GridItem(.flexible(), spacing: InsightsLayout.gridSpacing),
-                    GridItem(.flexible(), spacing: InsightsLayout.gridSpacing),
-                ],
-                spacing: InsightsLayout.gridSpacing
-            ) {
-                overviewMetricSquare { glancedMetricCell }
-                overviewMetricSquare { quizAccuracyMetricCell }
-                overviewMetricSquare { streakMetricCell }
-                overviewMetricSquare { absorbedMetricCell }
-            }
-            .background {
-                GeometryReader { geo in
-                    Color.clear
-                        .onAppear {
-                            updateOverviewTitleFontSize(gridWidth: geo.size.width)
-                        }
-                        .onChange(of: geo.size.width) { _, width in
-                            updateOverviewTitleFontSize(gridWidth: width)
-                        }
+            overviewMetricsGrid(includeSecondRow: includeSecondMetricRow)
+                .background {
+                    GeometryReader { geo in
+                        Color.clear
+                            .onAppear {
+                                updateOverviewTitleFontSizes(gridWidth: geo.size.width)
+                            }
+                            .onChange(of: geo.size.width) { _, width in
+                                updateOverviewTitleFontSizes(gridWidth: width)
+                            }
+                    }
                 }
-            }
         }
         .opacity(appeared ? 1 : 0)
         .offset(y: appeared ? 0 : 12)
         .animation(.easeOut(duration: 0.35), value: appeared)
     }
 
-    private func updateOverviewTitleFontSize(gridWidth: CGFloat) {
+    private func overviewMetricsGrid(includeSecondRow: Bool) -> some View {
+        LazyVGrid(
+            columns: [
+                GridItem(.flexible(), spacing: InsightsLayout.gridSpacing),
+                GridItem(.flexible(), spacing: InsightsLayout.gridSpacing),
+            ],
+            spacing: InsightsLayout.gridSpacing
+        ) {
+            overviewMetricSquare { glancedMetricCell }
+            overviewMetricSquare { quizAccuracyMetricCell }
+            if includeSecondRow {
+                overviewMetricSquare { streakMetricCell }
+                overviewMetricSquare { retainedMetricCell }
+            }
+        }
+    }
+
+    private func updateOverviewTitleFontSizes(gridWidth: CGFloat) {
         guard gridWidth > 0 else { return }
         let cellWidth = (gridWidth - InsightsLayout.gridSpacing) / 2
         let textWidth = InsightsOverviewTitleMetrics.labelTextWidth(inCellWidth: cellWidth)
-        let nextSize = InsightsOverviewTitleMetrics.uniformTitleSize(for: textWidth)
-        if abs(nextSize - overviewTitleFontSize) > 0.01 {
-            overviewTitleFontSize = nextSize
+        var next: [String: CGFloat] = [:]
+        for label in InsightsOverviewTitleMetrics.labels {
+            next[label] = InsightsOverviewTitleMetrics.titleSize(for: label, availableTextWidth: textWidth)
         }
+        let changed = next.count != overviewTitleFontSizes.count
+            || next.contains { overviewTitleFontSizes[$0.key] != $0.value }
+        if changed {
+            overviewTitleFontSizes = next
+        }
+    }
+
+    private func overviewTitleSize(for label: String) -> CGFloat {
+        overviewTitleFontSizes[label] ?? 14
     }
 
     private func overviewMetricSquare<Content: View>(@ViewBuilder content: () -> Content) -> some View {
         OverviewMetricSquareCell(content: content())
     }
 
-    private var insightsPaywallOverlay: some View {
-        VStack(spacing: 20) {
-            Spacer(minLength: 0)
+    private func premiumInsightsScroll(proxy: GeometryProxy) -> some View {
+        ScrollView(.vertical, showsIndicators: false) {
+            VStack(alignment: .leading, spacing: InsightsLayout.sectionSpacing) {
+                insightsTopSections
+                categoriesSection
+                trajectorySection
+            }
+            .padding(.horizontal, InsightsLayout.horizontalInset)
+            .padding(.top, insightsTopContentInset(safeAreaTop: proxy.safeAreaInsets.top))
+            .padding(.bottom, InsightsLayout.bottomPadding)
+        }
+    }
 
-            Text("Get access to all insights")
-                .font(GlanceHubFont.bold(22))
-                .foregroundStyle(HubPalette.espresso)
-                .multilineTextAlignment(.center)
+    /// Overview first row + solid half-screen paywall panel (grid split → tab bar). No scroll.
+    private func freeInsightsLayout(proxy: GeometryProxy) -> some View {
+        VStack(alignment: .leading, spacing: 0) {
+            VStack(alignment: .leading, spacing: InsightsLayout.sectionSpacing) {
+                if let satCountdownHeader {
+                    satCountdownHeaderSection(satCountdownHeader)
+                }
 
-            Text(insightsPlainText("See your strengths and weaknesses and latest trends"))
-                .font(GlanceHubFont.regular(16))
+                overviewSectionFirstRowOnly
+            }
+            .padding(.horizontal, InsightsLayout.horizontalInset)
+            .fixedSize(horizontal: false, vertical: true)
+
+            insightsLockedPaywallPanel
+                .frame(maxWidth: .infinity, maxHeight: .infinity)
+        }
+        .padding(.top, insightsTopContentInset(safeAreaTop: proxy.safeAreaInsets.top))
+        .padding(.bottom, InsightsLayout.bottomPadding)
+        .frame(width: proxy.size.width, height: proxy.size.height, alignment: .top)
+    }
+
+    private var insightsTopSections: some View {
+        VStack(alignment: .leading, spacing: InsightsLayout.sectionSpacing) {
+            if let satCountdownHeader {
+                satCountdownHeaderSection(satCountdownHeader)
+            }
+
+            overviewSection
+        }
+    }
+
+    /// Full-width solid panel from the overview grid split down to the tab bar.
+    private var insightsLockedPaywallPanel: some View {
+        VStack(spacing: 12) {
+            Text(insightsPlainText("See your strengths, weaknesses and latest trends"))
+                .font(GlanceHubFont.medium(16))
                 .foregroundStyle(HubPalette.espressoMuted)
                 .multilineTextAlignment(.center)
+                .lineLimit(3)
+                .minimumScaleFactor(0.82)
+                .padding(.horizontal, 28)
 
             Button {
                 paywallPresenter.presentPaywall()
@@ -321,27 +379,16 @@ struct GlanceSATProgressScreen: View {
                     .font(GlanceHubFont.semibold(17))
                     .foregroundStyle(HubPalette.linen)
                     .frame(maxWidth: .infinity)
-                    .padding(.vertical, 16)
+                    .padding(.vertical, 14)
                     .background(HubPalette.plantPot.opacity(0.86), in: Capsule(style: .continuous))
             }
             .buttonStyle(.plain)
+            .padding(.horizontal, 28)
+            .frame(maxWidth: 300)
         }
-        .padding(.horizontal, 24)
-        .padding(.top, 32)
-        .padding(.bottom, InsightsLayout.bottomPadding)
-        .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .bottom)
-        .background {
-            LinearGradient(
-                colors: [
-                    HubPalette.linen.opacity(0),
-                    HubPalette.linen.opacity(0.94),
-                    HubPalette.linen,
-                ],
-                startPoint: .top,
-                endPoint: .bottom
-            )
-        }
-        .ignoresSafeArea(edges: .bottom)
+        .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .center)
+        .background(HubPalette.linen)
+        .accessibilityElement(children: .contain)
     }
 
     private var categoriesSection: some View {
@@ -413,21 +460,17 @@ struct GlanceSATProgressScreen: View {
     // MARK: - Metric cells
 
     private var glancedMetricCell: some View {
-        InsightsMetricCell(
-            label: "Words glanced",
-            systemImage: "eye.fill",
-            iconTint: InsightsLayout.iconTint,
-            titleFontSize: overviewTitleFontSize
-        ) {
+        let titleSize = overviewTitleSize(for: "Words glanced")
+        return InsightsMetricCell(label: "Words glanced", titleFontSize: titleSize) {
             GeometryReader { geo in
-                let ringSize = min(geo.size.width, geo.size.height)
+                let ringSize = InsightsMetricCellLayout.glancedRingDiameter(in: geo.size)
                 InsightsGlancedRing(
                     count: displayData.wordsGlanced,
                     cap: displayData.totalWordGoal,
                     revealProgress: insightsChartReveal
                 )
                 .frame(width: ringSize, height: ringSize)
-                .frame(maxWidth: .infinity, maxHeight: .infinity)
+                .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .center)
             }
         }
     }
@@ -435,9 +478,7 @@ struct GlanceSATProgressScreen: View {
     private var quizAccuracyMetricCell: some View {
         InsightsMetricCell(
             label: "Quiz accuracy",
-            systemImage: "chart.line.uptrend.xyaxis",
-            iconTint: InsightsLayout.iconTint,
-            titleFontSize: overviewTitleFontSize
+            titleFontSize: overviewTitleSize(for: "Quiz accuracy")
         ) {
             GeometryReader { geo in
                 let valueSize = min(geo.size.height * 0.72, 40)
@@ -455,7 +496,7 @@ struct GlanceSATProgressScreen: View {
                             .foregroundStyle(HubPalette.espressoFaint)
                     }
                 }
-                .frame(maxWidth: .infinity, maxHeight: .infinity)
+                .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .center)
             }
         }
     }
@@ -463,11 +504,7 @@ struct GlanceSATProgressScreen: View {
     private var streakMetricCell: some View {
         InsightsMetricCell(
             label: "Longest streak",
-            systemImage: "flame.fill",
-            iconTint: InsightsLayout.iconTint,
-            usesPlantGlyph: true,
-            streakDays: displayData.bestCheckInStreak,
-            titleFontSize: overviewTitleFontSize
+            titleFontSize: overviewTitleSize(for: "Longest streak")
         ) {
             GeometryReader { geo in
                 let valueSize = min(geo.size.height * 0.72, 40)
@@ -482,31 +519,27 @@ struct GlanceSATProgressScreen: View {
                         .font(GlanceHubFont.medium(unitSize))
                         .foregroundStyle(HubPalette.espressoMuted)
                 }
-                .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .leading)
+                .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .center)
             }
         }
     }
 
-    private var absorbedMetricCell: some View {
+    private var retainedMetricCell: some View {
         InsightsMetricCell(
-            label: "Words absorbed",
-            systemImage: "checkmark.seal.fill",
-            iconTint: InsightsLayout.iconTint,
-            titleFontSize: overviewTitleFontSize
+            label: "Words retained",
+            titleFontSize: overviewTitleSize(for: "Words retained"),
+            labelTopSpacing: InsightsMetricCellLayout.retainedTitleTopSpacing
         ) {
             GeometryReader { geo in
                 let cap = max(displayData.totalWordGoal, 1)
                 let count = displayData.wordsAbsorbed
                 let fillFraction = min(1, CGFloat(count) / CGFloat(cap)) * insightsChartReveal
                 let meterHeight = geo.size.height
-                let valueSize = min(meterHeight * 0.42, 32)
-                let subSize = max(11, valueSize * 0.44)
+                let valueSize = min(meterHeight * 0.63, 48)
+                let subSize = max(11, valueSize * 0.36)
 
-                HStack(alignment: .bottom, spacing: 10) {
-                    InsightsAbsorbedMeter(fillFraction: fillFraction)
-                        .frame(width: 12, height: meterHeight)
-
-                    VStack(alignment: .leading, spacing: 2) {
+                ZStack {
+                    VStack(alignment: .center, spacing: 2) {
                         Text("\(count)")
                             .font(GlanceHubFont.bold(valueSize))
                             .monospacedDigit()
@@ -515,8 +548,14 @@ struct GlanceSATProgressScreen: View {
                             .font(GlanceHubFont.medium(subSize))
                             .foregroundStyle(HubPalette.espressoMuted)
                     }
+
+                    HStack(alignment: .center, spacing: 0) {
+                        InsightsAbsorbedMeter(fillFraction: fillFraction)
+                            .frame(width: 12, height: meterHeight)
+                        Spacer(minLength: 0)
+                    }
                 }
-                .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .center)
+                .frame(maxWidth: .infinity, maxHeight: .infinity)
             }
         }
     }
@@ -623,11 +662,7 @@ struct GlanceSATProgressScreen: View {
     }
 
     private func categoryIsReady(_ name: String) -> Bool {
-        #if DEBUG
-        debugInsightsUseMockValues || viewModel.isCategoryReady(name)
-        #else
         viewModel.isCategoryReady(name)
-        #endif
     }
 
     @ViewBuilder
@@ -762,63 +797,38 @@ private struct InsightsSolidCard<Content: View>: View {
 
 private struct InsightsMetricCell<Metric: View>: View {
     let label: String
-    let systemImage: String
-    let iconTint: Color
-    var usesPlantGlyph: Bool = false
-    var streakDays: Int = 0
     var titleFontSize: CGFloat = 11
+    var labelTopSpacing: CGFloat = InsightsMetricCellLayout.titleTopSpacing
     let metric: Metric
 
     init(
         label: String,
-        systemImage: String,
-        iconTint: Color,
-        usesPlantGlyph: Bool = false,
-        streakDays: Int = 0,
         titleFontSize: CGFloat = 11,
+        labelTopSpacing: CGFloat = InsightsMetricCellLayout.titleTopSpacing,
         @ViewBuilder metric: () -> Metric
     ) {
         self.label = label
-        self.systemImage = systemImage
-        self.iconTint = iconTint
-        self.usesPlantGlyph = usesPlantGlyph
-        self.streakDays = streakDays
         self.titleFontSize = titleFontSize
+        self.labelTopSpacing = labelTopSpacing
         self.metric = metric()
     }
 
     var body: some View {
-        VStack(alignment: .leading, spacing: 8) {
-            HStack(spacing: InsightsMetricCellLayout.titleSpacing) {
-                ZStack {
-                    Circle()
-                        .fill(HubPalette.oatmealDeep.opacity(0.35))
-                        .frame(width: InsightsMetricCellLayout.iconWidth, height: InsightsMetricCellLayout.iconWidth)
-
-                    if usesPlantGlyph {
-                        InsightsStreakPlantGlyph(streakDays: streakDays, tint: iconTint)
-                            .frame(width: 14, height: 14)
-                    } else {
-                        Image(systemName: systemImage)
-                            .font(.system(size: max(10, titleFontSize - 1), weight: .semibold))
-                            .foregroundStyle(iconTint)
-                    }
-                }
-
-                Text(label)
-                    .font(GlanceHubFont.semibold(titleFontSize))
-                    .foregroundStyle(HubPalette.espressoMuted)
-                    .lineLimit(1)
-                    .minimumScaleFactor(0.75)
-
-                Spacer(minLength: 0)
-            }
-
+        VStack(alignment: .center, spacing: 0) {
             metric
                 .frame(maxWidth: .infinity, maxHeight: .infinity)
+                .layoutPriority(1)
+
+            Text(label)
+                .font(GlanceHubFont.semibold(titleFontSize))
+                .foregroundStyle(HubPalette.espressoMuted)
+                .lineLimit(1)
+                .multilineTextAlignment(.center)
+                .frame(maxWidth: .infinity, alignment: .center)
+                .padding(.top, labelTopSpacing)
         }
         .padding(InsightsMetricCellLayout.padding)
-        .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .topLeading)
+        .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .center)
     }
 }
 
@@ -839,7 +849,7 @@ private struct InsightsGlancedRing: View {
     var body: some View {
         GeometryReader { geo in
             let side = min(geo.size.width, geo.size.height)
-            let stroke = max(6, side * 0.1)
+            let stroke = max(9, side * 0.14)
             let countFont = max(14, side * 0.22)
             let capFont = max(9, side * 0.13)
 
@@ -966,23 +976,6 @@ private struct InsightsCategoryRow: View {
         case "Power & culture": return "building.columns.fill"
         default: return "book.fill"
         }
-    }
-}
-
-private struct InsightsStreakPlantGlyph: View {
-    let streakDays: Int
-    var tint: Color = InsightsLayout.iconTint
-
-    private var stage: StreakPlantStage {
-        StreakPlantStage(days: max(streakDays, 0))
-    }
-
-    var body: some View {
-        Image(stage.assetName)
-            .renderingMode(.template)
-            .resizable()
-            .scaledToFit()
-            .foregroundStyle(tint)
     }
 }
 

@@ -13,10 +13,25 @@ enum StreakPlantState {
     private static let lastPrimaryQuizDayStorageKey = "streak.plant.lastPrimaryQuizDayKey"
     private static let missesProcessedThroughStorageKey = "streak.plant.missesProcessedThroughDayKey"
     private static let pendingWiltAnimationKey = "streak.plant.pendingWiltAnimation"
+    private static let day14TierMigrationKey = "streak.plant.day14TierMigrated"
+    private static let maxEvolutionTier = 6
 
     static var evolutionTier: Int {
-        get { max(0, min(3, WidgetAppGroup.defaults?.integer(forKey: evolutionTierKey) ?? 0)) }
-        set { WidgetAppGroup.defaults?.set(max(0, min(3, newValue)), forKey: evolutionTierKey) }
+        get {
+            migrateDay14TierIfNeeded()
+            return max(0, min(maxEvolutionTier, WidgetAppGroup.defaults?.integer(forKey: evolutionTierKey) ?? 0))
+        }
+        set { WidgetAppGroup.defaults?.set(max(0, min(maxEvolutionTier, newValue)), forKey: evolutionTierKey) }
+    }
+
+    /// Bumps stored tiers ≥4 by one so day 30/60 map to the new slots after day 14 was inserted at tier 4.
+    static func migrateDay14TierIfNeeded() {
+        guard WidgetAppGroup.defaults?.bool(forKey: day14TierMigrationKey) != true else { return }
+        let current = WidgetAppGroup.defaults?.integer(forKey: evolutionTierKey) ?? 0
+        if current >= 4 {
+            WidgetAppGroup.defaults?.set(min(maxEvolutionTier, current + 1), forKey: evolutionTierKey)
+        }
+        WidgetAppGroup.defaults?.set(true, forKey: day14TierMigrationKey)
     }
 
     static var isWilted: Bool {
@@ -92,8 +107,17 @@ enum StreakPlantState {
         return consumePendingWiltAnimation()
     }
 
+    /// Raises evolution tier when the current streak qualifies for a higher plant (never demotes).
+    static func syncEvolutionTierToQualifiedStreakDays(_ streakDays: Int) {
+        guard streakDays > 0 else { return }
+        let targetTier = StreakPlantStage(days: streakDays).evolutionTier
+        if evolutionTier < targetTier {
+            evolutionTier = targetTier
+        }
+    }
+
     static func markPrimaryQuizCompleted(streakDays: Int, dayKey: String = DailyWordBatchService.calendarDayKey()) {
-        evolutionTier = max(evolutionTier, StreakPlantStage(days: streakDays).evolutionTier)
+        syncEvolutionTierToQualifiedStreakDays(streakDays)
         isWilted = false
         consecutiveMissedDays = 0
         lastPrimaryQuizDayKey = dayKey
@@ -186,9 +210,18 @@ enum StreakPlantStage: Equatable {
     case day1
     case day3
     case day7
+    case day14
+    case day30
+    case day60
 
     init(days: Int) {
-        if days >= 7 {
+        if days >= 60 {
+            self = .day60
+        } else if days >= 30 {
+            self = .day30
+        } else if days >= 14 {
+            self = .day14
+        } else if days >= 7 {
             self = .day7
         } else if days >= 3 {
             self = .day3
@@ -201,6 +234,9 @@ enum StreakPlantStage: Equatable {
 
     init(evolutionTier: Int) {
         switch evolutionTier {
+        case 6: self = .day60
+        case 5: self = .day30
+        case 4: self = .day14
         case 3: self = .day7
         case 2: self = .day3
         case 1: self = .day1
@@ -214,6 +250,9 @@ enum StreakPlantStage: Equatable {
         case .day1: return 1
         case .day3: return 2
         case .day7: return 3
+        case .day14: return 4
+        case .day30: return 5
+        case .day60: return 6
         }
     }
 
@@ -223,6 +262,9 @@ enum StreakPlantStage: Equatable {
         case .day1: return "StreakPlantDay1"
         case .day3: return "StreakPlantDay3"
         case .day7: return "StreakPlantDay7"
+        case .day14: return "StreakPlantDay14"
+        case .day30: return "StreakPlantDay30"
+        case .day60: return "StreakPlantDay60"
         }
     }
 
@@ -232,6 +274,9 @@ enum StreakPlantStage: Equatable {
         case .day1: return "StreakPlantWiltedDay1"
         case .day3: return "StreakPlantWiltedDay3"
         case .day7: return "StreakPlantWiltedDay7"
+        case .day14: return "StreakPlantWiltedDay14"
+        case .day30: return "StreakPlantWiltedDay30"
+        case .day60: return "StreakPlantWiltedDay60"
         }
     }
 
@@ -249,18 +294,24 @@ enum StreakPlantStage: Equatable {
     var message: String {
         switch self {
         case .day0: return "plant the habit"
-        case .day1: return "first sprout"
+        case .day1: return "breaking ground"
         case .day3: return "taking root"
-        case .day7: return "full bloom"
+        case .day7: return "deeply rooted"
+        case .day14: return "branching out"
+        case .day30: return "in full bloom"
+        case .day60: return "fully flourishing"
         }
     }
 
     var wiltedMessage: String {
         switch self {
         case .day0: return "come back tomorrow"
-        case .day1: return "needs a little water"
-        case .day3: return "drooping a bit"
+        case .day1: return "rebuild your momentum"
+        case .day3: return "keep the streak alive"
         case .day7: return "rest until tomorrow"
+        case .day14: return "needs some care"
+        case .day30: return "time to revive"
+        case .day60: return "ready to rebound"
         }
     }
 
@@ -270,6 +321,9 @@ enum StreakPlantStage: Equatable {
         case .day1: return "seedling"
         case .day3: return "young plant"
         case .day7: return "mature plant"
+        case .day14: return "branching plant"
+        case .day30: return "full bloom plant"
+        case .day60: return "flowering plant"
         }
     }
 
@@ -279,6 +333,9 @@ enum StreakPlantStage: Equatable {
         case .day1: return "wilted seedling"
         case .day3: return "wilted young plant"
         case .day7: return "wilted mature plant"
+        case .day14: return "wilted branching plant"
+        case .day30: return "wilted full bloom plant"
+        case .day60: return "wilted flowering plant"
         }
     }
 

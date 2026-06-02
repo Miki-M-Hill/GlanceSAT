@@ -6,27 +6,53 @@
 import Foundation
 
 /// Timeline vocabulary encoded to the App Group container for widgets.
+/// Keys are local calendar days (`yyyy-MM-dd`); values are that day's word batch.
 struct WidgetSnapshotPayload: Codable, Sendable {
     var updatedAt: Date
-    /// Local calendar day (`yyyy-MM-dd`) for the daily ten; widgets reload after midnight.
-    var calendarDayKey: String
-    var words: [WidgetWordSnapshot]
+    /// Pre-computed rolling queue: today through today+3.
+    var dailyBatches: [String: [WidgetWordSnapshot]]
 
+    init(updatedAt: Date, dailyBatches: [String: [WidgetWordSnapshot]]) {
+        self.updatedAt = updatedAt
+        self.dailyBatches = dailyBatches
+    }
+
+    /// Legacy single-day initializer for previews and migration helpers.
     init(updatedAt: Date, calendarDayKey: String, words: [WidgetWordSnapshot]) {
         self.updatedAt = updatedAt
-        self.calendarDayKey = calendarDayKey
-        self.words = words
+        self.dailyBatches = [calendarDayKey: words]
     }
 
     init(from decoder: Decoder) throws {
         let container = try decoder.container(keyedBy: CodingKeys.self)
         updatedAt = try container.decode(Date.self, forKey: .updatedAt)
-        calendarDayKey = try container.decodeIfPresent(String.self, forKey: .calendarDayKey) ?? ""
-        words = try container.decode([WidgetWordSnapshot].self, forKey: .words)
+
+        if let batches = try container.decodeIfPresent([String: [WidgetWordSnapshot]].self, forKey: .dailyBatches) {
+            dailyBatches = batches
+        } else {
+            let legacyDayKey = try container.decodeIfPresent(String.self, forKey: .calendarDayKey) ?? ""
+            let legacyWords = try container.decodeIfPresent([WidgetWordSnapshot].self, forKey: .words) ?? []
+            dailyBatches = legacyDayKey.isEmpty ? [:] : [legacyDayKey: legacyWords]
+        }
+    }
+
+    func encode(to encoder: Encoder) throws {
+        var container = encoder.container(keyedBy: CodingKeys.self)
+        try container.encode(updatedAt, forKey: .updatedAt)
+        try container.encode(dailyBatches, forKey: .dailyBatches)
+    }
+
+    /// Words for a local calendar day, when present in the rolling queue.
+    func words(forDayKey dayKey: String) -> [WidgetWordSnapshot]? {
+        guard let words = dailyBatches[dayKey], !words.isEmpty else { return nil }
+        return words
     }
 
     private enum CodingKeys: String, CodingKey {
-        case updatedAt, calendarDayKey, words
+        case updatedAt
+        case dailyBatches
+        case calendarDayKey
+        case words
     }
 }
 

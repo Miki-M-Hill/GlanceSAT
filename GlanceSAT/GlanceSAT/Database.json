@@ -103,41 +103,6 @@
     "quizSentence": "Rather than face a violent coup, the aging monarch chose to abdicate."
   },
   {
-    "id": "c6a845f5-4ad8-4c47-9f40-b01a91b11a07",
-    "word": "Abduct",
-    "partOfSpeech": "verb",
-    "difficultyLevel": 2,
-    "frequencyTier": 3,
-    "category": "legal",
-    "definition": "To kidnap, take by force",
-    "synonyms": [
-      "kidnap",
-      "seize",
-      "snatch",
-      "carry off"
-    ],
-    "etymology": "Latin abducere, from ab- ('away') + ducere ('to lead')",
-    "exampleSentence": "Authorities feared the cartel would abduct the journalist before the trial.",
-    "learningData": {
-      "status": "new",
-      "nextReviewDate": "2026-03-30T00:00:00Z",
-      "lastReviewDate": null,
-      "interval": 1,
-      "easeFactor": 2.5,
-      "successfulRecalls": 0,
-      "consecutiveCorrect": 0,
-      "totalAttempts": 0
-    },
-    "passageDomain": "power_culture",
-    "semanticCharge": "negative",
-    "memoryHook": {
-      "kind": "morphology",
-      "text": "\"ab-\" (away) + \"duct\" (lead) = to lead away."
-    },
-    "semanticChargeIntensity": 1,
-    "quizSentence": "The sci-fi movie featured aliens trying to abduct an unsuspecting farmer."
-  },
-  {
     "id": "e9f35bd6-eecf-4209-977b-f743a011d63c",
     "word": "Aberration",
     "partOfSpeech": "noun",
@@ -181,7 +146,7 @@
     "difficultyLevel": 3,
     "frequencyTier": 5,
     "category": "legal",
-    "definition": "To aid, help, encourage",
+    "definition": "To assist or encourage, especially in wrongdoing",
     "synonyms": [
       "assist",
       "facilitate",
@@ -189,7 +154,7 @@
       "support"
     ],
     "etymology": "Old French abeter, from a- + beter ('to bait'), of Germanic origin",
-    "exampleSentence": "The spy succeeded only because he had a friend on the inside to abet him.",
+    "exampleSentence": "He was charged with aiding and abetting the robbery.",
     "learningData": {
       "status": "new",
       "nextReviewDate": "2026-03-30T00:00:00Z",
@@ -406,37 +371,6 @@
     "quizSentence": "His strict diet required a complete abnegation of sugar and dairy."
   },
   {
-    "id": "9191d403-cd10-4fa4-912d-eb5b0a0288dd",
-    "word": "Abort",
-    "partOfSpeech": "verb",
-    "difficultyLevel": 2,
-    "frequencyTier": 3,
-    "category": "academic",
-    "definition": "To give up on a half-finished project or effort",
-    "synonyms": [
-      "abandon",
-      "cancel",
-      "terminate",
-      "halt"
-    ],
-    "etymology": "Latin abortare, from aboriri ('to miscarry'), from ab- + oriri ('to arise, be born')",
-    "exampleSentence": "When they ran out of food, the jump-rope team had to abort the attempt.",
-    "learningData": {
-      "status": "new",
-      "nextReviewDate": "2026-03-30T00:00:00Z",
-      "lastReviewDate": null,
-      "interval": 1,
-      "easeFactor": 2.5,
-      "successfulRecalls": 0,
-      "consecutiveCorrect": 0,
-      "totalAttempts": 0
-    },
-    "passageDomain": "thought_language",
-    "semanticCharge": "neutral",
-    "memoryHook": null,
-    "quizSentence": "The captain ordered the crew to abort the launch sequence immediately."
-  },
-  {
     "id": "03caccb3-b758-4ddf-a4a4-6b804680026e",
     "word": "Abridge",
     "difficultyLevel": 2,
@@ -474,7 +408,7 @@
           "abbreviated",
           "cut"
         ],
-        "exampleSentence": "Moby-Dick is such a long book that even the abridged version is longer than most normal books."
+        "exampleSentence": "Even the abridged Moby-Dick remains longer than most novels on the shelf."
       }
     ],
     "passageDomain": "thought_language",
@@ -675,7 +609,7 @@
     "difficultyLevel": 3,
     "frequencyTier": 5,
     "category": "social-behavior",
-    "definition": "To agree",
+    "definition": "To agree or yield; to assume an office",
     "synonyms": [
       "consent",
       "assent",
@@ -740,7 +674,7 @@
     "difficultyLevel": 1,
     "frequencyTier": 2,
     "category": "academic",
-    "definition": "Obtainable, reachable",
+    "definition": "Reachable; easy to understand or approach",
     "synonyms": [
       "attainable",
       "reachable",
@@ -1818,7 +1752,7 @@
           "collection",
           "assemblage"
         ],
-        "exampleSentence": "The three branches of the U.S. Government form an aggregate much more powerful than its individual parts."
+        "exampleSentence": "The three branches form an aggregate more powerful than each part alone."
       },
       {
         "partOfSpeech": "verb",
@@ -1839,7 +1773,7 @@
       "text": "\"ag-\" (toward) + \"greg\" (flock) = to bring the flock together into a whole."
     },
     "definition": "A whole or total",
-    "exampleSentence": "The three branches of government form an aggregate more powerful than each part alone.",
+    "exampleSentence": "The three branches form an aggregate more powerful than each part alone.",
     "partOfSpeech": "noun",
     "synonyms": [
       "total",
@@ -1921,7 +1855,7 @@
     "difficultyLevel": 2,
     "frequencyTier": 4,
     "category": "religion",
-    "definition": "Believing that the existence of God cannot be proven or.",
+    "definition": "Believing that the existence of God cannot be proven or disproven",
     "synonyms": [
       "skeptical",
       "doubting",
@@ -1978,37 +1912,6 @@
     "semanticCharge": "neutral",
     "memoryHook": null,
     "quizSentence": "Early human civilization relied heavily on the invention of agriculture."
-  },
-  {
-    "id": "3389412f-dbda-47b3-8cc2-81bc9d880bf3",
-    "word": "Aisle",
-    "partOfSpeech": "noun",
-    "difficultyLevel": 1,
-    "frequencyTier": 2,
-    "category": "academic",
-    "definition": "A passageway between rows of seats",
-    "synonyms": [
-      "passageway",
-      "corridor",
-      "lane",
-      "walkway"
-    ],
-    "etymology": "Old French ele ('wing of a building'), from Latin ala ('wing'); spelling influenced by isle",
-    "exampleSentence": "Once we got inside the stadium we walked down the aisle to our seats.",
-    "learningData": {
-      "status": "new",
-      "nextReviewDate": "2026-03-30T00:00:00Z",
-      "lastReviewDate": null,
-      "interval": 1,
-      "easeFactor": 2.5,
-      "successfulRecalls": 0,
-      "consecutiveCorrect": 0,
-      "totalAttempts": 0
-    },
-    "passageDomain": "thought_language",
-    "semanticCharge": "neutral",
-    "memoryHook": null,
-    "quizSentence": "The nervous bride walked slowly down the church aisle."
   },
   {
     "id": "07666ff8-a7dd-49a9-8c45-36e44bc2631e",
@@ -2206,6 +2109,40 @@
     "semanticCharge": "neutral",
     "memoryHook": null,
     "quizSentence": "We must allocate more funding to the struggling public schools."
+  },
+  {
+    "id": "590b4e89-f4a3-4567-9556-f0ab11cfd1a3",
+    "word": "Allude",
+    "difficultyLevel": 3,
+    "frequencyTier": 2,
+    "category": "language-communication",
+    "etymology": "Latin alludere, from ad- ('to') + ludere ('to play')",
+    "learningData": {
+      "status": "new",
+      "nextReviewDate": "2026-03-30T00:00:00Z",
+      "lastReviewDate": null,
+      "interval": 1,
+      "easeFactor": 2.5,
+      "successfulRecalls": 0,
+      "consecutiveCorrect": 0,
+      "totalAttempts": 0
+    },
+    "passageDomain": "thought_language",
+    "semanticCharge": "neutral",
+    "partOfSpeech": "verb",
+    "definition": "To refer to indirectly",
+    "synonyms": [
+      "hint at",
+      "suggest",
+      "imply",
+      "touch on"
+    ],
+    "exampleSentence": "The essay alludes to Plato without naming him, expecting readers to recognize the reference.",
+    "memoryHook": {
+      "kind": "sound_spelling",
+      "text": "\"Allude\" sounds like \"elude\" — you elude naming something by alluding to it."
+    },
+    "quizSentence": "Rather than quoting the poem directly, the critic chose to allude to its central metaphor."
   },
   {
     "id": "a7ce9d67-2ff2-4824-8458-a381aec1f43c",
@@ -2486,7 +2423,7 @@
     "difficultyLevel": 2,
     "frequencyTier": 3,
     "category": "social-behavior",
-    "definition": "Friendly",
+    "definition": "Friendly and good-natured",
     "synonyms": [
       "affable",
       "genial",
@@ -2521,7 +2458,7 @@
     "difficultyLevel": 2,
     "frequencyTier": 4,
     "category": "social-behavior",
-    "definition": "Friendly",
+    "definition": "Characterized by friendly goodwill",
     "synonyms": [
       "cordial",
       "civil",
@@ -2766,7 +2703,7 @@
       "taboo"
     ],
     "etymology": "Greek anathema ('thing devoted to evil'), from anatithenai ('to set up'), from ana- + tithenai ('to place')",
-    "exampleSentence": "I never want to see that murderer. He is an anathema to me.",
+    "exampleSentence": "Tax evasion is anathema to voters who demand honest government.",
     "learningData": {
       "status": "new",
       "nextReviewDate": "2026-03-30T00:00:00Z",
@@ -2816,40 +2753,6 @@
     "semanticCharge": "neutral",
     "memoryHook": null,
     "quizSentence": "My grandfather loves sharing a funny anecdote from his childhood."
-  },
-  {
-    "id": "4f925ad8-4ec2-410b-b210-6ceac980a91a",
-    "word": "Anesthesia",
-    "partOfSpeech": "noun",
-    "difficultyLevel": 2,
-    "frequencyTier": 3,
-    "category": "science",
-    "definition": "Loss of sensation",
-    "synonyms": [
-      "numbness",
-      "insensibility",
-      "sedation",
-      "unconsciousness"
-    ],
-    "etymology": "Greek anaisthesia ('lack of sensation'), from an- ('without') + aisthesis ('sensation')",
-    "exampleSentence": "When the nerves in his spine were damaged, Mr. Hollins suffered anesthesia in his legs.",
-    "learningData": {
-      "status": "new",
-      "nextReviewDate": "2026-03-30T00:00:00Z",
-      "lastReviewDate": null,
-      "interval": 1,
-      "easeFactor": 2.5,
-      "successfulRecalls": 0,
-      "consecutiveCorrect": 0,
-      "totalAttempts": 0
-    },
-    "passageDomain": "science_world",
-    "semanticCharge": "neutral",
-    "memoryHook": {
-      "kind": "morphology",
-      "text": "\"an-\" (without) + \"esthes\" (feeling) = without physical sensation."
-    },
-    "quizSentence": "The surgeon waited for the anesthesia to completely numb the patient."
   },
   {
     "id": "144c1454-d060-4766-9545-3b5050cf1818",
@@ -2956,7 +2859,7 @@
           "wing",
           "supplement"
         ],
-        "exampleSentence": "He likes to do his studying in a little annex attached to the main reading room in the library."
+        "exampleSentence": "He studied in a quiet annex attached to the main reading room."
       }
     ],
     "passageDomain": "power_culture",
@@ -3148,7 +3051,7 @@
     "difficultyLevel": 4,
     "frequencyTier": 7,
     "category": "literary",
-    "definition": "Ancient",
+    "definition": "Antiquated; extremely old-fashioned",
     "synonyms": [
       "ancient",
       "archaic",
@@ -3417,7 +3320,7 @@
     "difficultyLevel": 4,
     "frequencyTier": 7,
     "category": "literary",
-    "definition": "Fictitious, false, wrong",
+    "definition": "Of doubtful authenticity; widely told but likely untrue",
     "synonyms": [
       "dubious",
       "spurious",
@@ -3673,37 +3576,6 @@
     "tonalFoilId": "f5034f88-e7bf-4a85-8281-5ffe01f80db7",
     "onboardingRank": 3,
     "quizSentence": "The state decided to appropriate the land for a new highway."
-  },
-  {
-    "id": "7ef9e6fb-6d9d-4c64-8937-bae83ee3302d",
-    "word": "Aquatic",
-    "partOfSpeech": "adjective",
-    "difficultyLevel": 1,
-    "frequencyTier": 2,
-    "category": "science",
-    "definition": "Relating to water",
-    "synonyms": [
-      "marine",
-      "aqueous",
-      "oceanic",
-      "nautical"
-    ],
-    "etymology": "Latin aquaticus, from aqua ('water')",
-    "exampleSentence": "The marine biologist studies starfish and other aquatic creatures.",
-    "learningData": {
-      "status": "new",
-      "nextReviewDate": "2026-03-30T00:00:00Z",
-      "lastReviewDate": null,
-      "interval": 1,
-      "easeFactor": 2.5,
-      "successfulRecalls": 0,
-      "consecutiveCorrect": 0,
-      "totalAttempts": 0
-    },
-    "passageDomain": "science_world",
-    "semanticCharge": "neutral",
-    "memoryHook": null,
-    "quizSentence": "Dolphins and whales are highly intelligent aquatic mammals."
   },
   {
     "id": "681c9758-f520-4a61-9ee1-839003ab5158",
@@ -4078,37 +3950,6 @@
     "quizSentence": "The vice president tried to arrogate the CEO's authority during her absence."
   },
   {
-    "id": "7ec33e37-2fef-45a6-97a6-405af63b8ca6",
-    "word": "Artifact",
-    "partOfSpeech": "noun",
-    "difficultyLevel": 2,
-    "frequencyTier": 3,
-    "category": "academic",
-    "definition": "A remaining piece from an extinct culture or place",
-    "synonyms": [
-      "relic",
-      "remnant",
-      "antiquity",
-      "object"
-    ],
-    "etymology": "Latin arte ('by skill') + factum ('thing made'), from facere ('to make')",
-    "exampleSentence": "The scientists spent all day searching the cave for artifacts from the ancient Mayan civilization.",
-    "learningData": {
-      "status": "new",
-      "nextReviewDate": "2026-03-30T00:00:00Z",
-      "lastReviewDate": null,
-      "interval": 1,
-      "easeFactor": 2.5,
-      "successfulRecalls": 0,
-      "consecutiveCorrect": 0,
-      "totalAttempts": 0
-    },
-    "passageDomain": "thought_language",
-    "semanticCharge": "neutral",
-    "memoryHook": null,
-    "quizSentence": "This clay pot is a fascinating artifact from the Bronze Age."
-  },
-  {
     "id": "41fc9859-c615-48b4-9173-6da7722860d3",
     "word": "Artisan",
     "partOfSpeech": "noun",
@@ -4341,6 +4182,40 @@
     },
     "semanticChargeIntensity": 3,
     "quizSentence": "Critics were quick to assail the director's controversial new film."
+  },
+  {
+    "id": "e61697dd-3fb6-4cff-b4db-4f5a205a8e63",
+    "word": "Assert",
+    "difficultyLevel": 2,
+    "frequencyTier": 1,
+    "category": "logic-reasoning",
+    "etymology": "Latin asserere, from ad- ('to') + serere ('to join')",
+    "learningData": {
+      "status": "new",
+      "nextReviewDate": "2026-03-30T00:00:00Z",
+      "lastReviewDate": null,
+      "interval": 1,
+      "easeFactor": 2.5,
+      "successfulRecalls": 0,
+      "consecutiveCorrect": 0,
+      "totalAttempts": 0
+    },
+    "passageDomain": "thought_language",
+    "semanticCharge": "neutral",
+    "partOfSpeech": "verb",
+    "definition": "To state confidently as true",
+    "synonyms": [
+      "declare",
+      "maintain",
+      "claim",
+      "affirm"
+    ],
+    "exampleSentence": "The historian asserts that trade routes, not battles alone, reshaped the empire.",
+    "memoryHook": {
+      "kind": "morphology",
+      "text": "\"Assert\" = to join your voice to a claim and stand by it."
+    },
+    "quizSentence": "In her opening paragraph, the author asserts that public transit reform is long overdue."
   },
   {
     "id": "10cdcc84-76c8-40f4-b48b-3fac6a7a485f",
@@ -4632,6 +4507,40 @@
     "semanticCharge": "neutral",
     "memoryHook": null,
     "quizSentence": "You must study diligently to attain a medical degree."
+  },
+  {
+    "id": "655ae5ae-16e6-45b9-b804-1c03b6736c29",
+    "word": "Attest",
+    "difficultyLevel": 3,
+    "frequencyTier": 2,
+    "category": "logic-reasoning",
+    "etymology": "Latin attestari, from ad- ('to') + testari ('to bear witness')",
+    "learningData": {
+      "status": "new",
+      "nextReviewDate": "2026-03-30T00:00:00Z",
+      "lastReviewDate": null,
+      "interval": 1,
+      "easeFactor": 2.5,
+      "successfulRecalls": 0,
+      "consecutiveCorrect": 0,
+      "totalAttempts": 0
+    },
+    "passageDomain": "thought_language",
+    "semanticCharge": "neutral",
+    "partOfSpeech": "verb",
+    "definition": "To provide evidence or bear witness",
+    "synonyms": [
+      "confirm",
+      "verify",
+      "corroborate",
+      "testify"
+    ],
+    "exampleSentence": "Ancient letters attest to the merchant's reputation among distant trading partners.",
+    "memoryHook": {
+      "kind": "sound_spelling",
+      "text": "\"At-\" + \"test\" = to be at the test as a witness."
+    },
+    "quizSentence": "Multiple independent records attest that the treaty was signed in April."
   },
   {
     "id": "6343469b-5da2-45b9-9ede-cb0fb4e9d586",
@@ -5027,37 +4936,6 @@
     "quizSentence": "The horse decided to balk at the jump and threw its rider."
   },
   {
-    "id": "40aaae51-082b-4b21-a74b-d7e1253d7e5a",
-    "word": "Ballad",
-    "partOfSpeech": "noun",
-    "difficultyLevel": 2,
-    "frequencyTier": 3,
-    "category": "arts",
-    "definition": "A love song",
-    "synonyms": [
-      "song",
-      "poem",
-      "lyric",
-      "ditty"
-    ],
-    "etymology": "Old French balade, from Provençal balada ('song for dancing'), from balar ('to dance'), from Latin ballare",
-    "exampleSentence": "Greta's boyfriend played her a ballad on the guitar during their walk through the dark woods.",
-    "learningData": {
-      "status": "new",
-      "nextReviewDate": "2026-03-30T00:00:00Z",
-      "lastReviewDate": null,
-      "interval": 1,
-      "easeFactor": 2.5,
-      "successfulRecalls": 0,
-      "consecutiveCorrect": 0,
-      "totalAttempts": 0
-    },
-    "passageDomain": "power_culture",
-    "semanticCharge": "neutral",
-    "memoryHook": null,
-    "quizSentence": "The musician strummed his guitar and sang a mournful ballad."
-  },
-  {
     "id": "95014c72-1035-419d-a2ae-ec1afd48a7fa",
     "word": "Banal",
     "partOfSpeech": "adjective",
@@ -5126,37 +5004,6 @@
     },
     "semanticChargeIntensity": 3,
     "quizSentence": "Mosquitoes are the absolute bane of my summer camping trips."
-  },
-  {
-    "id": "2152309b-4f64-4fae-863f-af3a36bb4d5e",
-    "word": "Bard",
-    "partOfSpeech": "noun",
-    "difficultyLevel": 2,
-    "frequencyTier": 4,
-    "category": "literary",
-    "definition": "A poet, often a singer as well",
-    "synonyms": [
-      "poet",
-      "minstrel",
-      "troubadour",
-      "lyricist"
-    ],
-    "etymology": "Gaelic/Welsh bard — Celtic tradition of professional poets who memorized and recited epic tales",
-    "exampleSentence": "Shakespeare is often considered the greatest bard in the history of the English language.",
-    "learningData": {
-      "status": "new",
-      "nextReviewDate": "2026-03-30T00:00:00Z",
-      "lastReviewDate": null,
-      "interval": 1,
-      "easeFactor": 2.5,
-      "successfulRecalls": 0,
-      "consecutiveCorrect": 0,
-      "totalAttempts": 0
-    },
-    "passageDomain": "power_culture",
-    "semanticCharge": "neutral",
-    "memoryHook": null,
-    "quizSentence": "William Shakespeare is famously known as the Bard of Avon."
   },
   {
     "id": "89b6df8d-01f6-42ce-bacb-3e5100443e3e",
@@ -5256,6 +5103,40 @@
     "semanticCharge": "neutral",
     "memoryHook": null,
     "quizSentence": "The new corporate headquarters is a towering glass behemoth."
+  },
+  {
+    "id": "61672c2d-4a1d-4c67-ab78-12a2711e528e",
+    "word": "Belie",
+    "difficultyLevel": 4,
+    "frequencyTier": 2,
+    "category": "intellect-judgment",
+    "etymology": "Old English belēogan, from be- + lēogan ('to lie')",
+    "learningData": {
+      "status": "new",
+      "nextReviewDate": "2026-03-30T00:00:00Z",
+      "lastReviewDate": null,
+      "interval": 1,
+      "easeFactor": 2.5,
+      "successfulRecalls": 0,
+      "consecutiveCorrect": 0,
+      "totalAttempts": 0
+    },
+    "passageDomain": "thought_language",
+    "semanticCharge": "negative",
+    "partOfSpeech": "verb",
+    "definition": "To give a false impression; to contradict",
+    "synonyms": [
+      "contradict",
+      "misrepresent",
+      "mask",
+      "negate"
+    ],
+    "exampleSentence": "Her calm tone belied the urgency of the warning she delivered.",
+    "memoryHook": {
+      "kind": "sound_spelling",
+      "text": "\"Belie\" hides the truth — it sounds like \"lie\" inside the word."
+    },
+    "quizSentence": "The company's polished report belied serious losses in its overseas division."
   },
   {
     "id": "9a701041-1c7e-4dc0-9ed6-efb3943856dc",
@@ -5692,6 +5573,40 @@
     "quizSentence": "The boisterous crowd cheered wildly when the band took the stage."
   },
   {
+    "id": "269239a6-eb7d-48a8-aa81-a32118ee56bb",
+    "word": "Bolster",
+    "difficultyLevel": 2,
+    "frequencyTier": 2,
+    "category": "logic-reasoning",
+    "etymology": "Old English bolster ('long pillow'), from a word meaning 'to support'",
+    "learningData": {
+      "status": "new",
+      "nextReviewDate": "2026-03-30T00:00:00Z",
+      "lastReviewDate": null,
+      "interval": 1,
+      "easeFactor": 2.5,
+      "successfulRecalls": 0,
+      "consecutiveCorrect": 0,
+      "totalAttempts": 0
+    },
+    "passageDomain": "thought_language",
+    "semanticCharge": "positive",
+    "partOfSpeech": "verb",
+    "definition": "To support or strengthen",
+    "synonyms": [
+      "reinforce",
+      "buttress",
+      "prop up",
+      "fortify"
+    ],
+    "exampleSentence": "New survey data bolstered the economist's claim that wages were finally rising.",
+    "memoryHook": {
+      "kind": "etymology_story",
+      "text": "A bolster pillow supports your head — to bolster an argument supports it."
+    },
+    "quizSentence": "The pilot study bolstered confidence in the larger experiment's design."
+  },
+  {
     "id": "85e5b3c2-4935-492e-b19c-446a8eb89d9e",
     "word": "Bombastic",
     "partOfSpeech": "adjective",
@@ -5902,7 +5817,7 @@
           "sideboard",
           "self-service"
         ],
-        "exampleSentence": "Rather than sitting around a table, the guests took food from our buffet and ate standing up."
+        "exampleSentence": "Guests took food from the buffet and ate standing in the hall."
       }
     ],
     "passageDomain": "thought_language",
@@ -6223,7 +6138,7 @@
     "difficultyLevel": 4,
     "frequencyTier": 6,
     "category": "social-behavior",
-    "definition": "An attempt to spoil someone else's reputation by.",
+    "definition": "A false statement meant to damage someone's reputation",
     "synonyms": [
       "slander",
       "defamation",
@@ -6707,7 +6622,7 @@
     "difficultyLevel": 3,
     "frequencyTier": 3,
     "category": "politics-law",
-    "definition": "A meeting usually held by people working toward the same.",
+    "definition": "A meeting of members of a political party or faction",
     "synonyms": [
       "meeting",
       "assembly",
@@ -6911,7 +6826,7 @@
       "turmoil"
     ],
     "etymology": "Late 15th century: from Latin, from Greek khaos 'vast chasm, void'.",
-    "exampleSentence": "Mr. Thornton’s sudden departure for the lavatory plunged his classroom into chaos.",
+    "exampleSentence": "The fire alarm plunged the hallway into brief but total chaos.",
     "learningData": {
       "status": "new",
       "nextReviewDate": "2026-03-30T00:00:00Z",
@@ -7391,7 +7306,7 @@
           "yell",
           "shout"
         ],
-        "exampleSentence": "Neville’s fans clamored for him to appear on stage, but he had passed out on the floor of his dressing room."
+        "exampleSentence": "Fans clamored for an encore, though the singer had already left the stage."
       }
     ],
     "passageDomain": "human_social",
@@ -7539,44 +7454,13 @@
     "quizSentence": "The condemned man begged the governor for clemency at the last minute."
   },
   {
-    "id": "c09b8ddb-84a1-4c68-8ac0-008ae02c055a",
-    "word": "Clergy",
-    "partOfSpeech": "noun",
-    "difficultyLevel": 2,
-    "frequencyTier": 4,
-    "category": "religion-philosophy",
-    "definition": "Members of Christian holy orders",
-    "synonyms": [
-      "priesthood",
-      "ministry",
-      "churchmen",
-      "clerics"
-    ],
-    "etymology": "Middle English: from Old French clergie, based on ecclesiastical Latin clericus 'clergyman'.",
-    "exampleSentence": "Though villagers found the rectory quaint, the clergy who lived there considered it dusty and mildewy.",
-    "learningData": {
-      "status": "new",
-      "nextReviewDate": "2026-03-30T00:00:00Z",
-      "lastReviewDate": null,
-      "interval": 1,
-      "easeFactor": 2.5,
-      "successfulRecalls": 0,
-      "consecutiveCorrect": 0,
-      "totalAttempts": 0
-    },
-    "passageDomain": "power_culture",
-    "semanticCharge": "neutral",
-    "memoryHook": null,
-    "quizSentence": "Local clergy organized a massive food drive for the homeless shelter."
-  },
-  {
     "id": "b5ebbca3-f5b4-45f0-9cbc-0d6316eb64d1",
     "word": "Cloying",
     "partOfSpeech": "adjective",
     "difficultyLevel": 4,
     "frequencyTier": 4,
     "category": "emotion",
-    "definition": "Sickeningly sweet",
+    "definition": "Disgustingly or distastefully sweet",
     "synonyms": [
       "saccharine",
       "syrupy",
@@ -7671,35 +7555,6 @@
       "text": "Fuse into one: co- (together) + alescere (to grow)-parts grow together into a single mass."
     },
     "quizSentence": "The different neighborhood watch groups decided to coalesce into one organization."
-  },
-  {
-    "id": "9ae0b30f-447d-4f59-9263-2c7d67f1ac69",
-    "word": "Cobbler",
-    "partOfSpeech": "noun",
-    "difficultyLevel": 2,
-    "frequencyTier": 6,
-    "category": "business-economy",
-    "definition": "A person who makes or repairs shoes",
-    "synonyms": [
-      "shoemaker",
-      "bootmaker"
-    ],
-    "etymology": "Middle English: of unknown origin.",
-    "exampleSentence": "I had my neighborhood cobbler replace my worn-out leather soles with new ones.",
-    "learningData": {
-      "status": "new",
-      "nextReviewDate": "2026-03-30T00:00:00Z",
-      "lastReviewDate": null,
-      "interval": 1,
-      "easeFactor": 2.5,
-      "successfulRecalls": 0,
-      "consecutiveCorrect": 0,
-      "totalAttempts": 0
-    },
-    "passageDomain": "power_culture",
-    "semanticCharge": "neutral",
-    "memoryHook": null,
-    "quizSentence": "I took my favorite leather boots to the cobbler for new soles."
   },
   {
     "id": "59bc304b-00e5-407f-9b3e-6dd6be92cbf8",
@@ -7867,7 +7722,7 @@
           "incidental",
           "ancillary"
         ],
-        "exampleSentence": "Divorcing my wife had the collateral effect of making me poor, as she was the only one of us with a job or money."
+        "exampleSentence": "Divorcing cost him dearly; losing her income was a harsh collateral effect."
       },
       {
         "partOfSpeech": "noun",
@@ -7885,7 +7740,7 @@
     "semanticCharge": "neutral",
     "memoryHook": null,
     "definition": "Secondary",
-    "exampleSentence": "Divorcing my wife had the collateral effect of making me poor, since she held the job.",
+    "exampleSentence": "Divorcing cost him dearly; losing her income was a harsh collateral effect.",
     "partOfSpeech": "adjective",
     "synonyms": [
       "secondary",
@@ -8388,7 +8243,7 @@
           "blend",
           "amalgamate"
         ],
-        "exampleSentence": "The difficulty of finding a fire escape amid the smoke was compounded with the dangers posed by the panicking crowds."
+        "exampleSentence": "Smoke and panic compounded the difficulty of reaching the fire escape."
       },
       {
         "partOfSpeech": "noun",
@@ -8399,7 +8254,7 @@
           "blend",
           "composite"
         ],
-        "exampleSentence": "My attraction to Donna was a compound of curiosity about the unknown, physical desire, and intellectual admiration."
+        "exampleSentence": "Her attraction was a compound of curiosity, desire, and quiet admiration."
       },
       {
         "partOfSpeech": "noun",
@@ -8410,14 +8265,14 @@
           "camp",
           "precinct"
         ],
-        "exampleSentence": "When the fighting started, Joseph rushed into the family compound because it was safe and well defended."
+        "exampleSentence": "When fighting broke out, families retreated to the walled family compound."
       }
     ],
     "passageDomain": "thought_language",
     "semanticCharge": "neutral",
     "memoryHook": null,
     "definition": "To combine parts",
-    "exampleSentence": "Finding a fire escape amid smoke was compounded by dangers from panicking crowds.",
+    "exampleSentence": "Smoke and panic compounded the difficulty of reaching the fire escape.",
     "partOfSpeech": "verb",
     "synonyms": [
       "combine",
@@ -8797,6 +8652,40 @@
     "quizSentence": "The school principal refuses to condone bullying of any kind."
   },
   {
+    "id": "f99f3d36-f88a-4781-9c4c-d923bc9f4990",
+    "word": "Conducive",
+    "difficultyLevel": 3,
+    "frequencyTier": 2,
+    "category": "academic",
+    "etymology": "Latin conducere, from con- ('together') + ducere ('to lead')",
+    "learningData": {
+      "status": "new",
+      "nextReviewDate": "2026-03-30T00:00:00Z",
+      "lastReviewDate": null,
+      "interval": 1,
+      "easeFactor": 2.5,
+      "successfulRecalls": 0,
+      "consecutiveCorrect": 0,
+      "totalAttempts": 0
+    },
+    "passageDomain": "thought_language",
+    "semanticCharge": "positive",
+    "partOfSpeech": "adjective",
+    "definition": "Tending to promote or assist",
+    "synonyms": [
+      "favorable",
+      "helpful",
+      "beneficial",
+      "propitious"
+    ],
+    "exampleSentence": "Quiet libraries are conducive to focused reading and careful note-taking.",
+    "memoryHook": {
+      "kind": "morphology",
+      "text": "\"Con-\" (together) + \"duc-\" (lead) = conditions that lead you toward a result."
+    },
+    "quizSentence": "The mentor argued that smaller seminar sizes are conducive to deeper discussion."
+  },
+  {
     "id": "0134fc6d-85aa-4f2d-9adb-9437765d4eb1",
     "word": "Conduit",
     "partOfSpeech": "noun",
@@ -9167,6 +9056,55 @@
       "text": "Geometry - just like congruent triangles, everything fits perfectly together in agreement."
     },
     "quizSentence": "There is a noticeable lack of congruity between his words and his actions."
+  },
+  {
+    "id": "256f79ee-1d16-43fd-994c-a0325fecf86c",
+    "word": "Conjecture",
+    "difficultyLevel": 3,
+    "frequencyTier": 2,
+    "category": "logic-reasoning",
+    "etymology": "Latin conjectura, from conjectus ('thrown together'), from conicere",
+    "learningData": {
+      "status": "new",
+      "nextReviewDate": "2026-03-30T00:00:00Z",
+      "lastReviewDate": null,
+      "interval": 1,
+      "easeFactor": 2.5,
+      "successfulRecalls": 0,
+      "consecutiveCorrect": 0,
+      "totalAttempts": 0
+    },
+    "passageDomain": "thought_language",
+    "semanticCharge": "neutral",
+    "senses": [
+      {
+        "partOfSpeech": "noun",
+        "definition": "An inference formed without complete evidence",
+        "synonyms": [
+          "guess",
+          "speculation",
+          "hypothesis",
+          "supposition"
+        ],
+        "exampleSentence": "The article treats the link between diet and mood as conjecture, not certainty."
+      },
+      {
+        "partOfSpeech": "verb",
+        "definition": "To form an opinion on incomplete evidence",
+        "synonyms": [
+          "speculate",
+          "surmise",
+          "infer",
+          "hypothesize"
+        ],
+        "exampleSentence": "Researchers conjectured that the artifact predated the written records."
+      }
+    ],
+    "memoryHook": {
+      "kind": "morphology",
+      "text": "\"Con-\" (together) + \"ject\" (throw) = ideas thrown together into a guess."
+    },
+    "quizSentence": "What looks like proof may still be conjecture until it survives repeated testing."
   },
   {
     "id": "71a029a9-6a96-4568-91b9-4fbfb2a15c10",
@@ -9606,6 +9544,40 @@
     "quizSentence": "Gun control remains a highly contentious issue in modern political debates."
   },
   {
+    "id": "027add1f-ce6b-4aa2-81b4-f6881883d49e",
+    "word": "Contextualize",
+    "difficultyLevel": 3,
+    "frequencyTier": 2,
+    "category": "language-communication",
+    "etymology": "From Latin contextus ('woven together') + -ize",
+    "learningData": {
+      "status": "new",
+      "nextReviewDate": "2026-03-30T00:00:00Z",
+      "lastReviewDate": null,
+      "interval": 1,
+      "easeFactor": 2.5,
+      "successfulRecalls": 0,
+      "consecutiveCorrect": 0,
+      "totalAttempts": 0
+    },
+    "passageDomain": "thought_language",
+    "semanticCharge": "neutral",
+    "partOfSpeech": "verb",
+    "definition": "To place in context so meaning becomes clear",
+    "synonyms": [
+      "frame",
+      "situate",
+      "background",
+      "explain"
+    ],
+    "exampleSentence": "The editor contextualized the quote by explaining the political crisis surrounding it.",
+    "memoryHook": {
+      "kind": "morphology",
+      "text": "Context + -ize = to put something inside its surrounding context."
+    },
+    "quizSentence": "Good historians contextualize events instead of judging them by modern standards alone."
+  },
+  {
     "id": "efaedd81-2f36-4a8b-9eaf-29615fe7d3a3",
     "word": "Contravene",
     "partOfSpeech": "verb",
@@ -9673,41 +9645,6 @@
       "text": "From Latin contritus (ground to pieces). Your heart is crushed and ground to pieces by the guilt of what you've done."
     },
     "quizSentence": "The contrite child apologized sincerely for breaking the neighbor's window."
-  },
-  {
-    "id": "0b877da6-6535-4f6f-a771-2f462563f24b",
-    "word": "Contusion",
-    "partOfSpeech": "noun",
-    "difficultyLevel": 3,
-    "frequencyTier": 6,
-    "category": "science-engineering",
-    "definition": "Bruise, injury",
-    "synonyms": [
-      "bruise",
-      "injury",
-      "bump",
-      "swelling"
-    ],
-    "etymology": "Late Middle English: from Latin contusio(n-), from the verb contundere 'to pound, bruise'.",
-    "exampleSentence": "The contusions on his face suggested he’d been in a fight.",
-    "learningData": {
-      "status": "new",
-      "nextReviewDate": "2026-03-30T00:00:00Z",
-      "lastReviewDate": null,
-      "interval": 1,
-      "easeFactor": 2.5,
-      "successfulRecalls": 0,
-      "consecutiveCorrect": 0,
-      "totalAttempts": 0
-    },
-    "passageDomain": "science_world",
-    "semanticCharge": "negative",
-    "memoryHook": {
-      "kind": "sound_spelling",
-      "text": "Confusion - getting hit in the head so hard it leaves a massive bruise and causes confusion."
-    },
-    "semanticChargeIntensity": 2,
-    "quizSentence": "He suffered a nasty purple contusion on his leg after the bicycle crash."
   },
   {
     "id": "942b41f1-3ab5-4cbb-a7fe-8a2d3b474ced",
@@ -9832,6 +9769,40 @@
       "congress"
     ],
     "quizSentence": "Shaking hands is a standard social convention when meeting someone new."
+  },
+  {
+    "id": "a7cf34f2-5bd5-4106-bd3e-fd16f02d3087",
+    "word": "Conversely",
+    "difficultyLevel": 2,
+    "frequencyTier": 1,
+    "category": "logic-reasoning",
+    "etymology": "From converse ('turned about') + -ly",
+    "learningData": {
+      "status": "new",
+      "nextReviewDate": "2026-03-30T00:00:00Z",
+      "lastReviewDate": null,
+      "interval": 1,
+      "easeFactor": 2.5,
+      "successfulRecalls": 0,
+      "consecutiveCorrect": 0,
+      "totalAttempts": 0
+    },
+    "passageDomain": "thought_language",
+    "semanticCharge": "neutral",
+    "partOfSpeech": "adverb",
+    "definition": "On the other hand; in an opposite way",
+    "synonyms": [
+      "on the contrary",
+      "in contrast",
+      "alternatively",
+      "by contrast"
+    ],
+    "exampleSentence": "Urban density can reduce emissions; conversely, sprawl often increases driving.",
+    "memoryHook": {
+      "kind": "morphology",
+      "text": "Converse = turn around — conversely turns the argument to the other side."
+    },
+    "quizSentence": "The first trial showed gains in speed; conversely, accuracy declined sharply."
   },
   {
     "id": "1a17c52f-716c-4fcd-9a3e-099c715229f6",
@@ -9972,40 +9943,6 @@
     "quizSentence": "The ex-spouses managed to maintain a polite and cordial relationship for their kids."
   },
   {
-    "id": "135d3582-30a6-4d9d-8c5c-45031cc3d7a0",
-    "word": "Coronation",
-    "partOfSpeech": "noun",
-    "difficultyLevel": 2,
-    "frequencyTier": 5,
-    "category": "history",
-    "definition": "The act of crowning",
-    "synonyms": [
-      "crowning",
-      "investiture",
-      "inauguration",
-      "enthronement"
-    ],
-    "etymology": "Late Middle English: from late Latin coronatio(n-), from coronare 'to crown'.",
-    "exampleSentence": "The new king’s coronation occurred the day after his father’s death.",
-    "learningData": {
-      "status": "new",
-      "nextReviewDate": "2026-03-30T00:00:00Z",
-      "lastReviewDate": null,
-      "interval": 1,
-      "easeFactor": 2.5,
-      "successfulRecalls": 0,
-      "consecutiveCorrect": 0,
-      "totalAttempts": 0
-    },
-    "passageDomain": "power_culture",
-    "semanticCharge": "neutral",
-    "memoryHook": {
-      "kind": "morphology",
-      "text": "\"coron\" (crown) = the official ceremony of giving someone the crown."
-    },
-    "quizSentence": "Thousands lined the streets to celebrate the new king's lavish coronation."
-  },
-  {
     "id": "847b4022-9a50-4e16-9911-a7c3df1127cb",
     "word": "Corpulence",
     "partOfSpeech": "noun",
@@ -10039,6 +9976,40 @@
     },
     "semanticChargeIntensity": 2,
     "quizSentence": "His increasing corpulence made it difficult for him to walk up the stairs."
+  },
+  {
+    "id": "7c6d4b0d-f516-4e77-9f65-6dce564e7d57",
+    "word": "Correlate",
+    "difficultyLevel": 3,
+    "frequencyTier": 1,
+    "category": "science-method",
+    "etymology": "Medieval Latin correlare, from Latin com- ('together') + relatus ('carried back')",
+    "learningData": {
+      "status": "new",
+      "nextReviewDate": "2026-03-30T00:00:00Z",
+      "lastReviewDate": null,
+      "interval": 1,
+      "easeFactor": 2.5,
+      "successfulRecalls": 0,
+      "consecutiveCorrect": 0,
+      "totalAttempts": 0
+    },
+    "passageDomain": "science_world",
+    "semanticCharge": "neutral",
+    "partOfSpeech": "verb",
+    "definition": "To show or have a mutual relationship",
+    "synonyms": [
+      "correspond",
+      "associate",
+      "link",
+      "connect"
+    ],
+    "exampleSentence": "The study correlates higher reading time with stronger vocabulary growth.",
+    "memoryHook": {
+      "kind": "morphology",
+      "text": "\"Co-\" (together) + \"relate\" = variables related together."
+    },
+    "quizSentence": "Analysts correlated rising temperatures with increased crop failures across the region."
   },
   {
     "id": "9b29fe68-8c02-4965-886f-54a9233c5951",
@@ -10233,6 +10204,40 @@
     "quizSentence": "The military generals staged a sudden coup and overthrew the democratic government."
   },
   {
+    "id": "76a04456-3ff6-4cff-af47-31a835a7dce7",
+    "word": "Covert",
+    "partOfSpeech": "adjective",
+    "difficultyLevel": 3,
+    "frequencyTier": 2,
+    "category": "politics-law",
+    "definition": "Secretly engaged in",
+    "synonyms": [
+      "secret",
+      "furtive",
+      "clandestine",
+      "surreptitious"
+    ],
+    "etymology": "Middle English: from Old French, past participle of covrir 'to cover'.",
+    "exampleSentence": "Nerwin waged a covert campaign against his enemies, while outwardly appearing to remain friendly.",
+    "learningData": {
+      "status": "new",
+      "nextReviewDate": "2026-03-30T00:00:00Z",
+      "lastReviewDate": null,
+      "interval": 1,
+      "easeFactor": 2.5,
+      "successfulRecalls": 0,
+      "consecutiveCorrect": 0,
+      "totalAttempts": 0
+    },
+    "passageDomain": "power_culture",
+    "semanticCharge": "neutral",
+    "memoryHook": {
+      "kind": "sound_spelling",
+      "text": "Cover it - keeping the military operation completely covered up and secret."
+    },
+    "quizSentence": "The CIA launched a covert operation to rescue the hostages at midnight."
+  },
+  {
     "id": "5c3d7fe5-afae-412c-8932-a9b2a7b5adde",
     "word": "Covet",
     "partOfSpeech": "verb",
@@ -10266,40 +10271,6 @@
     },
     "semanticChargeIntensity": 2,
     "quizSentence": "Thou shalt not covet thy neighbor's luxury sports car."
-  },
-  {
-    "id": "76a04456-3ff6-4cff-af47-31a835a7dce7",
-    "word": "Covert",
-    "partOfSpeech": "adjective",
-    "difficultyLevel": 3,
-    "frequencyTier": 2,
-    "category": "politics-law",
-    "definition": "Secretly engaged in",
-    "synonyms": [
-      "secret",
-      "furtive",
-      "clandestine",
-      "surreptitious"
-    ],
-    "etymology": "Middle English: from Old French, past participle of covrir 'to cover'.",
-    "exampleSentence": "Nerwin waged a covert campaign against his enemies, while outwardly appearing to remain friendly.",
-    "learningData": {
-      "status": "new",
-      "nextReviewDate": "2026-03-30T00:00:00Z",
-      "lastReviewDate": null,
-      "interval": 1,
-      "easeFactor": 2.5,
-      "successfulRecalls": 0,
-      "consecutiveCorrect": 0,
-      "totalAttempts": 0
-    },
-    "passageDomain": "power_culture",
-    "semanticCharge": "neutral",
-    "memoryHook": {
-      "kind": "sound_spelling",
-      "text": "Cover it - keeping the military operation completely covered up and secret."
-    },
-    "quizSentence": "The CIA launched a covert operation to rescue the hostages at midnight."
   },
   {
     "id": "88446ba0-9be6-423b-ae46-c9694a68dfb9",
@@ -10382,7 +10353,7 @@
       "guidelines"
     ],
     "etymology": "Early 17th century: from Greek kritērion 'means of judging', from kritēs 'judge'.",
-    "exampleSentence": "Among Mrs. Fields’s criteria for good cookies are that they be moist and chewy.",
+    "exampleSentence": "The committee published clear criteria for evaluating grant proposals.",
     "learningData": {
       "status": "new",
       "nextReviewDate": "2026-03-30T00:00:00Z",
@@ -12035,37 +12006,6 @@
     "quizSentence": "The devious villain concocted a brilliant scheme to rob the heavily guarded bank."
   },
   {
-    "id": "790613d8-a723-46f3-90b7-3703381dd249",
-    "word": "Dialect",
-    "partOfSpeech": "noun",
-    "difficultyLevel": 4,
-    "frequencyTier": 6,
-    "category": "language-communication",
-    "definition": "A variation of a language",
-    "synonyms": [
-      "vernacular",
-      "patois",
-      "idiom",
-      "regional speech"
-    ],
-    "etymology": "Greek dialektos ‘discourse,’ via Latin dialectus.",
-    "exampleSentence": "In remote mountain regions, inhabitants spoke a dialect others in the country struggled to understand.",
-    "learningData": {
-      "status": "new",
-      "nextReviewDate": "2026-03-30T00:00:00Z",
-      "lastReviewDate": null,
-      "interval": 1,
-      "easeFactor": 2.5,
-      "successfulRecalls": 0,
-      "consecutiveCorrect": 0,
-      "totalAttempts": 0
-    },
-    "passageDomain": "thought_language",
-    "semanticCharge": "neutral",
-    "memoryHook": null,
-    "quizSentence": "The remote islanders speak a unique dialect that mainlanders cannot understand."
-  },
-  {
     "id": "a4ee8736-d246-4338-8f53-6ac23623b888",
     "word": "Diaphanous",
     "partOfSpeech": "adjective",
@@ -12137,7 +12077,7 @@
           "sententious",
           "sanctimonious"
         ],
-        "exampleSentence": "His didactic style of teaching made it seem like he wanted to persuade his students not to understand history fully, but to understand it from only one point of view."
+        "exampleSentence": "His didactic lectures pressed one viewpoint and left little room for debate."
       }
     ],
     "passageDomain": "thought_language",
@@ -12315,6 +12255,40 @@
     "memoryHook": null,
     "semanticChargeIntensity": 2,
     "quizSentence": "A diligent researcher always double-checks her sources before publishing a paper."
+  },
+  {
+    "id": "85c7385c-f684-4391-9c29-ac9abb5d60ac",
+    "word": "Diminish",
+    "difficultyLevel": 2,
+    "frequencyTier": 2,
+    "category": "academic",
+    "etymology": "Old French diminuer, from Latin deminuere, from de- ('away') + minuere ('lessen')",
+    "learningData": {
+      "status": "new",
+      "nextReviewDate": "2026-03-30T00:00:00Z",
+      "lastReviewDate": null,
+      "interval": 1,
+      "easeFactor": 2.5,
+      "successfulRecalls": 0,
+      "consecutiveCorrect": 0,
+      "totalAttempts": 0
+    },
+    "passageDomain": "thought_language",
+    "semanticCharge": "negative",
+    "partOfSpeech": "verb",
+    "definition": "To make smaller, weaker, or less important",
+    "synonyms": [
+      "reduce",
+      "lessen",
+      "weaken",
+      "curtail"
+    ],
+    "exampleSentence": "Repeated interruptions diminished the speaker's ability to make a coherent case.",
+    "memoryHook": {
+      "kind": "morphology",
+      "text": "\"Di-\" (away) + \"min\" (small) = to make something smaller."
+    },
+    "quizSentence": "The new evidence diminished the credibility of the earlier conclusion."
   },
   {
     "id": "cccaf86b-5ab2-4508-9e93-9a36487bd1ed",
@@ -12628,7 +12602,7 @@
     "difficultyLevel": 4,
     "frequencyTier": 1,
     "category": "intellect-judgment",
-    "definition": "The quality of being reserved in speech or action; good.",
+    "definition": "Careful judgment; the quality of behaving with tact",
     "synonyms": [
       "judgment",
       "prudence",
@@ -12714,7 +12688,7 @@
           "belittle",
           "look down on"
         ],
-        "exampleSentence": "Insecure about their jobs, the older employees disdained the recently hired ones, who were young and capable."
+        "exampleSentence": "Older staff disdained the new hires, who were young and highly capable."
       },
       {
         "partOfSpeech": "noun",
@@ -12735,7 +12709,7 @@
       "text": "This stain - looking with absolute snobby disgust at \"this stain\" on your brand new shirt."
     },
     "definition": "To scorn, hold in low esteem",
-    "exampleSentence": "Insecure about their jobs, older employees disdained younger hires who were capable and ambitious.",
+    "exampleSentence": "Older staff disdained the new hires, who were young and highly capable.",
     "partOfSpeech": "verb",
     "synonyms": [
       "scorn",
@@ -13125,7 +13099,7 @@
           "objection",
           "discord"
         ],
-        "exampleSentence": "Unconvinced that the defendant was guilty, the last juror voiced his dissent with the rest of the jury."
+        "exampleSentence": "The last juror voiced dissent, unconvinced the defendant was guilty."
       }
     ],
     "passageDomain": "power_culture",
@@ -14363,7 +14337,7 @@
           "dress up",
           "heighten"
         ],
-        "exampleSentence": "When Harry told me that he had “done stuff” on his vacation, I asked him to embellish upon his account."
+        "exampleSentence": "When Harry said he had done stuff on vacation, I asked him to embellish."
       }
     ],
     "passageDomain": "power_culture",
@@ -14479,7 +14453,7 @@
           "renowned",
           "notable"
         ],
-        "exampleSentence": "Mr. Phillips is such an eminent scholar that every professor on campus has come to hear him lecture."
+        "exampleSentence": "The eminent scholar's lecture drew professors from across the campus."
       },
       {
         "partOfSpeech": "adjective",
@@ -14500,7 +14474,7 @@
       "text": "Eminem - a highly respected, famous, and prominent figure in their field."
     },
     "definition": "Distinguished, prominent, famous",
-    "exampleSentence": "The eminent historian's lecture drew scholars from universities across the country.",
+    "exampleSentence": "The eminent scholar's lecture drew professors from across the campus.",
     "partOfSpeech": "adjective",
     "synonyms": [
       "famous",
@@ -14518,7 +14492,7 @@
     "difficultyLevel": 6,
     "frequencyTier": 9,
     "category": "health-body",
-    "definition": "Soothing",
+    "definition": "Softening or soothing, especially to the skin",
     "synonyms": [
       "soothing",
       "balm",
@@ -14636,7 +14610,7 @@
           "experimental",
           "a posteriori"
         ],
-        "exampleSentence": "The scientist gathered empirical data on the growth rate of dandelions by studying the dandelions behind his house."
+        "exampleSentence": "The study rests on empirical data gathered from controlled field trials."
       },
       {
         "partOfSpeech": "adjective",
@@ -14646,7 +14620,7 @@
           "experiential",
           "verifiable"
         ],
-        "exampleSentence": "That all cats hate getting wet is an empirical statement: I can test it by bathing my cat, Trinket."
+        "exampleSentence": "That cats hate water is empirical; I could test it on mine."
       }
     ],
     "passageDomain": "science_world",
@@ -14656,7 +14630,7 @@
       "text": "Empire - the Roman Empire was built on practical, observable facts and engineering, not just philosophical theories."
     },
     "definition": "Based on observation or experience",
-    "exampleSentence": "The study rests on empirical evidence gathered from controlled field trials.",
+    "exampleSentence": "The study rests on empirical data gathered from controlled field trials.",
     "partOfSpeech": "adjective",
     "synonyms": [
       "observational",
@@ -14741,7 +14715,7 @@
     "difficultyLevel": 4,
     "frequencyTier": 9,
     "category": "arts-literature",
-    "definition": "The audience’s demand for a repeat performance; also the.",
+    "definition": "An extra performance demanded by applause",
     "synonyms": [
       "repeat performance",
       "repeat number",
@@ -15788,6 +15762,40 @@
     "quizSentence": "The incredibly harsh critic called the new blockbuster film an execrable piece of trash."
   },
   {
+    "id": "0630b2d0-7bee-4483-a1f7-6e34eb9c519b",
+    "word": "Exemplify",
+    "difficultyLevel": 3,
+    "frequencyTier": 2,
+    "category": "logic-reasoning",
+    "etymology": "Medieval Latin exemplificare, from Latin exemplum ('example') + facere ('make')",
+    "learningData": {
+      "status": "new",
+      "nextReviewDate": "2026-03-30T00:00:00Z",
+      "lastReviewDate": null,
+      "interval": 1,
+      "easeFactor": 2.5,
+      "successfulRecalls": 0,
+      "consecutiveCorrect": 0,
+      "totalAttempts": 0
+    },
+    "passageDomain": "thought_language",
+    "semanticCharge": "neutral",
+    "partOfSpeech": "verb",
+    "definition": "To serve as a typical example of",
+    "synonyms": [
+      "illustrate",
+      "demonstrate",
+      "represent",
+      "embody"
+    ],
+    "exampleSentence": "The case study exemplifies how small policy changes can shift public behavior.",
+    "memoryHook": {
+      "kind": "morphology",
+      "text": "Example + -ify = to make into an example."
+    },
+    "quizSentence": "Her career exemplifies the value of persistent, evidence-based advocacy."
+  },
+  {
     "id": "446957eb-96b5-4fa3-8e85-e5218b0cff39",
     "word": "Exhort",
     "partOfSpeech": "verb",
@@ -15994,6 +16002,40 @@
     "quizSentence": "He donated half his wealth to charity in an attempt to expiate his past corporate sins."
   },
   {
+    "id": "51c94888-a8f0-47c4-b216-8dccc51b845c",
+    "word": "Explicit",
+    "difficultyLevel": 2,
+    "frequencyTier": 1,
+    "category": "language-communication",
+    "etymology": "Latin explicitus, past participle of explicare ('unfold')",
+    "learningData": {
+      "status": "new",
+      "nextReviewDate": "2026-03-30T00:00:00Z",
+      "lastReviewDate": null,
+      "interval": 1,
+      "easeFactor": 2.5,
+      "successfulRecalls": 0,
+      "consecutiveCorrect": 0,
+      "totalAttempts": 0
+    },
+    "passageDomain": "thought_language",
+    "semanticCharge": "neutral",
+    "partOfSpeech": "adjective",
+    "definition": "Stated clearly and directly, leaving nothing implied",
+    "synonyms": [
+      "clear",
+      "direct",
+      "plain",
+      "unambiguous"
+    ],
+    "exampleSentence": "The contract's explicit terms prevented either party from claiming surprise later.",
+    "memoryHook": {
+      "kind": "morphology",
+      "text": "Explicit = fully unfolded and spelled out, not hidden."
+    },
+    "quizSentence": "The author was explicit about which sources she relied on and which she rejected."
+  },
+  {
     "id": "c1cae523-de30-444e-ab7f-710e0d6663fc",
     "word": "Expunge",
     "partOfSpeech": "verb",
@@ -16166,6 +16208,40 @@
     "quizSentence": "Please remove all extraneous details from your report to keep it under two pages."
   },
   {
+    "id": "b857c4e7-b95d-4d18-8045-728459fe760d",
+    "word": "Extrapolate",
+    "difficultyLevel": 4,
+    "frequencyTier": 2,
+    "category": "science-method",
+    "etymology": "Latin extra ('outside') + polare ('to polish'), via extrapolatio",
+    "learningData": {
+      "status": "new",
+      "nextReviewDate": "2026-03-30T00:00:00Z",
+      "lastReviewDate": null,
+      "interval": 1,
+      "easeFactor": 2.5,
+      "successfulRecalls": 0,
+      "consecutiveCorrect": 0,
+      "totalAttempts": 0
+    },
+    "passageDomain": "science_world",
+    "semanticCharge": "neutral",
+    "partOfSpeech": "verb",
+    "definition": "To infer unknown values by extending known data",
+    "synonyms": [
+      "project",
+      "infer",
+      "extend",
+      "estimate"
+    ],
+    "exampleSentence": "Scientists extrapolated the trend line to predict demand over the next decade.",
+    "memoryHook": {
+      "kind": "morphology",
+      "text": "\"Extra-\" (beyond) + \"polate\" = push a pattern beyond the data you have."
+    },
+    "quizSentence": "From three years of scores, the committee extrapolated likely long-term improvement."
+  },
+  {
     "id": "e71ca5f0-442d-4f83-a488-729e558ec2dd",
     "word": "Extricate",
     "partOfSpeech": "verb",
@@ -16303,7 +16379,7 @@
           "adept",
           "dexterous"
         ],
-        "exampleSentence": "The business was in such shambles that any solution seemed facile at best; nothing could really helpit in the long-run."
+        "exampleSentence": "Any facile fix seemed too shallow to save a business so deep in debt."
       }
     ],
     "passageDomain": "thought_language",
@@ -16323,6 +16399,40 @@
     ],
     "semanticChargeIntensity": 2,
     "quizSentence": "That highly complex geopolitical conflict requires more than a facile, one-sentence solution."
+  },
+  {
+    "id": "a45704d4-682b-4754-bcb8-3fe9bd416460",
+    "word": "Facilitate",
+    "difficultyLevel": 2,
+    "frequencyTier": 2,
+    "category": "academic",
+    "etymology": "Latin facilitare, from facilis ('easy')",
+    "learningData": {
+      "status": "new",
+      "nextReviewDate": "2026-03-30T00:00:00Z",
+      "lastReviewDate": null,
+      "interval": 1,
+      "easeFactor": 2.5,
+      "successfulRecalls": 0,
+      "consecutiveCorrect": 0,
+      "totalAttempts": 0
+    },
+    "passageDomain": "thought_language",
+    "semanticCharge": "positive",
+    "partOfSpeech": "verb",
+    "definition": "To make an action or process easier",
+    "synonyms": [
+      "enable",
+      "ease",
+      "assist",
+      "expedite"
+    ],
+    "exampleSentence": "Shared calendars facilitate coordination among researchers in different time zones.",
+    "memoryHook": {
+      "kind": "morphology",
+      "text": "Facile means easy — facilitate makes things easy to do."
+    },
+    "quizSentence": "The revised workflow facilitated faster review without sacrificing rigor."
   },
   {
     "id": "4787745c-0bca-437e-ab8d-3e74941bf601",
@@ -16461,6 +16571,40 @@
     },
     "semanticChargeIntensity": 2,
     "quizSentence": "The arrogant politician made a fatuous comment that completely alienated his voters."
+  },
+  {
+    "id": "b399d26b-2d03-4a1f-8524-e6cb7d87fc2c",
+    "word": "Feasible",
+    "difficultyLevel": 2,
+    "frequencyTier": 2,
+    "category": "general-academic",
+    "etymology": "Old French faisable, from fais-, stem of faire ('to do')",
+    "learningData": {
+      "status": "new",
+      "nextReviewDate": "2026-03-30T00:00:00Z",
+      "lastReviewDate": null,
+      "interval": 1,
+      "easeFactor": 2.5,
+      "successfulRecalls": 0,
+      "consecutiveCorrect": 0,
+      "totalAttempts": 0
+    },
+    "passageDomain": "thought_language",
+    "semanticCharge": "positive",
+    "partOfSpeech": "adjective",
+    "definition": "Possible to do or achieve with available means",
+    "synonyms": [
+      "practicable",
+      "viable",
+      "workable",
+      "achievable"
+    ],
+    "exampleSentence": "Engineers concluded that a bridge at that site was feasible but costly.",
+    "memoryHook": {
+      "kind": "sound_spelling",
+      "text": "Feasible = able to be done (think \"do-able\")."
+    },
+    "quizSentence": "The plan is ambitious, yet still feasible if funding arrives on schedule."
   },
   {
     "id": "87d8e7d2-afa9-422c-bf6d-60071c8bff56",
@@ -16768,7 +16912,7 @@
     "id": "28d1cd20-27ae-4762-9825-3482eac0e3ee",
     "word": "Figurative",
     "partOfSpeech": "adjective",
-    "definition": "Symbolic",
+    "definition": "Using figures of speech; not literal",
     "exampleSentence": "Using figurative language, Jane likened the storm to an angry bull.",
     "difficultyLevel": 3,
     "frequencyTier": 3,
@@ -17504,6 +17648,40 @@
     "quizSentence": "The suspicious spy cast a furtive glance around the room before dropping the secret package."
   },
   {
+    "id": "26d9eeac-b5a7-42de-9784-45b0790c39cf",
+    "word": "Galvanize",
+    "difficultyLevel": 3,
+    "frequencyTier": 2,
+    "category": "social-behavior",
+    "etymology": "From Luigi Galvani, whose experiments with electricity inspired the metaphor",
+    "learningData": {
+      "status": "new",
+      "nextReviewDate": "2026-03-30T00:00:00Z",
+      "lastReviewDate": null,
+      "interval": 1,
+      "easeFactor": 2.5,
+      "successfulRecalls": 0,
+      "consecutiveCorrect": 0,
+      "totalAttempts": 0
+    },
+    "passageDomain": "human_social",
+    "semanticCharge": "positive",
+    "partOfSpeech": "verb",
+    "definition": "To stimulate people into urgent action",
+    "synonyms": [
+      "spur",
+      "motivate",
+      "energize",
+      "rouse"
+    ],
+    "exampleSentence": "The leaked report galvanized students to organize a campus-wide forum.",
+    "memoryHook": {
+      "kind": "etymology_story",
+      "text": "Galvanize recalls an electric jolt that shocks people into motion."
+    },
+    "quizSentence": "A single compelling speech galvanized the coalition to act before the vote."
+  },
+  {
     "id": "78518a2e-6255-40bb-97f1-001f868f6854",
     "word": "Garish",
     "partOfSpeech": "adjective",
@@ -18057,7 +18235,7 @@
           "rail at",
           "hector"
         ],
-        "exampleSentence": "But this time the teacher harangued the class about the importance of brushing your teeth after chewing gum."
+        "exampleSentence": "The teacher harangued the class about brushing teeth after chewing gum."
       }
     ],
     "passageDomain": "human_social",
@@ -18357,7 +18535,7 @@
     "id": "1a7ad735-38fb-4d72-a2ef-6f11aa21797d",
     "word": "Hierarchy",
     "partOfSpeech": "noun",
-    "definition": "A system with ranked groups, usually according to.",
+    "definition": "A system of ranked groups, usually by authority or status",
     "exampleSentence": "Women found it very difficult to break into the upper ranks of the department’s hierarchy.",
     "difficultyLevel": 3,
     "frequencyTier": 1,
@@ -18789,6 +18967,40 @@
     "quizSentence": "The impecunious artist often traded his paintings for hot meals."
   },
   {
+    "id": "c4a5a496-6cac-44ba-969b-69efb6a6e283",
+    "word": "Impede",
+    "difficultyLevel": 3,
+    "frequencyTier": 2,
+    "category": "academic",
+    "etymology": "Latin impedire, from in- ('in') + pes ('foot') — to shackle the feet",
+    "learningData": {
+      "status": "new",
+      "nextReviewDate": "2026-03-30T00:00:00Z",
+      "lastReviewDate": null,
+      "interval": 1,
+      "easeFactor": 2.5,
+      "successfulRecalls": 0,
+      "consecutiveCorrect": 0,
+      "totalAttempts": 0
+    },
+    "passageDomain": "thought_language",
+    "semanticCharge": "negative",
+    "partOfSpeech": "verb",
+    "definition": "To obstruct or slow progress",
+    "synonyms": [
+      "hinder",
+      "block",
+      "hamper",
+      "thwart"
+    ],
+    "exampleSentence": "Outdated software impeded the team's ability to analyze the dataset quickly.",
+    "memoryHook": {
+      "kind": "morphology",
+      "text": "\"Im-\" (in) + \"ped\" (foot) = feet caught, movement blocked."
+    },
+    "quizSentence": "Bureaucratic delays impeded implementation of the approved reforms."
+  },
+  {
     "id": "4de4bff0-122d-4722-aa0f-214f1fe64319",
     "word": "Imperative",
     "difficultyLevel": 3,
@@ -19020,7 +19232,7 @@
           "bear on",
           "impact"
         ],
-        "exampleSentence": "I apologize for impinging upon you like this, but I really need to use your bathroom. Now."
+        "exampleSentence": "New rules may impinge on fishing rights long protected by local custom."
       }
     ],
     "passageDomain": "thought_language",
@@ -19102,7 +19314,7 @@
           "enforce",
           "apply"
         ],
-        "exampleSentence": "Do you have a knife or some other sort of implement that I could use to pry the lid off of this jar?"
+        "exampleSentence": "She used a metal implement to pry the stubborn lid off the jar."
       },
       {
         "partOfSpeech": "verb",
@@ -19113,14 +19325,14 @@
           "instrument",
           "device"
         ],
-        "exampleSentence": "After the first town curfew failed to stop the graffiti problem, the mayor implemented a new policy to use security cameras to catch perpetrators in the act."
+        "exampleSentence": "The mayor implemented a policy using cameras to catch graffiti vandals."
       }
     ],
     "passageDomain": "thought_language",
     "semanticCharge": "neutral",
     "memoryHook": null,
     "definition": "An instrument, utensil, tool",
-    "exampleSentence": "The council voted to implement reforms aimed at speeding permit approvals.",
+    "exampleSentence": "She used a metal implement to pry the stubborn lid off the jar.",
     "partOfSpeech": "noun",
     "synonyms": [
       "execute",
@@ -19450,7 +19662,7 @@
           "combustible",
           "igniting"
         ],
-        "exampleSentence": "If we catch the incendiary who screamed “bomb” in the middle of the soccer match, we’re going to put him in jail."
+        "exampleSentence": "The incendiary remark during the match nearly caused a riot in the stands."
       },
       {
         "partOfSpeech": "adjective",
@@ -19471,7 +19683,7 @@
       "text": "\"incend\" (fire) = a bomb or a speech specifically designed to cause massive fires or conflict."
     },
     "definition": "A person who agitates",
-    "exampleSentence": "The incendiary editorial sparked protests across campuses within hours of publication.",
+    "exampleSentence": "The incendiary remark during the match nearly caused a riot in the stands.",
     "partOfSpeech": "noun",
     "synonyms": [
       "inflammatory",
@@ -20186,7 +20398,7 @@
     "id": "46a4d3c7-8364-4d13-8869-8f34144020ec",
     "word": "Infusion",
     "partOfSpeech": "noun",
-    "definition": "An injection of one substance into another; the.",
+    "definition": "The process of steeping or injecting one substance into another",
     "exampleSentence": "The infusion of Eastern religion into Western philosophy created interesting new schools of thought.",
     "difficultyLevel": 3,
     "frequencyTier": 4,
@@ -20278,6 +20490,40 @@
       "text": "Genuine - someone with a highly innocent, trusting, and completely genuine nature."
     },
     "quizSentence": "Her ingenuous belief in the goodness of everyone made her an easy target for scams."
+  },
+  {
+    "id": "1c41f13e-34af-4da7-9abf-46bbb3ce48b2",
+    "word": "Inherent",
+    "difficultyLevel": 3,
+    "frequencyTier": 2,
+    "category": "intellect-judgment",
+    "etymology": "Latin inhaerere, from in- ('in') + haerere ('stick')",
+    "learningData": {
+      "status": "new",
+      "nextReviewDate": "2026-03-30T00:00:00Z",
+      "lastReviewDate": null,
+      "interval": 1,
+      "easeFactor": 2.5,
+      "successfulRecalls": 0,
+      "consecutiveCorrect": 0,
+      "totalAttempts": 0
+    },
+    "passageDomain": "thought_language",
+    "semanticCharge": "neutral",
+    "partOfSpeech": "adjective",
+    "definition": "Existing as a permanent, essential characteristic",
+    "synonyms": [
+      "intrinsic",
+      "built-in",
+      "innate",
+      "fundamental"
+    ],
+    "exampleSentence": "The author argues that bias is inherent in any single-source narrative.",
+    "memoryHook": {
+      "kind": "morphology",
+      "text": "Inherent = stuck inside as a core trait."
+    },
+    "quizSentence": "Risk is inherent in experimentation, but it can be measured and managed."
   },
   {
     "id": "b440c50c-a6f3-44ab-9ad2-140befe1f301",
@@ -20545,7 +20791,7 @@
     "id": "f7df5a30-cb0b-44ad-bac1-18d66b4b1b98",
     "word": "Inoculate",
     "partOfSpeech": "verb",
-    "definition": "To introduce a microorganism, serum, or vaccine into an.",
+    "definition": "To introduce a vaccine or serum to produce immunity",
     "exampleSentence": "Nurses inoculate infants against diseases that once disabled entire communities.",
     "difficultyLevel": 4,
     "frequencyTier": 5,
@@ -20708,7 +20954,7 @@
     "id": "c143d996-24aa-418e-ab98-3f90f38122b8",
     "word": "Insipid",
     "partOfSpeech": "adjective",
-    "definition": "Dull, boring",
+    "definition": "Lacking flavor, vigor, or interest",
     "exampleSentence": "The play was so insipid, I fell asleep halfway through.",
     "difficultyLevel": 4,
     "frequencyTier": 10,
@@ -21186,7 +21432,7 @@
     "id": "cf32e3bc-b5aa-41d9-9bb4-6b84980c6b12",
     "word": "Inure",
     "partOfSpeech": "verb",
-    "definition": "To cause someone or something to become accustomed to a.",
+    "definition": "To accustom someone to something difficult",
     "exampleSentence": "Twenty years in the salt mines inured the man to the discomforts of dirt and grime.",
     "difficultyLevel": 4,
     "frequencyTier": 10,
@@ -21529,7 +21775,7 @@
     "id": "a741bc4f-7206-4f8a-a13a-39221c44ea10",
     "word": "Juxtaposition",
     "partOfSpeech": "noun",
-    "definition": "The act of placing two things next to each other for.",
+    "definition": "The act of placing two things side by side for contrast",
     "exampleSentence": "The interior designer admired my juxtaposition of the yellow couch and green table.",
     "difficultyLevel": 5,
     "frequencyTier": 4,
@@ -21623,37 +21869,6 @@
     "quizSentence": "She deserves major kudos for organizing the charity gala all by herself."
   },
   {
-    "id": "5dacde45-4e98-4bc2-a53d-f5f82c586f3a",
-    "word": "Laceration",
-    "partOfSpeech": "noun",
-    "definition": "A cut, tear",
-    "exampleSentence": "The fall left a deep laceration that required stitches at urgent care.",
-    "difficultyLevel": 5,
-    "frequencyTier": 4,
-    "category": "perception-quality",
-    "synonyms": [
-      "slash",
-      "gash",
-      "rent",
-      "mangle"
-    ],
-    "etymology": "Latin *lacerāre* tears cloth or flesh; sarcasm can lacerate reputations with the same violence.",
-    "learningData": {
-      "status": "new",
-      "nextReviewDate": "2026-03-30T00:00:00Z",
-      "lastReviewDate": null,
-      "interval": 1,
-      "easeFactor": 2.5,
-      "successfulRecalls": 0,
-      "consecutiveCorrect": 0,
-      "totalAttempts": 0
-    },
-    "passageDomain": "thought_language",
-    "semanticCharge": "neutral",
-    "memoryHook": null,
-    "quizSentence": "The broken glass caused a deep laceration on his left forearm."
-  },
-  {
     "id": "a7d45912-c147-487b-8d1e-14849a2ee07b",
     "word": "Laconic",
     "partOfSpeech": "adjective",
@@ -21720,38 +21935,6 @@
       "text": "Language - speaking in a highly slow, tired, and lazy language because you have zero energy."
     },
     "quizSentence": "We spent a languid Sunday afternoon napping in the hammock."
-  },
-  {
-    "id": "6a7111cf-fc9e-413d-9bdf-2762b7fceef6",
-    "word": "Larceny",
-    "partOfSpeech": "noun",
-    "definition": "Obtaining another’s property by theft or trickery",
-    "exampleSentence": "Security footage identified the suspect charged with larceny from the campus bookstore.",
-    "difficultyLevel": 4,
-    "frequencyTier": 1,
-    "category": "law-ethics",
-    "synonyms": [
-      "theft",
-      "stealing",
-      "purloining",
-      "pilferage"
-    ],
-    "etymology": "Anglo-Norman *larcin* reaches back to *latrō* (‘robber’)—unlawful taking.",
-    "learningData": {
-      "status": "new",
-      "nextReviewDate": "2026-03-30T00:00:00Z",
-      "lastReviewDate": null,
-      "interval": 1,
-      "easeFactor": 2.5,
-      "successfulRecalls": 0,
-      "consecutiveCorrect": 0,
-      "totalAttempts": 0
-    },
-    "passageDomain": "power_culture",
-    "semanticCharge": "negative",
-    "memoryHook": null,
-    "semanticChargeIntensity": 3,
-    "quizSentence": "Shoplifting a candy bar is still considered an act of petty larceny."
   },
   {
     "id": "efe81f57-cf20-4069-9c12-b731167f88c7",
@@ -22048,7 +22231,7 @@
           "encumbrance",
           "vulnerability"
         ],
-        "exampleSentence": "Because she often lost her concentration and didn’t play defense, Marcy was a liability to the team."
+        "exampleSentence": "Her weak defense made Marcy a liability to the basketball team."
       }
     ],
     "passageDomain": "power_culture",
@@ -22593,7 +22776,7 @@
           "unmistakable",
           "self-evident"
         ],
-        "exampleSentence": "When I wrote the wrong sum on the chalkboard, my mistake was so manifest that the entire class burst into laughter."
+        "exampleSentence": "The wrong sum on the board was so manifest the class laughed aloud."
       },
       {
         "partOfSpeech": "verb",
@@ -22611,7 +22794,7 @@
     "semanticCharge": "neutral",
     "memoryHook": null,
     "definition": "Easily understandable, obvious",
-    "exampleSentence": "My mistake was so manifest that the entire class burst out laughing.",
+    "exampleSentence": "The wrong sum on the board was so manifest the class laughed aloud.",
     "partOfSpeech": "adjective",
     "synonyms": [
       "obvious",
@@ -23093,7 +23276,7 @@
           "arbitrate",
           "restrain"
         ],
-        "exampleSentence": "Because he found both the liberal and conservative proposals too excessive, Mr. Park sided with the moderates."
+        "exampleSentence": "Mr. Park chose a moderate position between liberal and conservative extremes."
       }
     ],
     "passageDomain": "thought_language",
@@ -23213,7 +23396,7 @@
     "id": "80b31c79-c947-402a-9922-de2fefbf0cc3",
     "word": "Morass",
     "partOfSpeech": "noun",
-    "definition": "A wet swampy bog; figuratively, something that traps and.",
+    "definition": "A swampy bog; a confusing, difficult situation",
     "exampleSentence": "When Theresa lost her job, she could not get out of her financial morass.",
     "difficultyLevel": 6,
     "frequencyTier": 9,
@@ -23593,7 +23776,7 @@
     "word": "Nefarious",
     "partOfSpeech": "adjective",
     "definition": "Heinously villainous",
-    "exampleSentence": "Dr. Meanman's nefarious plan to melt the ice caps was too impractical to fear.",
+    "exampleSentence": "Investigators uncovered a nefarious scheme to sell stolen identities online.",
     "difficultyLevel": 5,
     "frequencyTier": 5,
     "category": "law-ethics",
@@ -23916,6 +24099,55 @@
     "memoryHook": null,
     "semanticChargeIntensity": 2,
     "quizSentence": "The notorious pirate Blackbeard struck terror into the hearts of sailors everywhere."
+  },
+  {
+    "id": "23cb1976-4e65-4c75-acb5-ebf5f5839f31",
+    "word": "Notwithstanding",
+    "difficultyLevel": 4,
+    "frequencyTier": 2,
+    "category": "logic-reasoning",
+    "etymology": "Middle English not withstanding, literally 'not standing against'",
+    "learningData": {
+      "status": "new",
+      "nextReviewDate": "2026-03-30T00:00:00Z",
+      "lastReviewDate": null,
+      "interval": 1,
+      "easeFactor": 2.5,
+      "successfulRecalls": 0,
+      "consecutiveCorrect": 0,
+      "totalAttempts": 0
+    },
+    "passageDomain": "thought_language",
+    "semanticCharge": "neutral",
+    "senses": [
+      {
+        "partOfSpeech": "preposition",
+        "definition": "In spite of",
+        "synonyms": [
+          "despite",
+          "regardless of",
+          "even with",
+          "in defiance of"
+        ],
+        "exampleSentence": "Notwithstanding the rain, the march continued through downtown."
+      },
+      {
+        "partOfSpeech": "adverb",
+        "definition": "Nevertheless; all the same",
+        "synonyms": [
+          "nevertheless",
+          "nonetheless",
+          "still",
+          "yet"
+        ],
+        "exampleSentence": "The evidence was thin; notwithstanding, the jury reached a verdict."
+      }
+    ],
+    "memoryHook": {
+      "kind": "morphology",
+      "text": "Not with standing against = nothing standing in the way of the fact still being true."
+    },
+    "quizSentence": "The policy remained popular, notwithstanding fierce criticism from experts."
   },
   {
     "id": "471fbc61-f724-455a-b406-9d1c0ce3d8ac",
@@ -24379,6 +24611,40 @@
     "quizSentence": "I was being deliberately obtuse when I pretended not to understand his insult."
   },
   {
+    "id": "74fd9b99-990e-4242-93bb-5076ab555183",
+    "word": "Obviate",
+    "difficultyLevel": 4,
+    "frequencyTier": 3,
+    "category": "intellect-judgment",
+    "etymology": "Latin obviare, from ob- ('against') + via ('way') — to meet and block",
+    "learningData": {
+      "status": "new",
+      "nextReviewDate": "2026-03-30T00:00:00Z",
+      "lastReviewDate": null,
+      "interval": 1,
+      "easeFactor": 2.5,
+      "successfulRecalls": 0,
+      "consecutiveCorrect": 0,
+      "totalAttempts": 0
+    },
+    "passageDomain": "thought_language",
+    "semanticCharge": "positive",
+    "partOfSpeech": "verb",
+    "definition": "To remove a need or difficulty beforehand",
+    "synonyms": [
+      "prevent",
+      "preclude",
+      "avert",
+      "forestall"
+    ],
+    "exampleSentence": "Clear instructions obviated the need for repeated follow-up emails.",
+    "memoryHook": {
+      "kind": "morphology",
+      "text": "\"Ob-\" (against) + \"via\" (way) = block the problem before it arrives."
+    },
+    "quizSentence": "Backup systems obviate panic when a primary server fails."
+  },
+  {
     "id": "84c8e352-a349-4de9-a94b-baa5d44e5ea1",
     "word": "Odious",
     "partOfSpeech": "adjective",
@@ -24417,7 +24683,7 @@
     "id": "f0814109-4b0f-4b61-982d-cac50e2424a6",
     "word": "Officious",
     "partOfSpeech": "adjective",
-    "definition": "Offering one’s services when they are neither wanted nor.",
+    "definition": "Excessively eager to offer unwanted help or advice",
     "exampleSentence": "Brenda resented Allan’s officious behavior when he selected colors that might best improve her artwork.",
     "difficultyLevel": 5,
     "frequencyTier": 5,
@@ -24787,7 +25053,7 @@
     "id": "0f026d24-be85-4cd5-ba61-6c4e082faf95",
     "word": "Pacific",
     "partOfSpeech": "adjective",
-    "definition": "Soothing",
+    "definition": "Peaceful, calm",
     "exampleSentence": "The chemistry professor’s pacific demeanor helped the class remain calm after the experiment exploded.",
     "difficultyLevel": 5,
     "frequencyTier": 5,
@@ -24852,37 +25118,6 @@
     },
     "semanticChargeIntensity": 1,
     "quizSentence": "Adding a spoonful of honey made the bitter herbal tea much more palatable."
-  },
-  {
-    "id": "4b4f515f-2e38-4a0b-9a5b-8be8c6896026",
-    "word": "Palette",
-    "partOfSpeech": "adjective",
-    "definition": "A range of colors or qualities",
-    "exampleSentence": "The painting's palette of colors matched the intense emotions the work evoked.",
-    "difficultyLevel": 5,
-    "frequencyTier": 5,
-    "category": "arts-literature",
-    "synonyms": [
-      "gamut",
-      "spectrum",
-      "repertoire",
-      "range"
-    ],
-    "etymology": "French painter’s boards lent metaphor to any spread of available tones.",
-    "learningData": {
-      "status": "new",
-      "nextReviewDate": "2026-03-30T00:00:00Z",
-      "lastReviewDate": null,
-      "interval": 1,
-      "easeFactor": 2.5,
-      "successfulRecalls": 0,
-      "consecutiveCorrect": 0,
-      "totalAttempts": 0
-    },
-    "passageDomain": "power_culture",
-    "semanticCharge": "neutral",
-    "memoryHook": null,
-    "quizSentence": "The sunset painted the horizon with a vibrant palette of oranges, pinks, and purples."
   },
   {
     "id": "f4b9bf23-c50c-4405-ab76-ab3d8a416ce6",
@@ -25282,7 +25517,7 @@
     "id": "41c87f00-9b7d-4426-b292-20dce8025cd1",
     "word": "Pathology",
     "partOfSpeech": "noun",
-    "definition": "A deviation from the normal",
+    "definition": "A disease or disorder; abnormal bodily condition",
     "exampleSentence": "Dr. Hastings had difficulty identifying the precise nature of Brian’s pathology.",
     "difficultyLevel": 5,
     "frequencyTier": 6,
@@ -25659,7 +25894,7 @@
     "word": "Permeate",
     "partOfSpeech": "verb",
     "definition": "To spread throughout, saturate",
-    "exampleSentence": "Mrs. Huxtable was annoyed that the wet dog’s odor had permeated the furniture’s upholstery.",
+    "exampleSentence": "The smell of smoke began to permeate every room in the building.",
     "difficultyLevel": 4,
     "frequencyTier": 3,
     "category": "science-engineering",
@@ -25722,6 +25957,40 @@
     },
     "semanticChargeIntensity": 3,
     "quizSentence": "The pernicious weed choked out all the native plants in the garden bed."
+  },
+  {
+    "id": "98f68d4d-90e0-4c06-8445-e9d90f2ce9f6",
+    "word": "Perpetuate",
+    "difficultyLevel": 3,
+    "frequencyTier": 2,
+    "category": "social-behavior",
+    "etymology": "Latin perpetuare, from perpetuus ('continuous')",
+    "learningData": {
+      "status": "new",
+      "nextReviewDate": "2026-03-30T00:00:00Z",
+      "lastReviewDate": null,
+      "interval": 1,
+      "easeFactor": 2.5,
+      "successfulRecalls": 0,
+      "consecutiveCorrect": 0,
+      "totalAttempts": 0
+    },
+    "passageDomain": "human_social",
+    "semanticCharge": "negative",
+    "partOfSpeech": "verb",
+    "definition": "To cause to continue indefinitely",
+    "synonyms": [
+      "prolong",
+      "sustain",
+      "maintain",
+      "preserve"
+    ],
+    "exampleSentence": "Stereotypes perpetuated by media can shape public policy for decades.",
+    "memoryHook": {
+      "kind": "morphology",
+      "text": "Perpetual = forever — perpetuate keeps something going without end."
+    },
+    "quizSentence": "Without reform, the loophole could perpetuate inequality in college admissions."
   },
   {
     "id": "e52a7662-1bb9-4d9e-90aa-796204dadc81",
@@ -25992,7 +26261,7 @@
     "id": "40e75a9d-1e57-4a9d-94be-4df6ef1bcf95",
     "word": "Phlegmatic",
     "partOfSpeech": "adjective",
-    "definition": "Uninterested, unresponsive",
+    "definition": "Calm and unemotional; slow to react",
     "exampleSentence": "Monique feared her dog was sick when he showed a phlegmatic response to his toy.",
     "difficultyLevel": 5,
     "frequencyTier": 6,
@@ -26499,7 +26768,7 @@
     "id": "63ca7135-12c8-4888-a474-7dcf3ef8a15d",
     "word": "Portent",
     "partOfSpeech": "noun",
-    "definition": "An omen",
+    "definition": "A sign or warning of something to come",
     "exampleSentence": "The dark clouds were a portent of the severe storm that followed.",
     "difficultyLevel": 5,
     "frequencyTier": 6,
@@ -26528,6 +26797,55 @@
       "text": "Important - a highly important sign that something terrible is about to happen."
     },
     "quizSentence": "A black cat crossing your path is considered an unlucky portent in many cultures."
+  },
+  {
+    "id": "dae8ca0a-8238-4b81-baa2-cb3b1b1b17df",
+    "word": "Postulate",
+    "difficultyLevel": 4,
+    "frequencyTier": 2,
+    "category": "logic-reasoning",
+    "etymology": "Latin postulare ('to demand, assume')",
+    "learningData": {
+      "status": "new",
+      "nextReviewDate": "2026-03-30T00:00:00Z",
+      "lastReviewDate": null,
+      "interval": 1,
+      "easeFactor": 2.5,
+      "successfulRecalls": 0,
+      "consecutiveCorrect": 0,
+      "totalAttempts": 0
+    },
+    "passageDomain": "thought_language",
+    "semanticCharge": "neutral",
+    "senses": [
+      {
+        "partOfSpeech": "verb",
+        "definition": "To assume as true for the sake of argument or theory",
+        "synonyms": [
+          "hypothesize",
+          "propose",
+          "posit",
+          "presume"
+        ],
+        "exampleSentence": "The essay postulates that readers already accept the author's definition of fairness."
+      },
+      {
+        "partOfSpeech": "noun",
+        "definition": "Something taken as self-evident or assumed without proof",
+        "synonyms": [
+          "assumption",
+          "premise",
+          "axiom",
+          "presupposition"
+        ],
+        "exampleSentence": "The entire proof rests on a postulate that critics say is outdated."
+      }
+    ],
+    "memoryHook": {
+      "kind": "morphology",
+      "text": "Postulate = put forward a starting claim before you prove the rest."
+    },
+    "quizSentence": "Economists postulate a link between trust and investment, then test it empirically."
   },
   {
     "id": "3d4aedb7-f0b1-406a-8880-9dcde211ecb2",
@@ -26662,6 +26980,55 @@
     },
     "semanticChargeIntensity": 3,
     "quizSentence": "The mountain goat stood fearlessly on the very edge of the rocky precipice."
+  },
+  {
+    "id": "db304833-e2ca-465a-a073-26f158c85992",
+    "word": "Precipitate",
+    "difficultyLevel": 3,
+    "frequencyTier": 2,
+    "category": "academic",
+    "etymology": "Latin praecipitare, from praeceps ('headlong')",
+    "learningData": {
+      "status": "new",
+      "nextReviewDate": "2026-03-30T00:00:00Z",
+      "lastReviewDate": null,
+      "interval": 1,
+      "easeFactor": 2.5,
+      "successfulRecalls": 0,
+      "consecutiveCorrect": 0,
+      "totalAttempts": 0
+    },
+    "passageDomain": "science_world",
+    "semanticCharge": "neutral",
+    "senses": [
+      {
+        "partOfSpeech": "verb",
+        "definition": "To cause something to happen suddenly",
+        "synonyms": [
+          "trigger",
+          "hasten",
+          "bring about",
+          "spark"
+        ],
+        "exampleSentence": "Trade disputes precipitated a sharp drop in consumer confidence."
+      },
+      {
+        "partOfSpeech": "verb",
+        "definition": "To cause a substance to separate from a solution (chemistry)",
+        "synonyms": [
+          "settle out",
+          "crystallize",
+          "deposit",
+          "form a solid"
+        ],
+        "exampleSentence": "Cooling the mixture caused salts to precipitate from the liquid."
+      }
+    ],
+    "memoryHook": {
+      "kind": "morphology",
+      "text": "Precipitate = headlong — events fall fast when you precipitate them."
+    },
+    "quizSentence": "A single miscalculation can precipitate a chain of failures in complex systems."
   },
   {
     "id": "1cc0fcd7-7e44-41fe-8952-b460e0bdfcf2",
@@ -26803,7 +27170,7 @@
     "id": "15235322-efbd-4774-8936-c99355561eb2",
     "word": "Prepossessing",
     "partOfSpeech": "adjective",
-    "definition": "Occupying the mind to the exclusion of other thoughts or.",
+    "definition": "Attractive or appealing in appearance",
     "exampleSentence": "His prepossessing appearance made it impossible for me to think of anything else.",
     "difficultyLevel": 6,
     "frequencyTier": 10,
@@ -26837,7 +27204,7 @@
     "id": "159bbf4a-aae3-462a-996e-fce4862c8716",
     "word": "Presage",
     "partOfSpeech": "noun",
-    "definition": "An omen",
+    "definition": "An omen foreshadowing a future event",
     "exampleSentence": "When my uncle's old war wound ached, he took it as a presage of storms.",
     "difficultyLevel": 6,
     "frequencyTier": 10,
@@ -27202,7 +27569,7 @@
     "word": "Profligate",
     "partOfSpeech": "adjective",
     "definition": "Dissolute, extravagant",
-    "exampleSentence": "The profligate gambler loved to drink, spend money, steal, cheat, and hang out with prostitutes.",
+    "exampleSentence": "The profligate heir squandered his fortune on reckless bets within a year.",
     "difficultyLevel": 6,
     "frequencyTier": 10,
     "category": "emotion-character",
@@ -27843,41 +28210,6 @@
     "quizSentence": "The judge imposed harsh punitive damages to ensure the corporation never repeated the offense."
   },
   {
-    "id": "70ba2d80-3579-4efa-b12a-68c31a16d32f",
-    "word": "Putrid",
-    "partOfSpeech": "adjective",
-    "definition": "Rotten, foul",
-    "exampleSentence": "Those rotten eggs smell putrid.",
-    "difficultyLevel": 5,
-    "frequencyTier": 7,
-    "category": "science-engineering",
-    "synonyms": [
-      "rotten",
-      "rank",
-      "decayed",
-      "fetid"
-    ],
-    "etymology": "*Putēre*, stink, named organic betrayal noses recognize before calendars admit spoilage.",
-    "learningData": {
-      "status": "new",
-      "nextReviewDate": "2026-03-30T00:00:00Z",
-      "lastReviewDate": null,
-      "interval": 1,
-      "easeFactor": 2.5,
-      "successfulRecalls": 0,
-      "consecutiveCorrect": 0,
-      "totalAttempts": 0
-    },
-    "passageDomain": "science_world",
-    "semanticCharge": "negative",
-    "memoryHook": {
-      "kind": "sound_spelling",
-      "text": "Puke - rot so foul it makes you want to puke."
-    },
-    "semanticChargeIntensity": 3,
-    "quizSentence": "A putrid stench arose from the forgotten bag of rotting potatoes in the pantry."
-  },
-  {
     "id": "aa9e0060-e145-4231-b10c-2ab2dfd24d58",
     "word": "Quagmire",
     "partOfSpeech": "noun",
@@ -27942,6 +28274,55 @@
     "semanticCharge": "neutral",
     "memoryHook": null,
     "quizSentence": "We stayed in a quaint little bed-and-breakfast covered in climbing ivy."
+  },
+  {
+    "id": "105437e9-848f-4beb-89f0-a1f83284690b",
+    "word": "Qualify",
+    "difficultyLevel": 3,
+    "frequencyTier": 1,
+    "category": "logic-reasoning",
+    "etymology": "Medieval Latin qualificare, from Latin qualis ('of what kind') + facere ('make')",
+    "learningData": {
+      "status": "new",
+      "nextReviewDate": "2026-03-30T00:00:00Z",
+      "lastReviewDate": null,
+      "interval": 1,
+      "easeFactor": 2.5,
+      "successfulRecalls": 0,
+      "consecutiveCorrect": 0,
+      "totalAttempts": 0
+    },
+    "passageDomain": "thought_language",
+    "semanticCharge": "neutral",
+    "senses": [
+      {
+        "partOfSpeech": "verb",
+        "definition": "To limit or modify a claim",
+        "synonyms": [
+          "moderate",
+          "restrict",
+          "nuance",
+          "temper"
+        ],
+        "exampleSentence": "The author qualifies the headline by adding important exceptions in the next sentence."
+      },
+      {
+        "partOfSpeech": "verb",
+        "definition": "To meet the requirements for something",
+        "synonyms": [
+          "be eligible",
+          "meet standards",
+          "pass muster",
+          "satisfy conditions"
+        ],
+        "exampleSentence": "Only three candidates qualified for the final round of interviews."
+      }
+    ],
+    "memoryHook": {
+      "kind": "morphology",
+      "text": "On the SAT, qualify often means add limits — like adding qualities that narrow a claim."
+    },
+    "quizSentence": "A good thesis qualifies broad claims so they match the evidence presented."
   },
   {
     "id": "2c11b227-346e-4a6d-891d-8a467b84d52e",
@@ -28283,7 +28664,7 @@
     "id": "bd17af0e-4069-49d5-9a43-1f11b5aca950",
     "word": "Raucous",
     "partOfSpeech": "adjective",
-    "definition": "Loud, boisterous",
+    "definition": "Harshly loud and disorderly",
     "exampleSentence": "Sarah’s neighbors called the cops when her house party got too raucous.",
     "difficultyLevel": 6,
     "frequencyTier": 10,
@@ -28555,7 +28936,7 @@
           "align",
           "balance"
         ],
-        "exampleSentence": "Alou had to reconcile his skepticism about the existence of aliens with the fact that he was looking at a flying saucer."
+        "exampleSentence": "She tried to reconcile her skepticism with the UFO she had filmed."
       }
     ],
     "passageDomain": "human_social",
@@ -28814,6 +29195,40 @@
     "quizSentence": "The mother bird will chew the worms and regurgitate them for her hungry chicks."
   },
   {
+    "id": "2d8524c3-4914-485d-a7ea-337aeef1d6d3",
+    "word": "Reiterate",
+    "difficultyLevel": 2,
+    "frequencyTier": 2,
+    "category": "language-communication",
+    "etymology": "Latin reiterare, from re- ('again') + iterare ('to repeat')",
+    "learningData": {
+      "status": "new",
+      "nextReviewDate": "2026-03-30T00:00:00Z",
+      "lastReviewDate": null,
+      "interval": 1,
+      "easeFactor": 2.5,
+      "successfulRecalls": 0,
+      "consecutiveCorrect": 0,
+      "totalAttempts": 0
+    },
+    "passageDomain": "thought_language",
+    "semanticCharge": "neutral",
+    "partOfSpeech": "verb",
+    "definition": "To repeat for emphasis or clarity",
+    "synonyms": [
+      "repeat",
+      "restate",
+      "emphasize again",
+      "recapitulate"
+    ],
+    "exampleSentence": "The judge reiterated that the ruling applied only to future cases.",
+    "memoryHook": {
+      "kind": "morphology",
+      "text": "\"Re-\" (again) + \"iterate\" (repeat) = say it again on purpose."
+    },
+    "quizSentence": "The coach reiterated the same strategy because the team kept drifting off plan."
+  },
+  {
     "id": "e8753669-a627-4f04-bf25-fe28563a5210",
     "word": "Relegate",
     "difficultyLevel": 6,
@@ -28851,7 +29266,7 @@
           "entrust",
           "transfer"
         ],
-        "exampleSentence": "After spilling a drink on a customer’s shirt, the waiter found himself relegated to the least lucrative shift."
+        "exampleSentence": "After spilling wine on a guest, the waiter was relegated to the worst shift."
       }
     ],
     "passageDomain": "power_culture",
@@ -29433,7 +29848,7 @@
           "aversion",
           "loathing"
         ],
-        "exampleSentence": "With a deft movement of her wrist and a punch to the stomach, Lacy repulsed Jack’s attempt to kiss her."
+        "exampleSentence": "Lacy repulsed Jack's attempt to kiss her with a sharp turn away."
       }
     ],
     "passageDomain": "self_character",
@@ -29548,61 +29963,6 @@
       "text": "Send back - cancel an order and send it entirely back."
     },
     "quizSentence": "The university will rescind your acceptance letter if you fail your final high school exams."
-  },
-  {
-    "id": "28c2d3fd-bb16-4721-8115-2f56cee4d6ff",
-    "word": "Reservoir",
-    "difficultyLevel": 3,
-    "frequencyTier": 1,
-    "category": "science-engineering",
-    "etymology": "French *réservoir* keeps captured water—literally something that *reserves* liquid.",
-    "learningData": {
-      "status": "new",
-      "nextReviewDate": "2026-03-30T00:00:00Z",
-      "lastReviewDate": null,
-      "interval": 1,
-      "easeFactor": 2.5,
-      "successfulRecalls": 0,
-      "consecutiveCorrect": 0,
-      "totalAttempts": 0
-    },
-    "senses": [
-      {
-        "partOfSpeech": "noun",
-        "definition": "Reserves, large supply",
-        "synonyms": [
-          "water store",
-          "impoundment",
-          "dammed lake",
-          "basin"
-        ],
-        "exampleSentence": "Igor the Indomitable had quite a reservoir of strengh and could lift ten tons, even after running 700 miles, jumping over three mountains, and swimming across an ocean."
-      },
-      {
-        "partOfSpeech": "noun",
-        "definition": "A body of water used for storing water",
-        "synonyms": [
-          "supply",
-          "stockpile",
-          "reserve",
-          "pool"
-        ],
-        "exampleSentence": "After graduation, the more rebellious members of the senior class jumped into the town reservoir used for drinking water."
-      }
-    ],
-    "passageDomain": "science_world",
-    "semanticCharge": "neutral",
-    "memoryHook": null,
-    "definition": "Reserves, large supply",
-    "exampleSentence": "Even after a marathon, Igor drew on a vast reservoir of strength.",
-    "partOfSpeech": "noun",
-    "synonyms": [
-      "water store",
-      "impoundment",
-      "dammed lake",
-      "basin"
-    ],
-    "quizSentence": "The city relies on a massive underground reservoir for its drinking water supply."
   },
   {
     "id": "b4d98ea8-ebff-4ea5-b5eb-1054af02c35b",
@@ -30179,7 +30539,7 @@
     "id": "1513b8e6-e124-44e1-a3e2-a456f44dba35",
     "word": "Saccharine",
     "partOfSpeech": "adjective",
-    "definition": "Sickeningly sweet",
+    "definition": "Overly or insincerely sweet",
     "exampleSentence": "Tom’s saccharine manner, although intended to make him popular, actually repelled his classmates.",
     "difficultyLevel": 4,
     "frequencyTier": 3,
@@ -30383,7 +30743,7 @@
     "word": "Sanctimonious",
     "partOfSpeech": "adjective",
     "definition": "Giving a hypocritical appearance of piety",
-    "exampleSentence": "The sanctimonious Bertrand lectured on commandments yet stole cars for extra cash.",
+    "exampleSentence": "The sanctimonious critic preached thrift while hiding his own debts.",
     "difficultyLevel": 4,
     "frequencyTier": 3,
     "category": "emotion-character",
@@ -30582,6 +30942,40 @@
       "text": "Scrap - checking every scrap because honesty demands perfect detail."
     },
     "quizSentence": "The scrupulous accountant caught an error of merely three cents in the massive ledger."
+  },
+  {
+    "id": "06a31b5d-3b33-4310-b586-299b18c795c0",
+    "word": "Scrutinize",
+    "difficultyLevel": 3,
+    "frequencyTier": 2,
+    "category": "intellect-judgment",
+    "etymology": "Latin scrutinium, from scrutari ('to search through rubbish carefully')",
+    "learningData": {
+      "status": "new",
+      "nextReviewDate": "2026-03-30T00:00:00Z",
+      "lastReviewDate": null,
+      "interval": 1,
+      "easeFactor": 2.5,
+      "successfulRecalls": 0,
+      "consecutiveCorrect": 0,
+      "totalAttempts": 0
+    },
+    "passageDomain": "thought_language",
+    "semanticCharge": "neutral",
+    "partOfSpeech": "verb",
+    "definition": "To examine closely and critically",
+    "synonyms": [
+      "inspect",
+      "analyze",
+      "pore over",
+      "study closely"
+    ],
+    "exampleSentence": "Peer reviewers scrutinize methods sections for hidden flaws.",
+    "memoryHook": {
+      "kind": "etymology_story",
+      "text": "Scrutinize = search through every detail as if hunting for hidden trash."
+    },
+    "quizSentence": "Voters scrutinize campaign promises when economic data tell a different story."
   },
   {
     "id": "598f31d6-4b89-49ea-8c5d-495cc83d3a01",
@@ -31441,7 +31835,7 @@
     "word": "Strenuous",
     "partOfSpeech": "adjective",
     "definition": "Requiring tremendous energy or stamina",
-    "exampleSentence": "Running a marathon is quite a strenuous task. So is watching an entire Star Trek marathon.",
+    "exampleSentence": "Training for a marathon is a strenuous challenge for any runner.",
     "difficultyLevel": 4,
     "frequencyTier": 4,
     "category": "perception-quality",
@@ -31635,6 +32029,74 @@
     "memoryHook": null,
     "semanticChargeIntensity": 2,
     "quizSentence": "The submissive dog rolled onto its back to show surrender to the larger alpha wolf."
+  },
+  {
+    "id": "f891f79f-2d2c-4d72-9e80-467b9b8feac4",
+    "word": "Subsequently",
+    "difficultyLevel": 2,
+    "frequencyTier": 1,
+    "category": "logic-reasoning",
+    "etymology": "Latin subsequens, from sub- ('after') + sequi ('to follow')",
+    "learningData": {
+      "status": "new",
+      "nextReviewDate": "2026-03-30T00:00:00Z",
+      "lastReviewDate": null,
+      "interval": 1,
+      "easeFactor": 2.5,
+      "successfulRecalls": 0,
+      "consecutiveCorrect": 0,
+      "totalAttempts": 0
+    },
+    "passageDomain": "thought_language",
+    "semanticCharge": "neutral",
+    "partOfSpeech": "adverb",
+    "definition": "Afterward; at a later time",
+    "synonyms": [
+      "later",
+      "afterward",
+      "then",
+      "after that"
+    ],
+    "exampleSentence": "The team published its pilot results and subsequently launched a larger trial.",
+    "memoryHook": {
+      "kind": "morphology",
+      "text": "\"Sub-\" (after) + \"sequ-\" (follow) = what follows later in sequence."
+    },
+    "quizSentence": "The law passed in May and subsequently changed hiring practices across the state."
+  },
+  {
+    "id": "b84202a2-fe1a-4161-8203-41f2f63392b2",
+    "word": "Substantiate",
+    "difficultyLevel": 4,
+    "frequencyTier": 2,
+    "category": "logic-reasoning",
+    "etymology": "Latin substantiare, from substantia ('substance, essence')",
+    "learningData": {
+      "status": "new",
+      "nextReviewDate": "2026-03-30T00:00:00Z",
+      "lastReviewDate": null,
+      "interval": 1,
+      "easeFactor": 2.5,
+      "successfulRecalls": 0,
+      "consecutiveCorrect": 0,
+      "totalAttempts": 0
+    },
+    "passageDomain": "thought_language",
+    "semanticCharge": "neutral",
+    "partOfSpeech": "verb",
+    "definition": "To provide evidence that supports a claim",
+    "synonyms": [
+      "corroborate",
+      "verify",
+      "confirm",
+      "back up"
+    ],
+    "exampleSentence": "The journalist could not substantiate the rumor without named sources.",
+    "memoryHook": {
+      "kind": "morphology",
+      "text": "Substance = solid proof — substantiate gives a claim substance."
+    },
+    "quizSentence": "Charts alone cannot substantiate causation without a plausible mechanism."
   },
   {
     "id": "d960da4e-da0b-4612-bf99-00f3f6b2646c",
@@ -31840,40 +32302,6 @@
     "quizSentence": "Since they could not conceive, the couple decided to hire a surrogate mother."
   },
   {
-    "id": "cca11146-269a-40ad-8f60-b367b15a45d2",
-    "word": "Swarthy",
-    "partOfSpeech": "adjective",
-    "definition": "Of dark color or complexion",
-    "exampleSentence": "When he got drunk, Robinson’s white skin became rather swarthy.",
-    "difficultyLevel": 4,
-    "frequencyTier": 5,
-    "category": "perception-quality",
-    "synonyms": [
-      "dark-complexioned",
-      "dusky",
-      "brown-skinned",
-      "swart"
-    ],
-    "etymology": "Old English *sweart* warmed into *swarthy* for deep sun-seasoned hue.",
-    "learningData": {
-      "status": "new",
-      "nextReviewDate": "2026-03-30T00:00:00Z",
-      "lastReviewDate": null,
-      "interval": 1,
-      "easeFactor": 2.5,
-      "successfulRecalls": 0,
-      "consecutiveCorrect": 0,
-      "totalAttempts": 0
-    },
-    "passageDomain": "thought_language",
-    "semanticCharge": "neutral",
-    "memoryHook": {
-      "kind": "sound_spelling",
-      "text": "Weather-line - outdoor life etched into complexion (literary \"swarth\" tones)."
-    },
-    "quizSentence": "The pirate captain had a rough, swarthy complexion from years of sailing in the sun."
-  },
-  {
     "id": "cc58e54b-62da-44ff-ada0-c1ef7e35f440",
     "word": "Sycophant",
     "partOfSpeech": "noun",
@@ -31907,6 +32335,40 @@
     },
     "semanticChargeIntensity": 2,
     "quizSentence": "The king's court was filled with groveling sycophants desperate for royal favor."
+  },
+  {
+    "id": "3f5a5e74-99f8-4e56-a591-5457f699dd68",
+    "word": "Synthesize",
+    "difficultyLevel": 3,
+    "frequencyTier": 2,
+    "category": "logic-reasoning",
+    "etymology": "Greek syntithenai, from syn- ('together') + tithenai ('to place')",
+    "learningData": {
+      "status": "new",
+      "nextReviewDate": "2026-03-30T00:00:00Z",
+      "lastReviewDate": null,
+      "interval": 1,
+      "easeFactor": 2.5,
+      "successfulRecalls": 0,
+      "consecutiveCorrect": 0,
+      "totalAttempts": 0
+    },
+    "passageDomain": "thought_language",
+    "semanticCharge": "neutral",
+    "partOfSpeech": "verb",
+    "definition": "To combine separate elements into a coherent whole",
+    "synonyms": [
+      "integrate",
+      "merge",
+      "combine",
+      "fuse"
+    ],
+    "exampleSentence": "The essay synthesizes archival research with oral histories into one narrative.",
+    "memoryHook": {
+      "kind": "morphology",
+      "text": "\"Syn-\" (together) + \"thesis\" (placing) = place ideas together into one whole."
+    },
+    "quizSentence": "Strong conclusions synthesize conflicting studies instead of citing only one."
   },
   {
     "id": "0f05bbbf-7fad-40d0-8e14-e700dffaf8f6",
@@ -32049,7 +32511,7 @@
     "id": "497b0f1e-c245-4c85-9ca0-cb6c16f3945c",
     "word": "Tedious",
     "partOfSpeech": "adjective",
-    "definition": "Dull, boring",
+    "definition": "Tiresome because of length or dullness",
     "exampleSentence": "As the professor droned on, the lecture grew increasingly tedious.",
     "difficultyLevel": 3,
     "frequencyTier": 1,
@@ -32972,7 +33434,7 @@
     "word": "Ubiquitous",
     "partOfSpeech": "adjective",
     "definition": "Existing everywhere, widespread",
-    "exampleSentence": "It seems that everyone in the United States has a television. The technology is ubiquitous here.",
+    "exampleSentence": "Smartphones have become ubiquitous in classrooms worldwide.",
     "difficultyLevel": 4,
     "frequencyTier": 6,
     "category": "perception-quality",
@@ -33101,6 +33563,40 @@
     },
     "semanticChargeIntensity": 2,
     "quizSentence": "The unctuous car salesman used excessive flattery to try and secure a quick commission."
+  },
+  {
+    "id": "1a9bb3e5-145f-4754-bb83-bf7da214ace5",
+    "word": "Undermine",
+    "difficultyLevel": 3,
+    "frequencyTier": 2,
+    "category": "logic-reasoning",
+    "etymology": "From under + mine — to dig beneath foundations",
+    "learningData": {
+      "status": "new",
+      "nextReviewDate": "2026-03-30T00:00:00Z",
+      "lastReviewDate": null,
+      "interval": 1,
+      "easeFactor": 2.5,
+      "successfulRecalls": 0,
+      "consecutiveCorrect": 0,
+      "totalAttempts": 0
+    },
+    "passageDomain": "thought_language",
+    "semanticCharge": "negative",
+    "partOfSpeech": "verb",
+    "definition": "To weaken gradually or indirectly",
+    "synonyms": [
+      "erode",
+      "sabotage",
+      "subvert",
+      "impair"
+    ],
+    "exampleSentence": "Selective quoting can undermine an otherwise careful argument.",
+    "memoryHook": {
+      "kind": "etymology_story",
+      "text": "To undermine is to dig under a wall until it collapses."
+    },
+    "quizSentence": "Repeated delays undermined public trust in the agency's forecasts."
   },
   {
     "id": "43cc90eb-e862-47d3-be9b-eb016175cf1a",
@@ -34156,7 +34652,7 @@
     "id": "f4175c7f-091f-4424-9121-d3687876d915",
     "word": "Vociferous",
     "partOfSpeech": "adjective",
-    "definition": "Loud, boisterous",
+    "definition": "Expressing opinions loudly and insistently",
     "exampleSentence": "I’m tired of his vociferous whining so I’m breaking up with him.",
     "difficultyLevel": 4,
     "frequencyTier": 7,

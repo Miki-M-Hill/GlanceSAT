@@ -10,6 +10,8 @@ import WidgetKit
 /// Calendar-day vocabulary batch shared by Today, the daily quiz, and widgets.
 enum DailyWordBatchService {
     static let maxDailyWords = 10
+    /// Pre-computed days in the App Group rolling queue (today … today+3).
+    static let rollingQueueDayCount = 4
     static let batchFilename = "daily_word_batch.json"
     static let batchHistoryFilename = "daily_batch_history.json"
     private static let maxBatchHistoryEntries = 60
@@ -77,9 +79,10 @@ enum DailyWordBatchService {
     private static func selectSeededNewBatch(
         modelContext: ModelContext,
         referenceDate: Date,
-        baseline: DiagnosticBaseline
+        baseline: DiagnosticBaseline,
+        limit: Int? = nil
     ) -> [Word] {
-        let cap = selectionCap
+        let cap = limit ?? selectionCap
         let dayKey = calendarDayKey(for: referenceDate)
         let band = difficultyBand(for: baseline)
 
@@ -233,14 +236,35 @@ enum DailyWordBatchService {
         ]
     }
 
-    nonisolated static func calendarDayKey(for date: Date = Date(), calendar: Calendar = .current) -> String {
-        let dayStart = calendar.startOfDay(for: date)
+    nonisolated static func calendarDayKey(
+        for date: Date = Date(),
+        offsetDays: Int = 0,
+        calendar: Calendar = .current
+    ) -> String {
+        let base = calendar.startOfDay(for: date)
+        let dayStart: Date
+        if offsetDays == 0 {
+            dayStart = base
+        } else if let shifted = calendar.date(byAdding: .day, value: offsetDays, to: base) {
+            dayStart = shifted
+        } else {
+            dayStart = base
+        }
         let formatter = DateFormatter()
         formatter.calendar = calendar
         formatter.locale = Locale(identifier: "en_US_POSIX")
         formatter.timeZone = calendar.timeZone
         formatter.dateFormat = "yyyy-MM-dd"
         return formatter.string(from: dayStart)
+    }
+
+    nonisolated static func rollingQueueDayKeys(
+        for referenceDate: Date = Date(),
+        calendar: Calendar = .current
+    ) -> [String] {
+        (0..<rollingQueueDayCount).map {
+            calendarDayKey(for: referenceDate, offsetDays: $0, calendar: calendar)
+        }
     }
 
     /// Clamps manual clock-forward skew: future `yyyy-MM-dd` keys are treated as reference "today".
@@ -265,11 +289,10 @@ enum DailyWordBatchService {
         return trimmed > calendarDayKey(for: referenceDate, calendar: calendar)
     }
 
-    /// Ensures today's batch exists, reconciles widget SRS, and syncs the widget snapshot.
+    /// Ensures today's batch exists, maintains a four-day rolling queue, reconciles widget SRS, and syncs snapshots.
     ///
-    /// **Calendar-day lock:** Once today's ten `wordIDs` are written, they stay fixed until midnight
-    /// (local calendar). Refreshes resolve those rows in order only—no due-filter or backfill swaps—so
-    /// passive widget exposure and the evening quiz use the same ten headwords all day.
+    /// **Calendar-day lock:** Once today's word IDs are written, they stay fixed until midnight.
+    /// Future days are pre-computed so widgets stay fresh without a host launch.
     @MainActor
     @discardableResult
     static func refresh(modelContext: ModelContext, referenceDate: Date = Date()) async -> [Word] {
@@ -278,59 +301,161 @@ enum DailyWordBatchService {
         let calendar = Calendar.current
         let todayKey = calendarDayKey(for: referenceDate, calendar: calendar)
         WidgetDailyState.clearIfNotToday(todayKey: todayKey)
-        let previousKey = loadPersistedBatch()?.calendarDayKey
-        let storedBatch = loadPersistedBatch()
 
-        if let stored = storedBatch,
-           !stored.wordIDs.isEmpty,
-           stored.calendarDayKey != todayKey,
-           !isFutureCalendarDayKey(stored.calendarDayKey, referenceDate: referenceDate, calendar: calendar) {
-            appendToBatchHistory(dayKey: stored.calendarDayKey, wordIDs: stored.wordIDs)
+        var queue = loadPersistedQueue()?.dailyBatches ?? [:]
+        let requiredKeys = rollingQueueDayKeys(for: referenceDate, calendar: calendar)
+        let hadPastDays = queue.keys.contains { $0 < todayKey && !(queue[$0]?.isEmpty ?? true) }
+        archiveStaleQueueEntries(queue: &queue, todayKey: todayKey)
+
+        let cap = selectionCap
+        let hadTodayBatch = !(queue[todayKey]?.isEmpty ?? true)
+
+        if !hadTodayBatch {
+            let pool = selectNewBatchPool(
+                modelContext: modelContext,
+                referenceDate: referenceDate,
+                totalCount: cap * rollingQueueDayCount,
+                excluding: []
+            )
+            assignSlices(from: pool, toKeys: requiredKeys, dailyCap: cap, queue: &queue)
+        } else {
+            let missingFutureKeys = requiredKeys.dropFirst().filter { key in
+                queue[key]?.isEmpty != false
+            }
+            if !missingFutureKeys.isEmpty {
+                let reservedIDs = Set(requiredKeys.compactMap { queue[$0] }.flatMap { $0 })
+                let pool = selectNewBatchPool(
+                    modelContext: modelContext,
+                    referenceDate: referenceDate,
+                    totalCount: missingFutureKeys.count * cap,
+                    excluding: reservedIDs
+                )
+                assignSlices(
+                    from: pool,
+                    toKeys: Array(missingFutureKeys),
+                    dailyCap: cap,
+                    queue: &queue
+                )
+            }
         }
 
-        let words: [Word]
-        let persistedWordIDs: [UUID]
+        queue = pruneQueue(queue, keeping: requiredKeys)
 
-        if let stored = storedBatch,
-           stored.calendarDayKey == todayKey,
-           !isFutureCalendarDayKey(stored.calendarDayKey, referenceDate: referenceDate, calendar: calendar),
-           !stored.wordIDs.isEmpty {
-            let resolved = resolveWords(wordIDs: stored.wordIDs, modelContext: modelContext)
+        var todayWords: [Word]
+        if let todayIDs = queue[todayKey], !todayIDs.isEmpty {
+            let resolved = resolveWords(wordIDs: todayIDs, modelContext: modelContext)
             if resolved.isEmpty {
-                let fresh = selectNewBatch(modelContext: modelContext, referenceDate: referenceDate)
-                words = fresh
-                persistedWordIDs = fresh.map(\.id)
+                let pool = selectNewBatchPool(
+                    modelContext: modelContext,
+                    referenceDate: referenceDate,
+                    totalCount: cap * rollingQueueDayCount,
+                    excluding: []
+                )
+                assignSlices(from: pool, toKeys: requiredKeys, dailyCap: cap, queue: &queue)
+                todayWords = resolveWords(wordIDs: queue[todayKey] ?? [], modelContext: modelContext)
             } else {
-                var resolvedWords = resolved
-                if resolvedWords.count < selectionCap {
-                    // Same calendar day: a free-tier batch may only have 3 IDs; premium unlocks up to 10.
-                    resolvedWords = backfillDueWords(
-                        into: resolvedWords,
+                todayWords = resolved
+                if todayWords.count < cap {
+                    todayWords = backfillDueWords(
+                        into: todayWords,
                         modelContext: modelContext,
                         referenceDate: referenceDate,
                         dayKey: todayKey
                     )
+                    queue[todayKey] = todayWords.map(\.id)
                 }
-                words = resolvedWords
-                persistedWordIDs = resolvedWords.map(\.id)
             }
         } else {
-            let fresh = selectNewBatch(modelContext: modelContext, referenceDate: referenceDate)
-            words = fresh
-            persistedWordIDs = fresh.map(\.id)
+            let pool = selectNewBatchPool(
+                modelContext: modelContext,
+                referenceDate: referenceDate,
+                totalCount: cap * rollingQueueDayCount,
+                excluding: []
+            )
+            assignSlices(from: pool, toKeys: requiredKeys, dailyCap: cap, queue: &queue)
+            todayWords = resolveWords(wordIDs: queue[todayKey] ?? [], modelContext: modelContext)
         }
 
-        let capped = applySubscriptionCap(words)
-        persistBatch(wordIDs: capped.map(\.id), dayKey: todayKey)
-        WidgetSnapshotWriter.writeSnapshot(words: capped, calendarDayKey: todayKey, modelContext: modelContext)
+        let cappedToday = applySubscriptionCap(todayWords)
+        queue[todayKey] = cappedToday.map(\.id)
+        persistQueue(queue)
+
+        var snapshotBatches: [String: [Word]] = [:]
+        for key in requiredKeys {
+            guard let ids = queue[key], !ids.isEmpty else { continue }
+            snapshotBatches[key] = applySubscriptionCap(
+                resolveWords(wordIDs: ids, modelContext: modelContext)
+            )
+        }
+        WidgetSnapshotWriter.writeSnapshot(dailyBatches: snapshotBatches, modelContext: modelContext)
         EntitlementManager.shared.syncWidgetSubscriptionState()
         WidgetTimelineReloader.scheduleVocabularyReload()
 
-        if previousKey != todayKey {
+        if hadPastDays || !hadTodayBatch {
             WidgetTimelineReloader.scheduleAllWidgetReload()
         }
 
-        return capped
+        return cappedToday
+    }
+
+    /// Post-quiz: SRS invalidates pre-computed future days — flush and rebuild the rolling queue.
+    @MainActor
+    static func flushFutureQueueAndRefresh(
+        modelContext: ModelContext,
+        referenceDate: Date = Date()
+    ) async {
+        let calendar = Calendar.current
+        var queue = loadPersistedQueue()?.dailyBatches ?? [:]
+        for offset in 1..<rollingQueueDayCount {
+            let futureKey = calendarDayKey(for: referenceDate, offsetDays: offset, calendar: calendar)
+            queue.removeValue(forKey: futureKey)
+        }
+        persistQueue(queue)
+        _ = await refresh(modelContext: modelContext, referenceDate: referenceDate)
+    }
+
+    @MainActor
+    private static func assignSlices(
+        from pool: [Word],
+        toKeys keys: [String],
+        dailyCap: Int,
+        queue: inout [String: [UUID]]
+    ) {
+        let slices = partitionPool(pool, dailyCap: dailyCap, dayCount: keys.count)
+        for (index, key) in keys.enumerated() where index < slices.count {
+            let ids = slices[index].map(\.id)
+            guard !ids.isEmpty else { continue }
+            queue[key] = ids
+        }
+    }
+
+    @MainActor
+    private static func partitionPool(_ pool: [Word], dailyCap: Int, dayCount: Int) -> [[Word]] {
+        guard dailyCap > 0, dayCount > 0 else { return [] }
+        var slices: [[Word]] = []
+        slices.reserveCapacity(dayCount)
+        for index in 0..<dayCount {
+            let start = index * dailyCap
+            let end = min(start + dailyCap, pool.count)
+            if start < end {
+                slices.append(Array(pool[start..<end]))
+            } else {
+                slices.append([])
+            }
+        }
+        return slices
+    }
+
+    private static func archiveStaleQueueEntries(queue: inout [String: [UUID]], todayKey: String) {
+        for (key, ids) in queue where key < todayKey && !ids.isEmpty {
+            appendToBatchHistory(dayKey: key, wordIDs: ids)
+        }
+        queue = queue.filter { $0.key >= todayKey }
+    }
+
+    private static func pruneQueue(_ queue: [String: [UUID]], keeping requiredKeys: [String]) -> [String: [UUID]] {
+        let allowed = Set(requiredKeys)
+        return queue.filter { allowed.contains($0.key) }
     }
 
     @MainActor
@@ -391,17 +516,55 @@ enum DailyWordBatchService {
 
     @MainActor
     private static func selectNewBatch(modelContext: ModelContext, referenceDate: Date) -> [Word] {
-        if let baseline = onboardingSeedingBaselineIfNeeded() {
+        selectNewBatchPool(
+            modelContext: modelContext,
+            referenceDate: referenceDate,
+            totalCount: selectionCap,
+            excluding: []
+        )
+    }
+
+    @MainActor
+    private static func selectNewBatchPool(
+        modelContext: ModelContext,
+        referenceDate: Date,
+        totalCount: Int,
+        excluding: Set<UUID> = []
+    ) -> [Word] {
+        guard totalCount > 0 else { return [] }
+
+        if excluding.isEmpty, let baseline = onboardingSeedingBaselineIfNeeded() {
             let seeded = selectSeededNewBatch(
                 modelContext: modelContext,
                 referenceDate: referenceDate,
-                baseline: baseline
+                baseline: baseline,
+                limit: totalCount
             )
             markOnboardingSeedingApplied(baseline)
-            return seeded
+            if seeded.count >= totalCount {
+                return Array(seeded.prefix(totalCount))
+            }
+            var selected = seeded
+            var selectedIDs = Set(selected.map(\.id))
+            let dayKey = calendarDayKey(for: referenceDate)
+            let remaining = totalCount - selected.count
+            if remaining > 0 {
+                let extra = selectNewBatchPool(
+                    modelContext: modelContext,
+                    referenceDate: referenceDate,
+                    totalCount: remaining,
+                    excluding: selectedIDs
+                )
+                for word in extra where !selectedIDs.contains(word.id) {
+                    selected.append(word)
+                    selectedIDs.insert(word.id)
+                    if selected.count >= totalCount { break }
+                }
+            }
+            return Array(selected.prefix(totalCount))
         }
 
-        let cap = selectionCap
+        let cap = totalCount
         let dayKey = calendarDayKey(for: referenceDate)
 
         var reviewDescriptor = FetchDescriptor<Word>(
@@ -414,9 +577,12 @@ enum DailyWordBatchService {
 
         var srsReviewWords: [Word] = (try? modelContext.fetch(reviewDescriptor)) ?? []
         srsReviewWords = shuffledDailySelection(srsReviewWords, dayKey: dayKey + "-review")
+        if !excluding.isEmpty {
+            srsReviewWords.removeAll { excluding.contains($0.id) }
+        }
 
         var selected = Array(srsReviewWords.prefix(cap))
-        let selectedIDs = Set(selected.map(\.id))
+        let selectedIDs = Set(selected.map(\.id)).union(excluding)
 
         if selected.count < cap {
             let remaining = cap - selected.count
@@ -433,7 +599,7 @@ enum DailyWordBatchService {
             return Array(selected.prefix(cap))
         }
 
-        let exclusionSet = Set(selected.map(\.id))
+        let exclusionSet = Set(selected.map(\.id)).union(excluding)
         let fallback = selectCatalogFallbackBatch(
             modelContext: modelContext,
             limit: cap - selected.count,
@@ -448,7 +614,7 @@ enum DailyWordBatchService {
         return selectCatalogFallbackBatch(
             modelContext: modelContext,
             limit: cap,
-            excluding: [],
+            excluding: excluding,
             dayKey: dayKey
         )
     }
@@ -568,10 +734,40 @@ enum DailyWordBatchService {
         return resolved
     }
 
-    private struct PersistedDailyWordBatch: Codable {
-        var calendarDayKey: String
-        var wordIDs: [UUID]
+    private struct PersistedDailyWordBatchQueue: Codable {
+        var dailyBatches: [String: [UUID]]
         var generatedAt: Date
+
+        init(dailyBatches: [String: [UUID]], generatedAt: Date = Date()) {
+            self.dailyBatches = dailyBatches
+            self.generatedAt = generatedAt
+        }
+
+        init(from decoder: Decoder) throws {
+            let container = try decoder.container(keyedBy: CodingKeys.self)
+            if let batches = try container.decodeIfPresent([String: [UUID]].self, forKey: .dailyBatches) {
+                dailyBatches = batches
+                generatedAt = try container.decode(Date.self, forKey: .generatedAt)
+            } else {
+                let dayKey = try container.decode(String.self, forKey: .calendarDayKey)
+                let wordIDs = try container.decode([UUID].self, forKey: .wordIDs)
+                dailyBatches = [dayKey: wordIDs]
+                generatedAt = try container.decode(Date.self, forKey: .generatedAt)
+            }
+        }
+
+        func encode(to encoder: Encoder) throws {
+            var container = encoder.container(keyedBy: CodingKeys.self)
+            try container.encode(dailyBatches, forKey: .dailyBatches)
+            try container.encode(generatedAt, forKey: .generatedAt)
+        }
+
+        private enum CodingKeys: String, CodingKey {
+            case dailyBatches
+            case generatedAt
+            case calendarDayKey
+            case wordIDs
+        }
     }
 
     /// Reads today's persisted batch IDs without touching SwiftData (for early quiz prefetch at launch).
@@ -579,12 +775,13 @@ enum DailyWordBatchService {
         referenceDate: Date = Date(),
         calendar: Calendar = .current
     ) -> [UUID] {
-        guard let batch = loadPersistedBatch(),
-              batch.calendarDayKey == calendarDayKey(for: referenceDate, calendar: calendar),
-              !isFutureCalendarDayKey(batch.calendarDayKey, referenceDate: referenceDate, calendar: calendar) else {
+        let todayKey = calendarDayKey(for: referenceDate, calendar: calendar)
+        guard let queue = loadPersistedQueue()?.dailyBatches,
+              let ids = queue[todayKey],
+              !ids.isEmpty else {
             return []
         }
-        return batch.wordIDs
+        return ids
     }
 
     /// Resolves today's persisted batch without running a full `refresh` (cold-boot handoff from bootstrap).
@@ -599,23 +796,19 @@ enum DailyWordBatchService {
         return applySubscriptionCap(resolveWords(wordIDs: ids, modelContext: modelContext))
     }
 
-    private static func loadPersistedBatch() -> PersistedDailyWordBatch? {
+    private static func loadPersistedQueue() -> PersistedDailyWordBatchQueue? {
         AppGroupFileLock.withLock {
             guard let url = batchFileURL,
                   let data = try? Data(contentsOf: url) else {
                 return nil
             }
-            return try? JSONDecoder().decode(PersistedDailyWordBatch.self, from: data)
+            return try? JSONDecoder().decode(PersistedDailyWordBatchQueue.self, from: data)
         }
     }
 
-    private static func persistBatch(wordIDs: [UUID], dayKey: String) {
+    private static func persistQueue(_ dailyBatches: [String: [UUID]], generatedAt: Date = Date()) {
         AppGroupFileLock.withLock {
-            let batch = PersistedDailyWordBatch(
-                calendarDayKey: dayKey,
-                wordIDs: wordIDs,
-                generatedAt: Date()
-            )
+            let batch = PersistedDailyWordBatchQueue(dailyBatches: dailyBatches, generatedAt: generatedAt)
             guard let url = batchFileURL,
                   let data = try? JSONEncoder().encode(batch) else {
                 return

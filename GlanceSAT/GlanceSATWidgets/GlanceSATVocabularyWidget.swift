@@ -14,7 +14,7 @@ struct GlanceSATEntry: TimelineEntry {
     let isPostQuizCompletedDay: Bool
     let isDailyLimitLocked: Bool
     let streakDays: Int
-    /// Snapshot `calendarDayKey` does not match the widget's local today (midnight / timezone).
+    /// No pre-computed batch for the widget's local today (queue exhausted — open app to refresh).
     let isStaleSnapshot: Bool
 
     init(
@@ -68,22 +68,23 @@ struct GlanceSATProvider: TimelineProvider {
 
             if !WidgetPrefsReader.hasPremiumAccess(),
                WidgetPrefsReader.isFreemiumDailyLimitReached() {
-                let entry = Self.lockedEntry(date: now, payload: payload)
+                let entry = Self.lockedEntry(date: now, payload: payload, todayKey: todayKey)
                 completion(Timeline(entries: [entry], policy: .atEnd))
                 return
             }
 
-            if payload.calendarDayKey != todayKey {
+            guard let todayWords = WidgetTimelineBuilder.wordsForDay(todayKey, in: payload) else {
+                let fallback = payload.dailyBatches.values.first?.first ?? .placeholder
                 let entry = GlanceSATEntry(
                     date: now,
-                    word: payload.words.first ?? .placeholder,
+                    word: fallback,
                     isStaleSnapshot: true
                 )
                 completion(Timeline(entries: [entry], policy: .atEnd))
                 return
             }
 
-            let visibleWords = WidgetInteractionStore.visibleWords(from: payload.words)
+            let visibleWords = WidgetInteractionStore.visibleWords(from: todayWords)
             let words = visibleWords.isEmpty ? [.placeholder] : visibleWords
 
             let entries = WidgetTimelineBuilder.buildVocabularyEntries(
@@ -103,18 +104,19 @@ struct GlanceSATProvider: TimelineProvider {
 
         if !WidgetPrefsReader.hasPremiumAccess(),
            WidgetPrefsReader.isFreemiumDailyLimitReached() {
-            return lockedEntry(date: date, payload: payload)
+            return lockedEntry(date: date, payload: payload, todayKey: todayKey)
         }
 
-        if payload.calendarDayKey != todayKey {
+        guard let todayWords = WidgetTimelineBuilder.wordsForDay(todayKey, in: payload) else {
+            let fallback = payload.dailyBatches.values.first?.first ?? .placeholder
             return GlanceSATEntry(
                 date: date,
-                word: payload.words.first ?? .placeholder,
+                word: fallback,
                 isStaleSnapshot: true
             )
         }
 
-        let words = WidgetInteractionStore.visibleWords(from: payload.words)
+        let words = WidgetInteractionStore.visibleWords(from: todayWords)
         guard !words.isEmpty else {
             return GlanceSATEntry(date: date, word: .placeholder)
         }
@@ -137,10 +139,13 @@ struct GlanceSATProvider: TimelineProvider {
         )
     }
 
-    private static func lockedEntry(date: Date, payload: WidgetSnapshotPayload) -> GlanceSATEntry {
-        GlanceSATEntry(
+    private static func lockedEntry(date: Date, payload: WidgetSnapshotPayload, todayKey: String) -> GlanceSATEntry {
+        let word = WidgetTimelineBuilder.wordsForDay(todayKey, in: payload)?.first
+            ?? payload.dailyBatches.values.first?.first
+            ?? .placeholder
+        return GlanceSATEntry(
             date: date,
-            word: payload.words.first ?? .placeholder,
+            word: word,
             isDailyLimitLocked: true,
             streakDays: WidgetPrefsReader.streakDays()
         )

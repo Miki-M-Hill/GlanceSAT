@@ -21,7 +21,10 @@ struct GlanceSATQuizWidgetRootView: View {
             if entry.isStaleSnapshot {
                 GlanceSATWidgetStaleView(family: family, deepLinkURL: deepLinkURL)
             } else if entry.isCelebrating {
-                GlanceSATWidgetCelebrationView(family: family)
+                GlanceSATWidgetCelebrationView(
+                    family: family,
+                    streakDays: WidgetPrefsReader.streakDays()
+                )
             } else if entry.isResting {
                 GlanceSATWidgetRestView(
                     entry: GlanceSATEntry(

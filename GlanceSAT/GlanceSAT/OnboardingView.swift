@@ -278,7 +278,7 @@ struct OnboardingView: View {
                     if isFirstSAT == false {
                         VStack(alignment: .center, spacing: 24) {
                             VStack(alignment: .center, spacing: 14) {
-                                Text("Where are you currently at in Reading & Writing?")
+                                Text("What is your current Reading & Writing level?")
                                     .font(.system(size: 18, weight: .semibold))
                                     .foregroundStyle(OnboardingColors.primaryText)
                                     .lineSpacing(4)
@@ -463,34 +463,52 @@ struct OnboardingView: View {
     }
 
     private var widgetScreen: some View {
-        OnboardingViewport { metrics in
-            VStack(alignment: .center, spacing: 0) {
-                OnboardingHeaderBlock(
-                    title: "Add Glance to your lock screen",
-                    metrics: metrics
-                )
+        GeometryReader { proxy in
+            let metrics = OnboardingLayoutMetrics.resolve(height: proxy.size.height)
+            let verticalInset = metrics.isCompact ? 12.0 : 16.0
+            let contentMinHeight = max(0, proxy.size.height - (verticalInset * 2))
 
-                Spacer(minLength: 40)
+            ScrollView(.vertical, showsIndicators: false) {
+                VStack(alignment: .center, spacing: metrics.widgetSectionSpacing) {
+                    OnboardingHeaderBlock(
+                        title: "Add Glance to your lock screen",
+                        metrics: metrics
+                    )
 
-                LockScreenWordCarousel()
-                    .frame(maxWidth: .infinity)
-                    .frame(height: metrics.lockScreenHeight)
+                    LockScreenStaticPreview(isCompact: metrics.isCompact)
 
-                Spacer(minLength: 40)
-
-                HStack {
-                    Spacer(minLength: 0)
-                    VStack(alignment: .leading, spacing: 16) {
-                        WidgetInstallStep(number: 1, text: "Touch and hold your Lock Screen")
-                        WidgetInstallStep(number: 2, text: "Tap Customize, then Add Widgets")
-                        WidgetInstallStep(number: 3, text: "Choose Glance and place your vocabulary widget")
-                    }
-                    Spacer(minLength: 0)
+                    widgetInstallSteps
                 }
-
-                Spacer(minLength: 0)
+                .frame(maxWidth: .infinity, alignment: .top)
+                .frame(minHeight: contentMinHeight, alignment: .top)
+                .padding(.horizontal, OnboardingLayout.horizontalPadding)
+                .padding(.top, verticalInset)
+                .padding(.bottom, verticalInset)
             }
+            .frame(width: proxy.size.width, height: proxy.size.height)
         }
+    }
+
+    private var widgetInstallSteps: some View {
+        VStack(alignment: .leading, spacing: 14) {
+            WidgetInstallStep(
+                number: 1,
+                text: "Long-press your Lock Screen and tap Customize."
+            )
+            WidgetInstallStep(
+                number: 2,
+                text: "Tap the widget area below the time."
+            )
+            WidgetInstallStep(
+                number: 3,
+                text: "Select Glance from the widget list."
+            )
+            WidgetInstallStep(
+                number: 4,
+                text: "Add the widget, then tap Done."
+            )
+        }
+        .frame(maxWidth: .infinity, alignment: .leading)
     }
 
     // MARK: - Bottom chrome
@@ -594,7 +612,7 @@ struct OnboardingView: View {
             }
         }
         .padding(.horizontal, OnboardingLayout.horizontalPadding)
-        .padding(.top, 12)
+        .padding(.top, page == OnboardingFlowPage.widgetInstall ? 28 : 12)
         .padding(.bottom, 24)
         .background(
             OnboardingColors.linen.opacity(0.96)
@@ -998,6 +1016,8 @@ struct OnboardingLayoutMetrics {
     let lockScreenHeight: CGFloat
     let pickerHeight: CGFloat
     let widgetPlaceholderHeight: CGFloat
+    /// Even gaps on the widget-install screen (header → preview → steps → CTA).
+    let widgetSectionSpacing: CGFloat
 
     static func resolve(height: CGFloat = UIScreen.main.bounds.height) -> OnboardingLayoutMetrics {
         let isCompact = height < 700
@@ -1006,7 +1026,8 @@ struct OnboardingLayoutMetrics {
             sectionBreak: isCompact ? 28 : 40,
             lockScreenHeight: isCompact ? 188 : 228,
             pickerHeight: isCompact ? 112 : 132,
-            widgetPlaceholderHeight: isCompact ? 88 : 108
+            widgetPlaceholderHeight: isCompact ? 88 : 108,
+            widgetSectionSpacing: isCompact ? 24 : 32
         )
     }
 }
@@ -1395,6 +1416,10 @@ private struct PersonalizedPlanInfographic: View {
     let dreamScoreLabel: String?
     let isCompact: Bool
 
+    private var usesMomentumGrowingTileGrid: Bool {
+        startingPoint == .momentumGrowing
+    }
+
     var body: some View {
         VStack(alignment: .center, spacing: isCompact ? 28 : 36) {
             VStack(alignment: .leading, spacing: isCompact ? 22 : 28) {
@@ -1412,30 +1437,35 @@ private struct PersonalizedPlanInfographic: View {
                 )
             }
             .frame(maxWidth: .infinity, alignment: .leading)
+            .onboardingPremiumCard(cornerRadius: 20, padding: isCompact ? 16 : 20)
 
             VStack(spacing: isCompact ? 12 : 14) {
                 HStack(alignment: .top, spacing: isCompact ? 12 : 16) {
                     PersonalizedPlanTile(
                         symbol: "calendar",
                         value: satTestDate?.displayTitle ?? "-",
-                        isCompact: isCompact
+                        isCompact: isCompact,
+                        lockSquareAspect: usesMomentumGrowingTileGrid
                     )
                     PersonalizedPlanTile(
                         symbol: "flag.fill",
                         value: startingPoint?.rawValue ?? "-",
-                        isCompact: isCompact
+                        isCompact: isCompact,
+                        lockSquareAspect: usesMomentumGrowingTileGrid
                     )
                 }
                 HStack(alignment: .top, spacing: isCompact ? 12 : 16) {
                     PersonalizedPlanTile(
                         symbol: "bell.fill",
                         value: reminderTime,
-                        isCompact: isCompact
+                        isCompact: isCompact,
+                        lockSquareAspect: usesMomentumGrowingTileGrid
                     )
                     PersonalizedPlanTile(
                         symbol: "target",
                         value: dreamScoreLabel ?? "-",
-                        isCompact: isCompact
+                        isCompact: isCompact,
+                        lockSquareAspect: usesMomentumGrowingTileGrid
                     )
                 }
             }
@@ -1468,9 +1498,11 @@ private struct PersonalizedPlanTile: View {
     let symbol: String
     let value: String
     let isCompact: Bool
+    /// Equal square tiles when the starting level is Momentum Growing (longer label).
+    var lockSquareAspect: Bool = false
 
     var body: some View {
-        VStack(spacing: isCompact ? 6 : 8) {
+        let content = VStack(spacing: isCompact ? 6 : 8) {
             Image(systemName: symbol)
                 .font(.system(size: isCompact ? 20 : 22, weight: .semibold))
                 .foregroundStyle(OnboardingColors.sageGreen)
@@ -1482,10 +1514,18 @@ private struct PersonalizedPlanTile: View {
                 .multilineTextAlignment(.center)
                 .lineLimit(2)
                 .minimumScaleFactor(0.5)
-                .frame(maxWidth: .infinity)
+                .frame(maxWidth: .infinity, maxHeight: lockSquareAspect ? .infinity : nil, alignment: .center)
         }
-        .frame(maxWidth: .infinity)
+        .frame(maxWidth: .infinity, maxHeight: lockSquareAspect ? .infinity : nil)
         .padding(.vertical, isCompact ? 10 : 12)
+
+        Group {
+            if lockSquareAspect {
+                content.aspectRatio(1, contentMode: .fit)
+            } else {
+                content
+            }
+        }
         .onboardingTileCard()
     }
 }
@@ -1513,7 +1553,46 @@ private struct WidgetInstallStep: View {
     }
 }
 
-// MARK: - Lock screen carousel (Screen 2)
+// MARK: - Lock screen carousel (Screen 1)
+
+private struct LockScreenStaticPreview: View {
+    var isCompact: Bool = false
+
+    private var cornerRadius: CGFloat { isCompact ? 34 : 40 }
+    private var cardWidth: CGFloat { isCompact ? 172 : 200 }
+    private var cardHeight: CGFloat { isCompact ? 224 : 260 }
+    private var slideHeight: CGFloat { isCompact ? 128 : 148 }
+    private var shadowPadding: CGFloat { isCompact ? 10 : 14 }
+
+    var body: some View {
+        ZStack {
+            RoundedRectangle(cornerRadius: cornerRadius, style: .continuous)
+                .fill(OnboardingColors.sageGreen)
+                .shadow(color: OnboardingColors.sageGreen.opacity(0.28), radius: isCompact ? 16 : 20, y: isCompact ? 8 : 10)
+
+            VStack(spacing: isCompact ? 12 : 14) {
+                Image(systemName: "lock.fill")
+                    .font(.system(size: 12, weight: .semibold))
+                    .foregroundStyle(Color.white.opacity(0.75))
+
+                LockScreenCarouselSlide(
+                    clock: "10:00",
+                    word: "glance",
+                    definition: "(v.) study smart, not hard"
+                )
+                .frame(height: slideHeight)
+            }
+            .padding(.horizontal, isCompact ? 18 : 22)
+            .padding(.vertical, isCompact ? 20 : 24)
+            .clipShape(RoundedRectangle(cornerRadius: cornerRadius, style: .continuous))
+        }
+        .frame(width: cardWidth, height: cardHeight)
+        .padding(.vertical, shadowPadding)
+        .frame(maxWidth: .infinity)
+        .accessibilityElement(children: .combine)
+        .accessibilityLabel("Lock Screen widget preview showing glance, study smart, not hard")
+    }
+}
 
 private struct LockScreenWordCarousel: View {
     private struct WordMoment: Identifiable {
@@ -1779,7 +1858,7 @@ private struct LockScreenCarouselSlide: View {
                 Text(definition)
                     .font(.system(size: 12, weight: .regular))
                     .foregroundStyle(Color.white.opacity(0.88))
-                    .lineLimit(1)
+                    .lineLimit(2)
                     .minimumScaleFactor(0.75)
                     .multilineTextAlignment(.center)
             }

@@ -161,7 +161,7 @@ struct TodayHubLayoutMetrics: Equatable {
         case .day0: base = 60
         case .day1: base = 108
         case .day3: base = 98
-        case .day7: base = 86
+        case .day7, .day14, .day30, .day60: base = 86
         }
         return scaled(base)
     }

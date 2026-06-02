@@ -7,24 +7,47 @@ import Foundation
 
 struct WidgetSnapshotPayload: Codable, Sendable {
     var updatedAt: Date
-    var calendarDayKey: String
-    var words: [WidgetWordSnapshot]
+    var dailyBatches: [String: [WidgetWordSnapshot]]
+
+    init(updatedAt: Date, dailyBatches: [String: [WidgetWordSnapshot]]) {
+        self.updatedAt = updatedAt
+        self.dailyBatches = dailyBatches
+    }
 
     init(updatedAt: Date, calendarDayKey: String, words: [WidgetWordSnapshot]) {
         self.updatedAt = updatedAt
-        self.calendarDayKey = calendarDayKey
-        self.words = words
+        self.dailyBatches = [calendarDayKey: words]
     }
 
     init(from decoder: Decoder) throws {
         let container = try decoder.container(keyedBy: CodingKeys.self)
         updatedAt = try container.decode(Date.self, forKey: .updatedAt)
-        calendarDayKey = try container.decodeIfPresent(String.self, forKey: .calendarDayKey) ?? ""
-        words = try container.decode([WidgetWordSnapshot].self, forKey: .words)
+
+        if let batches = try container.decodeIfPresent([String: [WidgetWordSnapshot]].self, forKey: .dailyBatches) {
+            dailyBatches = batches
+        } else {
+            let legacyDayKey = try container.decodeIfPresent(String.self, forKey: .calendarDayKey) ?? ""
+            let legacyWords = try container.decodeIfPresent([WidgetWordSnapshot].self, forKey: .words) ?? []
+            dailyBatches = legacyDayKey.isEmpty ? [:] : [legacyDayKey: legacyWords]
+        }
+    }
+
+    func encode(to encoder: Encoder) throws {
+        var container = encoder.container(keyedBy: CodingKeys.self)
+        try container.encode(updatedAt, forKey: .updatedAt)
+        try container.encode(dailyBatches, forKey: .dailyBatches)
+    }
+
+    func words(forDayKey dayKey: String) -> [WidgetWordSnapshot]? {
+        guard let words = dailyBatches[dayKey], !words.isEmpty else { return nil }
+        return words
     }
 
     private enum CodingKeys: String, CodingKey {
-        case updatedAt, calendarDayKey, words
+        case updatedAt
+        case dailyBatches
+        case calendarDayKey
+        case words
     }
 }
 
@@ -166,7 +189,7 @@ enum WidgetPayloadLoader {
 
         guard let data = try? Data(contentsOf: url),
               let decoded = try? JSONDecoder().decode(WidgetSnapshotPayload.self, from: data),
-              !decoded.words.isEmpty else {
+              !decoded.dailyBatches.isEmpty else {
             return fallbackPayload()
         }
 
@@ -178,8 +201,7 @@ enum WidgetPayloadLoader {
     private static func fallbackPayload() -> WidgetSnapshotPayload {
         WidgetSnapshotPayload(
             updatedAt: Date(),
-            calendarDayKey: WidgetCalendar.dayKey(),
-            words: [WidgetWordSnapshot.placeholder]
+            dailyBatches: [WidgetCalendar.dayKey(): [WidgetWordSnapshot.placeholder]]
         )
     }
 }

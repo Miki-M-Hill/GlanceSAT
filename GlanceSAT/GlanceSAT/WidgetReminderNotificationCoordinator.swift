@@ -42,7 +42,7 @@ enum WidgetReminderNotificationCoordinator {
         let body: String
         if hasLockInstalled, !hasHomeInstalled {
             title = "Add the Home Screen widget"
-            body = "Keep SAT words nearby throughout the day with the Glance Home Screen widget."
+            body = "Add Glance to your Home Screen to keep your daily words in plain sight alongside your apps."
         } else if hasHomeInstalled, !hasLockInstalled {
             title = "Add the Lock Screen widget"
             body = "See SAT words naturally each time you check your phone."

@@ -26,6 +26,7 @@ xcuserdata/
 
 # Local tooling
 .venv-icon/
+scripts/.pydeps/
 
 # macOS
 .DS_Store

@@ -8,9 +8,14 @@ import WidgetKit
 
 /// Deterministic half-hour widget timeline (10 daily words ↔ 48 slots).
 enum WidgetTimelineBuilder {
-    static let celebrationDuration: TimeInterval = 300
+    static let celebrationDuration: TimeInterval = 60
     static let slotsPerDay = GlanceSATWidgetConstants.timelineSlotsPerDay
     static let slotMinutes = GlanceSATWidgetConstants.rotationIntervalMinutes
+
+    /// Reads pre-computed words for a local calendar day from the rolling queue snapshot.
+    static func wordsForDay(_ dayKey: String, in payload: WidgetSnapshotPayload) -> [WidgetWordSnapshot]? {
+        payload.words(forDayKey: dayKey)
+    }
 
     // MARK: - Word index (strict 24h grid)
 

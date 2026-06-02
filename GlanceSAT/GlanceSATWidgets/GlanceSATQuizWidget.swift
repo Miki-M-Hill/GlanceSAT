@@ -66,10 +66,11 @@ struct GlanceSATQuizProvider: TimelineProvider {
             let now = Date()
             let todayKey = WidgetCalendar.dayKey(for: now, calendar: calendar)
 
-            if payload.calendarDayKey != todayKey {
+            guard let todayWords = WidgetTimelineBuilder.wordsForDay(todayKey, in: payload) else {
+                let fallback = payload.dailyBatches.values.first?.first ?? .placeholder
                 let entry = GlanceSATQuizEntry(
                     date: now,
-                    word: payload.words.first ?? .placeholder,
+                    word: fallback,
                     slotKey: WidgetSlotClock.slotKey(calendarDayKey: todayKey, slotIndex: 0),
                     displayPhase: .quiz,
                     isStaleSnapshot: true
@@ -78,7 +79,7 @@ struct GlanceSATQuizProvider: TimelineProvider {
                 return
             }
 
-            let words = WidgetInteractionStore.visibleWords(from: payload.words)
+            let words = WidgetInteractionStore.visibleWords(from: todayWords)
             guard !words.isEmpty else {
                 let entry = GlanceSATQuizEntry(
                     date: now,
@@ -114,7 +115,8 @@ struct GlanceSATQuizProvider: TimelineProvider {
         let payload = WidgetPayloadLoader.load()
         let calendar = Calendar.current
         let todayKey = WidgetCalendar.dayKey(for: date, calendar: calendar)
-        let words = WidgetInteractionStore.visibleWords(from: payload.words)
+        let todayWords = WidgetTimelineBuilder.wordsForDay(todayKey, in: payload) ?? []
+        let words = WidgetInteractionStore.visibleWords(from: todayWords)
 
         if WidgetPrefsReader.isInQuizCelebrationWindow(now: date, calendar: calendar) {
             let slotIndex = WidgetTimelineBuilder.slotIndex(for: date, calendar: calendar)
@@ -130,14 +132,11 @@ struct GlanceSATQuizProvider: TimelineProvider {
         let slotIndex = WidgetTimelineBuilder.slotIndex(for: date, calendar: calendar)
         let slotKey = WidgetSlotClock.slotKey(calendarDayKey: todayKey, slotIndex: slotIndex)
         let word = words.isEmpty ? WidgetWordSnapshot.placeholder : WidgetTimelineBuilder.quizWord(at: date, in: words, calendar: calendar)
-        let postQuiz = WidgetTimelineBuilder.isPostQuizDisplayDay(now: date, calendar: calendar)
-
         return makeEntry(
             date: date,
             word: word,
             slotKey: slotKey,
-            todayKey: todayKey,
-            isPostQuizCompletedDay: postQuiz
+            todayKey: todayKey
         )
     }
 
@@ -167,8 +166,7 @@ struct GlanceSATQuizProvider: TimelineProvider {
                     date: plan.resumeDate,
                     word: WidgetTimelineBuilder.quizWord(at: plan.resumeDate, in: words, calendar: calendar),
                     slotKey: WidgetSlotClock.slotKey(calendarDayKey: todayKey, slotIndex: resumeSlot),
-                    todayKey: todayKey,
-                    isPostQuizCompletedDay: true
+                    todayKey: todayKey
                 )
             )
 
@@ -178,18 +176,7 @@ struct GlanceSATQuizProvider: TimelineProvider {
                 todayKey: todayKey,
                 words: words,
                 calendar: calendar,
-                isPostQuizCompletedDay: true,
                 skipFirstIfMatches: plan.resumeDate
-            )
-        } else if WidgetTimelineBuilder.isPostQuizDisplayDay(now: now, calendar: calendar) {
-            appendRotationEntries(
-                to: &entries,
-                from: now,
-                todayKey: todayKey,
-                words: words,
-                calendar: calendar,
-                isPostQuizCompletedDay: true,
-                skipFirstIfMatches: nil
             )
         } else {
             appendRotationEntries(
@@ -198,7 +185,6 @@ struct GlanceSATQuizProvider: TimelineProvider {
                 todayKey: todayKey,
                 words: words,
                 calendar: calendar,
-                isPostQuizCompletedDay: false,
                 skipFirstIfMatches: nil
             )
         }
@@ -213,7 +199,6 @@ struct GlanceSATQuizProvider: TimelineProvider {
         todayKey: String,
         words: [WidgetWordSnapshot],
         calendar: Calendar,
-        isPostQuizCompletedDay: Bool,
         skipFirstIfMatches: Date?
     ) {
         let slotDates = WidgetTimelineBuilder.remainingHalfHourSlotDates(from: referenceDate, calendar: calendar)
@@ -229,8 +214,7 @@ struct GlanceSATQuizProvider: TimelineProvider {
                     date: slotDate,
                     word: WidgetTimelineBuilder.quizWord(at: slotDate, in: words, calendar: calendar),
                     slotKey: slotKey,
-                    todayKey: todayKey,
-                    isPostQuizCompletedDay: isPostQuizCompletedDay
+                    todayKey: todayKey
                 )
             )
         }
@@ -277,19 +261,8 @@ struct GlanceSATQuizProvider: TimelineProvider {
         date: Date,
         word: WidgetWordSnapshot,
         slotKey: String,
-        todayKey: String,
-        isPostQuizCompletedDay: Bool = false
+        todayKey: String
     ) -> GlanceSATQuizEntry {
-        if isPostQuizCompletedDay {
-            return GlanceSATQuizEntry(
-                date: date,
-                word: word,
-                slotKey: slotKey,
-                displayPhase: .vocab,
-                isPostQuizCompletedDay: true
-            )
-        }
-
         let evaluationDate = phaseEvaluationDate(forSlotDate: date)
         let phase: WidgetQuizDisplayPhase
         if !word.hasSentenceQuiz {

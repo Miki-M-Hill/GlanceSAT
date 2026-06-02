@@ -15,16 +15,22 @@ enum WidgetSnapshotWriter {
     }
 
     @MainActor
-    static func writeSnapshot(words: [Word], calendarDayKey: String, modelContext: ModelContext) {
-        let snapshots = words.map { word -> WidgetWordSnapshot in
-            var snapshot = WidgetWordSnapshot(from: word)
-            WidgetSentenceQuizBuilder.apply(to: &snapshot, target: word, context: modelContext)
-            return snapshot
+    static func writeSnapshot(dailyBatches: [String: [Word]], modelContext: ModelContext) {
+        var snapshotBatches: [String: [WidgetWordSnapshot]] = [:]
+        snapshotBatches.reserveCapacity(dailyBatches.count)
+
+        for (dayKey, words) in dailyBatches {
+            let snapshots = words.map { word -> WidgetWordSnapshot in
+                var snapshot = WidgetWordSnapshot(from: word)
+                WidgetSentenceQuizBuilder.apply(to: &snapshot, target: word, context: modelContext)
+                return snapshot
+            }
+            snapshotBatches[dayKey] = snapshots
         }
+
         let payload = WidgetSnapshotPayload(
             updatedAt: Date(),
-            calendarDayKey: calendarDayKey,
-            words: snapshots
+            dailyBatches: snapshotBatches
         )
         guard let dir = WidgetAppGroup.containerURL else {
             #if DEBUG

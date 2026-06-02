@@ -25,7 +25,7 @@ struct GlanceSATWidgetRootView: View {
             } else if entry.isDailyLimitLocked {
                 GlanceSATWidgetLockedView(family: family, deepLinkURL: WidgetDeepLink.paywallURL())
             } else if entry.isCelebrating {
-                GlanceSATWidgetCelebrationView(family: family)
+                GlanceSATWidgetCelebrationView(family: family, streakDays: entry.streakDays)
             } else if entry.isResting {
                 GlanceSATWidgetRestView(entry: entry, family: family, deepLinkURL: deepLinkURL)
             } else {
@@ -40,19 +40,37 @@ struct GlanceSATWidgetRootView: View {
     }
 }
 
-// MARK: - Post-quiz celebration (5 minutes after primary quiz)
+// MARK: - Post-quiz celebration (1 minute after primary quiz)
 
 struct GlanceSATWidgetCelebrationView: View {
     let family: WidgetFamily
+    var streakDays: Int = 0
 
-    private let message = "Well done on completing today's recall! Time to see today's words in context."
+    private var effectiveStreakDays: Int {
+        streakDays > 0 ? streakDays : WidgetPrefsReader.streakDays()
+    }
+
+    private var plantStage: WidgetStreakPlantStage {
+        WidgetStreakPlantStage(days: effectiveStreakDays)
+    }
+
+    private var palette: WidgetPalette { WidgetPalette.named(WidgetPrefsReader.themeName()) }
+
+    private var celebrationMessage: String {
+        switch family {
+        case .systemSmall:
+            return "Well done! See today's words."
+        default:
+            return "Well done on completing today's recall! Time to see today's words in context."
+        }
+    }
 
     var body: some View {
         switch family {
         case .accessoryInline:
-            Label("Quiz complete", systemImage: "checkmark.seal.fill")
+            Text("Quiz complete")
                 .font(.system(.footnote, design: .default, weight: .medium))
-                .lineLimit(nil)
+                .lineLimit(1)
                 .minimumScaleFactor(0.4)
                 .foregroundStyle(.primary)
                 .widgetAccentable()
@@ -60,60 +78,91 @@ struct GlanceSATWidgetCelebrationView: View {
         case .accessoryCircular:
             ZStack {
                 AccessoryWidgetBackground()
-                Image(systemName: "checkmark.seal.fill")
-                    .font(.system(size: 20, weight: .semibold))
-                    .foregroundStyle(.primary)
+                Image(plantStage.assetName)
+                    .resizable()
+                    .scaledToFit()
+                    .padding(6)
                     .widgetAccentable()
             }
 
         case .accessoryRectangular:
-            GeometryReader { proxy in
-                let metrics = WidgetLockCardMetrics.compute(
-                    contentSize: proxy.size,
-                    word: "Well done!",
-                    subtitle: "Today's recall is complete."
-                )
-                VStack(alignment: .leading, spacing: metrics.spacing) {
+            HStack(alignment: .center, spacing: 8) {
+                Image(plantStage.assetName)
+                    .resizable()
+                    .scaledToFit()
+                    .frame(width: 28, height: 28)
+                    .widgetAccentable()
+
+                VStack(alignment: .leading, spacing: 1) {
                     Text("Well done!")
-                        .font(.system(size: metrics.wordSize, weight: .semibold, design: .default))
-                        .foregroundStyle(.primary)
+                        .font(.system(size: 14, weight: .semibold, design: .default))
                         .lineLimit(1)
-                        .minimumScaleFactor(0.5)
-                        .widgetAccentable()
                     Text("Today's recall is complete.")
-                        .font(.system(size: metrics.bodySize, weight: .regular, design: .default))
+                        .font(.system(size: 12, weight: .regular, design: .default))
                         .foregroundStyle(.secondary)
-                        .lineLimit(nil)
-                        .minimumScaleFactor(0.45)
-                        .fixedSize(horizontal: false, vertical: true)
+                        .lineLimit(2)
+                        .minimumScaleFactor(0.8)
                 }
-                .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .leading)
             }
+            .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .leading)
+
+        case .systemSmall:
+            homeCelebrationBody(
+                plantSide: 42,
+                messageSize: 11,
+                messageLineLimit: 3,
+                insets: EdgeInsets(top: 8, leading: 10, bottom: 8, trailing: 10),
+                spacing: 4
+            )
+
+        case .systemMedium:
+            homeCelebrationBody(
+                plantSide: 56,
+                messageSize: 12,
+                messageLineLimit: 4,
+                insets: EdgeInsets(top: 10, leading: 12, bottom: 10, trailing: 12),
+                spacing: 6
+            )
 
         default:
-            GeometryReader { proxy in
-                let metrics = WidgetLockCardMetrics.compute(
-                    contentSize: proxy.size,
-                    word: "Quiz complete",
-                    subtitle: message
-                )
-                VStack(spacing: metrics.spacing) {
-                    Image(systemName: "checkmark.seal.fill")
-                        .font(.system(size: min(36, metrics.wordSize * 1.15), weight: .semibold))
-                        .foregroundStyle(.primary)
-                        .widgetAccentable()
-                    Text(message)
-                        .font(.system(size: metrics.bodySize, weight: .medium, design: .default))
-                        .multilineTextAlignment(.center)
-                        .lineLimit(nil)
-                        .minimumScaleFactor(0.45)
-                        .fixedSize(horizontal: false, vertical: true)
-                        .foregroundStyle(.primary)
-                }
-                .frame(maxWidth: .infinity, maxHeight: .infinity)
-                .padding(10)
-            }
+            homeCelebrationBody(
+                plantSide: 72,
+                messageSize: 14,
+                messageLineLimit: 5,
+                insets: EdgeInsets(top: 14, leading: 14, bottom: 14, trailing: 14),
+                spacing: 8
+            )
         }
+    }
+
+    private func homeCelebrationBody(
+        plantSide: CGFloat,
+        messageSize: CGFloat,
+        messageLineLimit: Int,
+        insets: EdgeInsets,
+        spacing: CGFloat
+    ) -> some View {
+        VStack(spacing: spacing) {
+            Spacer(minLength: 0)
+
+            Image(plantStage.assetName)
+                .resizable()
+                .scaledToFit()
+                .frame(width: plantSide, height: plantSide)
+                .accessibilityHidden(true)
+
+            Text(celebrationMessage)
+                .font(.system(size: messageSize, weight: .medium, design: .default))
+                .foregroundStyle(palette.primary)
+                .multilineTextAlignment(.center)
+                .lineLimit(messageLineLimit)
+                .minimumScaleFactor(0.65)
+                .fixedSize(horizontal: false, vertical: true)
+
+            Spacer(minLength: 0)
+        }
+        .frame(maxWidth: .infinity, maxHeight: .infinity)
+        .padding(insets)
     }
 }
 
@@ -417,6 +466,21 @@ struct GlanceSATHomeFamiliesView: View {
         activeDetailText != nil
     }
 
+    /// Medium home widget: hook/example tray is open.
+    private var isShowingSentence: Bool {
+        !isSmallFamily && isAnyDetailRevealed
+    }
+
+    private func displayedWordSize(_ metrics: WidgetHomeCardMetrics.Values) -> CGFloat {
+        guard isShowingSentence, sizeTier == .medium else { return metrics.wordSize }
+        return metrics.wordSize * 0.86
+    }
+
+    private func displayedBodySize(_ metrics: WidgetHomeCardMetrics.Values) -> CGFloat {
+        guard isShowingSentence, sizeTier == .medium else { return metrics.bodySize }
+        return metrics.bodySize * 0.88
+    }
+
     var body: some View {
         ZStack(alignment: .center) {
             Color.clear
@@ -435,7 +499,7 @@ struct GlanceSATHomeFamiliesView: View {
                     definitionWithPartOfSpeech: entry.word.widgetDefinitionWithPartOfSpeech,
                     detailText: activeDetailText,
                     isDetailRevealed: isAnyDetailRevealed,
-                    includeAction: !isSmallFamily && !entry.isPostQuizCompletedDay
+                    includeAction: !isSmallFamily
                 )
 
                 VStack(alignment: .center, spacing: 0) {
@@ -443,23 +507,21 @@ struct GlanceSATHomeFamiliesView: View {
 
                     VStack(alignment: .center, spacing: metrics.clusterSpacing) {
                         Text(entry.word.word)
-                            .font(.system(size: metrics.wordSize, weight: .semibold, design: .default))
+                            .font(.system(size: displayedWordSize(metrics), weight: .semibold, design: .default))
                             .foregroundStyle(palette.primary)
                             .multilineTextAlignment(.center)
                             .lineLimit(isSmallFamily ? 1 : nil)
                             .minimumScaleFactor(isSmallFamily ? 0.35 : 0.4)
-                            .fixedSize(horizontal: false, vertical: true)
                             .frame(maxWidth: .infinity)
                             .widgetURL(deepLinkURL)
                             .widgetAccentable()
 
                         Text(entry.word.widgetDefinitionWithPartOfSpeech)
-                            .font(.system(size: metrics.bodySize, weight: .regular, design: .rounded))
+                            .font(.system(size: displayedBodySize(metrics), weight: .regular, design: .rounded))
                             .foregroundStyle(palette.secondary)
                             .multilineTextAlignment(.center)
                             .lineLimit(metrics.definitionLineLimit)
                             .minimumScaleFactor(0.4)
-                            .fixedSize(horizontal: false, vertical: true)
                             .frame(maxWidth: .infinity)
                     }
 
@@ -473,7 +535,7 @@ struct GlanceSATHomeFamiliesView: View {
 
                     Spacer(minLength: 0)
 
-                    if !isSmallFamily, !entry.isPostQuizCompletedDay {
+                    if !isSmallFamily {
                         homeActionTray
                             .padding(.top, metrics.sectionSpacing)
                     }
@@ -519,9 +581,8 @@ struct GlanceSATHomeFamiliesView: View {
             .font(font)
             .foregroundStyle(palette.secondary)
             .multilineTextAlignment(.leading)
-            .lineLimit(nil)
-            .minimumScaleFactor(0.4)
-            .fixedSize(horizontal: false, vertical: true)
+            .lineLimit(3)
+            .minimumScaleFactor(0.6)
         }
         .frame(maxWidth: .infinity, alignment: .leading)
     }
@@ -668,4 +729,9 @@ private struct GlanceSATLockFamiliesView: View {
         entry: GlanceSATEntry(date: .now, word: .placeholder, isResting: true, streakDays: 3)
     )
     .glanceWidgetBackground(themeName: "linen")
+}
+
+#Preview("Celebration Small") {
+    GlanceSATWidgetCelebrationView(family: .systemSmall, streakDays: 5)
+        .glanceWidgetBackground(themeName: "linen")
 }

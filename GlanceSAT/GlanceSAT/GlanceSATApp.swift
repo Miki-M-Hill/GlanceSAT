@@ -313,7 +313,7 @@ private struct AppRootView: View {
         }
         .overlay(alignment: .topLeading) {
             #if DEBUG
-            if selectedTab == .today || selectedTab == .insights {
+            if selectedTab == .today {
                 debugOnboardingButton
             }
             #endif
@@ -447,6 +447,15 @@ private struct AppRootView: View {
                 Button { applyDebugPlantPreview(days: 7, wilted: false) } label: {
                     Label("Day 7", systemImage: debugStreakDayOverride == 7 && debugPlantWiltPreview != 1 ? "checkmark.circle.fill" : "circle")
                 }
+                Button { applyDebugPlantPreview(days: 14, wilted: false) } label: {
+                    Label("Day 14", systemImage: debugStreakDayOverride == 14 && debugPlantWiltPreview != 1 ? "checkmark.circle.fill" : "circle")
+                }
+                Button { applyDebugPlantPreview(days: 30, wilted: false) } label: {
+                    Label("Day 30", systemImage: debugStreakDayOverride == 30 && debugPlantWiltPreview != 1 ? "checkmark.circle.fill" : "circle")
+                }
+                Button { applyDebugPlantPreview(days: 60, wilted: false) } label: {
+                    Label("Day 60", systemImage: debugStreakDayOverride == 60 && debugPlantWiltPreview != 1 ? "checkmark.circle.fill" : "circle")
+                }
                 Button { applyDebugPlantPreview(days: nil, wilted: false) } label: {
                     Label("Healthy", systemImage: debugStreakDayOverride < 0 && debugPlantWiltPreview == 0 ? "checkmark.circle.fill" : "leaf")
                 }
@@ -499,26 +508,6 @@ private struct AppRootView: View {
                     Label(
                         "Reset library swipe lock",
                         systemImage: libraryFreemiumSession.isLockedForSession ? "checkmark.circle.fill" : "arrow.counterclockwise"
-                    )
-                }
-            }
-
-            Section("Insights") {
-                Button {
-                    DebugInsightsControls.showPlaceholderData()
-                } label: {
-                    Label(
-                        "Use placeholder insights",
-                        systemImage: DebugInsightsControls.useMockValues ? "checkmark.circle.fill" : "chart.bar.doc.horizontal"
-                    )
-                }
-
-                Button {
-                    DebugInsightsControls.showLiveData()
-                } label: {
-                    Label(
-                        "Use live insights data",
-                        systemImage: !DebugInsightsControls.useMockValues ? "checkmark.circle.fill" : "chart.bar.xaxis"
                     )
                 }
             }
