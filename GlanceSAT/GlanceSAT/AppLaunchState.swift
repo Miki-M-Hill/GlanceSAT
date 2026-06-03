@@ -24,8 +24,8 @@ enum AppLaunchState {
         hasPerformedInitialFetch = true
     }
 
-    /// Instantly removes the splash overlay (widget deep links, etc.).
-    @MainActor static func dismissSplashImmediately() {
+    /// Requests splash dismissal after the minimum display window, with a smooth fade-out.
+    @MainActor static func requestSplashDismiss() {
         NotificationCenter.default.post(name: splashDismissNotification, object: nil)
     }
 }

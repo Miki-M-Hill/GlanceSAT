@@ -44,7 +44,7 @@ Paywall **Start my 7-day free trial** advances to screen 9 but does **not** comp
 |---------|----------|
 | Primary CTA (bottom) | Advances forward (with side effects on screens 5, 6, 8) |
 | Back chevron (top-left) | Visible on screens 2–9; decrements `page` with spring animation |
-| Paywall X | Jumps from screen 8 → 9 (widget) |
+| Paywall X | Opens 3-day pass downsell sheet; pass or **Continue to widget setup** → screen 9. See [GlanceSAT_Three_Day_Full_Access_Pass.md](./GlanceSAT_Three_Day_Full_Access_Pass.md). |
 | TabView swipe | System page gesture may still apply |
 | Skip | Not implemented |
 

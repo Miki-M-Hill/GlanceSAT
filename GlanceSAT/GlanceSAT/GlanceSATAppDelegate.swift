@@ -20,4 +20,11 @@ final class GlanceSATAppDelegate: NSObject, UIApplicationDelegate {
         WidgetDeepLinkRouter.handleIncomingURL(url)
         return true
     }
+
+    func application(
+        _ application: UIApplication,
+        supportedInterfaceOrientationsFor window: UIWindow?
+    ) -> UIInterfaceOrientationMask {
+        .portrait
+    }
 }

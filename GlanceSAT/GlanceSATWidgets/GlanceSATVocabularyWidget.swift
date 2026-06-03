@@ -66,8 +66,7 @@ struct GlanceSATProvider: TimelineProvider {
             let now = Date()
             let todayKey = WidgetCalendar.dayKey(for: now, calendar: calendar)
 
-            if !WidgetPrefsReader.hasPremiumAccess(),
-               WidgetPrefsReader.isFreemiumDailyLimitReached() {
+            if Self.shouldShowFreemiumLock(at: now, calendar: calendar) {
                 let entry = Self.lockedEntry(date: now, payload: payload, todayKey: todayKey)
                 completion(Timeline(entries: [entry], policy: .atEnd))
                 return
@@ -87,13 +86,22 @@ struct GlanceSATProvider: TimelineProvider {
             let visibleWords = WidgetInteractionStore.visibleWords(from: todayWords)
             let words = visibleWords.isEmpty ? [.placeholder] : visibleWords
 
-            let entries = WidgetTimelineBuilder.buildVocabularyEntries(
+            var entries = WidgetTimelineBuilder.buildVocabularyEntries(
                 now: now,
                 words: words,
                 calendar: calendar
             )
+            entries = WidgetTimelineBuilder.finalizeVocabularyEntries(
+                Self.entriesEnsuringCelebration(
+                    entries,
+                    now: now,
+                    words: words,
+                    calendar: calendar
+                )
+            )
+            let policy = WidgetTimelineBuilder.vocabularyTimelinePolicy(for: entries, now: now, calendar: calendar)
 
-            completion(Timeline(entries: entries, policy: .atEnd))
+            completion(Timeline(entries: entries, policy: policy))
         }
     }
 
@@ -102,8 +110,7 @@ struct GlanceSATProvider: TimelineProvider {
         let calendar = Calendar.current
         let todayKey = WidgetCalendar.dayKey(for: date, calendar: calendar)
 
-        if !WidgetPrefsReader.hasPremiumAccess(),
-           WidgetPrefsReader.isFreemiumDailyLimitReached() {
+        if Self.shouldShowFreemiumLock(at: date, calendar: calendar) {
             return lockedEntry(date: date, payload: payload, todayKey: todayKey)
         }
 
@@ -121,10 +128,11 @@ struct GlanceSATProvider: TimelineProvider {
             return GlanceSATEntry(date: date, word: .placeholder)
         }
 
-        if WidgetPrefsReader.isInQuizCelebrationWindow(now: date, calendar: calendar) {
+        if WidgetPrefsReader.isInQuizCelebrationWindow(now: date, calendar: calendar),
+           let completion = WidgetPrefsReader.lastQuizCompletionTimestamp() {
             return GlanceSATEntry(
-                date: date,
-                word: WidgetTimelineBuilder.word(at: date, in: words, calendar: calendar),
+                date: completion,
+                word: WidgetTimelineBuilder.word(at: completion, in: words, calendar: calendar),
                 isCelebrating: true,
                 streakDays: WidgetPrefsReader.streakDays()
             )
@@ -137,6 +145,41 @@ struct GlanceSATProvider: TimelineProvider {
             isPostQuizCompletedDay: postQuiz,
             streakDays: WidgetPrefsReader.streakDays()
         )
+    }
+
+    /// Freemium paywall lock applies after the daily quiz, but not during the post-quiz celebration window.
+    private static func shouldShowFreemiumLock(at date: Date, calendar: Calendar) -> Bool {
+        guard !WidgetPrefsReader.hasPremiumAccess(),
+              WidgetPrefsReader.isFreemiumDailyLimitReached() else {
+            return false
+        }
+        return !WidgetPrefsReader.isInQuizCelebrationWindow(now: date, calendar: calendar)
+    }
+
+    /// Guarantees a celebrating entry at `now` when prefs say we're in-window but the builder missed it.
+    private static func entriesEnsuringCelebration(
+        _ entries: [GlanceSATEntry],
+        now: Date,
+        words: [WidgetWordSnapshot],
+        calendar: Calendar
+    ) -> [GlanceSATEntry] {
+        guard WidgetPrefsReader.isInQuizCelebrationWindow(now: now, calendar: calendar) else {
+            return entries
+        }
+        let active = entries.filter { $0.date <= now }.max(by: { $0.date < $1.date })
+        if active?.isCelebrating == true {
+            return entries
+        }
+        var updated = entries
+        updated.append(
+            GlanceSATEntry(
+                date: now,
+                word: WidgetTimelineBuilder.word(at: now, in: words, calendar: calendar),
+                isCelebrating: true,
+                streakDays: WidgetPrefsReader.streakDays()
+            )
+        )
+        return updated
     }
 
     private static func lockedEntry(date: Date, payload: WidgetSnapshotPayload, todayKey: String) -> GlanceSATEntry {
@@ -156,7 +199,6 @@ struct GlanceSATVocabularyWidget: Widget {
     var body: some WidgetConfiguration {
         StaticConfiguration(kind: GlanceSATWidgetConstants.vocabularyKind, provider: GlanceSATProvider()) { entry in
             GlanceSATWidgetRootView(entry: entry)
-                .glanceWidgetBackground(themeName: WidgetPrefsReader.themeName())
         }
         .configurationDisplayName("Glance")
         .description("SAT vocabulary on your Home Screen and Lock Screen.")

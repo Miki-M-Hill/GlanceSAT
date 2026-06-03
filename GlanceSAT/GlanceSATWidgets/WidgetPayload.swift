@@ -71,6 +71,8 @@ struct WidgetWordSnapshot: Codable, Sendable, Identifiable {
     var exampleSentence: String
     var etymology: String?
     var memoryHookText: String?
+    /// `positive` | `negative` | `neutral` | `mixed` — for widget connotation reveal.
+    var semanticCharge: String
     var sentenceQuizPrompt: String
     var synonymQuizOptions: [String]
     var synonymQuizCorrectAnswer: String
@@ -83,6 +85,7 @@ struct WidgetWordSnapshot: Codable, Sendable, Identifiable {
         exampleSentence: String,
         etymology: String?,
         memoryHookText: String? = nil,
+        semanticCharge: String = "neutral",
         sentenceQuizPrompt: String = "",
         synonymQuizOptions: [String] = [],
         synonymQuizCorrectAnswer: String = ""
@@ -94,6 +97,7 @@ struct WidgetWordSnapshot: Codable, Sendable, Identifiable {
         self.exampleSentence = exampleSentence
         self.etymology = etymology
         self.memoryHookText = memoryHookText
+        self.semanticCharge = semanticCharge
         self.sentenceQuizPrompt = sentenceQuizPrompt
         self.synonymQuizOptions = synonymQuizOptions
         self.synonymQuizCorrectAnswer = synonymQuizCorrectAnswer
@@ -110,13 +114,15 @@ struct WidgetWordSnapshot: Codable, Sendable, Identifiable {
         exampleSentence = try container.decode(String.self, forKey: .exampleSentence)
         etymology = try container.decodeIfPresent(String.self, forKey: .etymology)
         memoryHookText = try container.decodeIfPresent(String.self, forKey: .memoryHookText)
+        let rawCharge = try container.decodeIfPresent(String.self, forKey: .semanticCharge) ?? "neutral"
+        semanticCharge = Self.normalizedSemanticCharge(rawCharge)
         sentenceQuizPrompt = try container.decodeIfPresent(String.self, forKey: .sentenceQuizPrompt) ?? ""
         synonymQuizOptions = try container.decodeIfPresent([String].self, forKey: .synonymQuizOptions) ?? []
         synonymQuizCorrectAnswer = try container.decodeIfPresent(String.self, forKey: .synonymQuizCorrectAnswer) ?? ""
     }
 
     private enum CodingKeys: String, CodingKey {
-        case id, word, partOfSpeech, definition, exampleSentence, etymology, memoryHookText
+        case id, word, partOfSpeech, definition, exampleSentence, etymology, memoryHookText, semanticCharge
         case sentenceQuizPrompt, synonymQuizOptions, synonymQuizCorrectAnswer
     }
 
@@ -151,6 +157,16 @@ struct WidgetWordSnapshot: Codable, Sendable, Identifiable {
         return hook.isEmpty
     }
 
+    private static func normalizedSemanticCharge(_ raw: String) -> String {
+        let trimmed = raw.trimmingCharacters(in: .whitespacesAndNewlines).lowercased()
+        switch trimmed {
+        case "negative", "neutral", "positive", "mixed":
+            return trimmed
+        default:
+            return "neutral"
+        }
+    }
+
     static let placeholder = WidgetWordSnapshot(
         id: UUID(),
         word: "Glance",
@@ -159,6 +175,7 @@ struct WidgetWordSnapshot: Codable, Sendable, Identifiable {
         exampleSentence: "",
         etymology: nil,
         memoryHookText: nil,
+        semanticCharge: "neutral",
         sentenceQuizPrompt: "She took a quick _______ at the schedule.",
         synonymQuizOptions: ["look", "peek", "scan", "watch"],
         synonymQuizCorrectAnswer: "look"

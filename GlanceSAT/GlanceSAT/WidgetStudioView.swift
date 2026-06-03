@@ -33,12 +33,17 @@ struct WidgetStudioView: View {
     }
 
     private var styleChoicesForCurrentSize: [StyleChoice] {
+        let choices: [StyleChoice]
         switch viewModel.selectedSize {
         case .small:
-            return allStyleChoices.filter { $0.target != .rich }
+            choices = allStyleChoices.filter { $0.target != .rich }
         case .medium, .large:
-            return allStyleChoices
+            choices = allStyleChoices
         }
+        guard GlanceProductSurface.showsWordEtymologyAndHooks else {
+            return choices.filter { $0.target != .etymology && $0.target != .rich }
+        }
+        return choices
     }
 
     private var studioWidgetCoreSize: CGSize {

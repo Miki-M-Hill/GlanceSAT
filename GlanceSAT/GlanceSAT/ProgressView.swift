@@ -10,6 +10,7 @@ import UIKit
 // MARK: - Layout
 
 private enum InsightsLayout {
+    /// Symmetric gutter for Insights tiles and graphs (streak bar uses `TodayHubLayoutMetrics.horizontalContentInset`).
     static let horizontalInset: CGFloat = 20
     static let sectionSpacing: CGFloat = 28
     static let cardCornerRadius: CGFloat = 28
@@ -137,8 +138,60 @@ struct GlanceSATProgressScreen: View {
     @State private var insightsChartReveal: CGFloat = 0
     @State private var categoryBarFractions: [CGFloat] = []
     @State private var overviewTitleFontSizes: [String: CGFloat] = [:]
-    @State private var satCountdownHeader: String?
+    @State private var satCountdownLineText = "Add your SAT date in settings for a countdown"
+    #if DEBUG
+    @AppStorage(DebugInsightsControls.useMockValuesKey) private var debugInsightsUseMockValues = false
+    @AppStorage("debugStreakDayOverride") private var debugStreakDayOverride = -1
+    @AppStorage("debugPlantWiltPreview") private var debugPlantWiltPreview = -1
+    #endif
+
+    private var insightsDisplayedStreakDays: Int {
+        #if DEBUG
+        if debugStreakDayOverride >= 0 {
+            return debugStreakDayOverride
+        }
+        #endif
+        return QuizStreakCalculator.currentStreakDays(sessionDayKeys: insightsQuizSessionDayKeys)
+    }
+
+    private var insightsQuizSessionDayKeys: Set<String> {
+        var keys = Set(sessions.map(\.creditedQuizDayKey))
+        let todayKey = DailyWordBatchService.calendarDayKey()
+        if WidgetDailyState.isPrimaryQuizCompleted(for: todayKey) {
+            keys.insert(todayKey)
+        }
+        return keys
+    }
+
+    private var insightsEvolutionPlantStage: StreakPlantStage {
+        #if DEBUG
+        if debugStreakDayOverride >= 0 {
+            return StreakPlantStage(days: debugStreakDayOverride)
+        }
+        #endif
+        return StreakPlantStage(evolutionTier: StreakPlantState.evolutionTier)
+    }
+
+    private var insightsShowWiltedPlant: Bool {
+        #if DEBUG
+        switch debugPlantWiltPreview {
+        case 1:
+            return insightsEvolutionPlantStage.supportsWiltedVariant
+        case 0:
+            return false
+        default:
+            break
+        }
+        #endif
+        return StreakPlantState.isWilted
+    }
+
     private var displayData: InsightsDisplayData {
+        #if DEBUG
+        if debugInsightsUseMockValues {
+            return InsightsPresentation.mockData
+        }
+        #endif
         return InsightsDisplayData(
             totalWordGoal: 1000,
             wordsGlanced: viewModel.wordsEncountered,
@@ -160,85 +213,179 @@ struct GlanceSATProgressScreen: View {
     }
 
     private var hasPremiumInsightsAccess: Bool {
-        entitlementManager.hasPremiumAccess
+        #if DEBUG
+        if debugInsightsUseMockValues {
+            return true
+        }
+        #endif
+        return entitlementManager.hasPremiumAccess
     }
 
     var body: some View {
-        NavigationStack {
-            GeometryReader { proxy in
-                Group {
-                    if hasPremiumInsightsAccess {
-                        premiumInsightsScroll(proxy: proxy)
-                    } else {
-                        freeInsightsLayout(proxy: proxy)
-                    }
+        insightsGeometryShell
+            .onAppear {
+                refreshSATCountdownHeader()
+                reconcileInsightsStreakPlantState()
+                insightsCoordinator.applyCached(to: viewModel, sessions: sessions)
+                withAnimation(.easeOut(duration: 0.4)) {
+                    appeared = true
                 }
-                .scrollContentBackground(.hidden)
-                .background(HubPalette.linen.ignoresSafeArea())
+                playInsightsChartRevealAnimation()
+                insightsCoordinator.scheduleRefresh(
+                    container: modelContext.container,
+                    sessions: sessions,
+                    force: false
+                )
             }
-            .glanceNavigationBarChrome(colorScheme: colorScheme, isHidden: true)
-        }
-        .onAppear {
-            refreshSATCountdownHeader()
-            insightsCoordinator.applyCached(to: viewModel, sessions: sessions)
-            withAnimation(.easeOut(duration: 0.4)) {
-                appeared = true
+            .onChange(of: sessionRefreshSignature) { _, _ in
+                reconcileInsightsStreakPlantState()
+                insightsCoordinator.scheduleRefresh(
+                    container: modelContext.container,
+                    sessions: sessions,
+                    force: true
+                )
             }
-            playInsightsChartRevealAnimation()
-            insightsCoordinator.scheduleRefresh(
-                container: modelContext.container,
-                sessions: sessions,
-                force: false
-            )
-        }
-        .onChange(of: sessionRefreshSignature) { _, _ in
-            insightsCoordinator.scheduleRefresh(
-                container: modelContext.container,
-                sessions: sessions,
-                force: true
-            )
-        }
-        .onChange(of: scenePhase) { _, phase in
-            if phase == .active {
+            .onChange(of: scenePhase) { _, phase in
+                if phase == .active {
+                    refreshSATCountdownHeader()
+                    reconcileInsightsStreakPlantState()
+                }
+            }
+            .onReceive(NotificationCenter.default.publisher(for: .satExamDateDidChange)) { _ in
                 refreshSATCountdownHeader()
             }
-        }
-        .onReceive(NotificationCenter.default.publisher(for: .satExamDateDidChange)) { _ in
-            refreshSATCountdownHeader()
-        }
-        .onReceive(NotificationCenter.default.publisher(for: .insightsWordStatsDidUpdate)) { _ in
-            guard let stats = insightsCoordinator.cachedWordStats else { return }
-            insightsCoordinator.handleWordStatsUpdated(stats, viewModel: viewModel, sessions: sessions)
-            categoryBarFractions = viewModel.categories.map { CGFloat(max(0, min(1, $0.accuracy))) }
-            playInsightsChartRevealAnimation()
-        }
-        .onReceive(NotificationCenter.default.publisher(for: .wordDatabaseDidChange)) { _ in
-            insightsCoordinator.scheduleRefresh(
-                container: modelContext.container,
-                sessions: sessions,
-                force: true
+            .onReceive(NotificationCenter.default.publisher(for: .insightsWordStatsDidUpdate)) { _ in
+                guard let stats = insightsCoordinator.cachedWordStats else { return }
+                insightsCoordinator.handleWordStatsUpdated(stats, viewModel: viewModel, sessions: sessions)
+                categoryBarFractions = viewModel.categories.map { CGFloat(max(0, min(1, $0.accuracy))) }
+                playInsightsChartRevealAnimation()
+            }
+            .onReceive(NotificationCenter.default.publisher(for: .wordDatabaseDidChange)) { _ in
+                insightsCoordinator.scheduleRefresh(
+                    container: modelContext.container,
+                    sessions: sessions,
+                    force: true
+                )
+            }
+            #if DEBUG
+            .onChange(of: debugInsightsUseMockValues) { _, _ in
+                playInsightsChartRevealAnimation()
+            }
+            .onReceive(NotificationCenter.default.publisher(for: .debugInsightsMockDataDidChange)) { _ in
+                playInsightsChartRevealAnimation()
+            }
+            #endif
+    }
+
+    private var insightsGeometryShell: some View {
+        GeometryReader { proxy in
+            let metrics = TodayHubLayoutMetrics(
+                size: proxy.size,
+                safeArea: proxy.safeAreaInsets
             )
+            insightsNavigationRoot(metrics: metrics)
+                .frame(width: proxy.size.width, height: proxy.size.height, alignment: .top)
+        }
+        .frame(maxWidth: .infinity, maxHeight: .infinity)
+        .background(HubPalette.linen)
+    }
+
+    @ViewBuilder
+    private func insightsNavigationRoot(metrics: TodayHubLayoutMetrics) -> some View {
+        NavigationStack {
+            Group {
+                if hasPremiumInsightsAccess {
+                    premiumInsightsScroll(metrics: metrics)
+                } else {
+                    freeInsightsLayout(metrics: metrics)
+                }
+            }
+            .scrollContentBackground(.hidden)
+            .background(HubPalette.linen)
+            .glanceNavigationBarChrome(colorScheme: colorScheme, isHidden: true)
         }
     }
 
-    private func insightsTopContentInset(safeAreaTop: CGFloat) -> CGFloat {
-        GlanceDeviceLayout.heightFraction(0.02) + safeAreaTop
+    private func insightsTopContentInset(screenHeight: CGFloat) -> CGFloat {
+        HubScreenHeaderLayout.scrollTopInset(screenHeight: screenHeight)
     }
 
     private func refreshSATCountdownHeader() {
-        satCountdownHeader = SATExamDateStore.countdownLabel()
+        satCountdownLineText = SATExamDateStore.countdownLabel()
+            ?? "Add your SAT date in settings for a countdown"
     }
 
-    /// Matches Today tab `todayPageTitle` (uppercase GLANCE chrome).
-    private func satCountdownHeaderSection(_ text: String) -> some View {
-        Text(insightsPlainText(text))
-            .font(.caption.weight(.bold))
-            .tracking(2)
-            .foregroundStyle(Color.primary)
-            .textCase(.uppercase)
+    private func reconcileInsightsStreakPlantState() {
+        StreakPlantState.clearIfNotToday()
+        _ = StreakPlantState.reconcileMissedDays()
+    }
+
+    /// Mirrors `DailyHubView.dailyHeader` post-quiz wrapper — same parent padding, no extra horizontal inset.
+    private func insightsStreakHeader(metrics: TodayHubLayoutMetrics) -> some View {
+        SharedStreakBarView(
+            metrics: metrics,
+            streakDays: insightsDisplayedStreakDays,
+            evolutionPlantStage: insightsEvolutionPlantStage,
+            wilted: insightsShowWiltedPlant
+        )
+        .padding(.bottom, metrics.postQuizGlassSpacing)
+    }
+
+    /// Single column for overview tiles and chart sections — one symmetric gutter only.
+    private func insightsContentColumn(
+        metrics: TodayHubLayoutMetrics,
+        includeFullOverview: Bool
+    ) -> some View {
+        VStack(spacing: InsightsLayout.sectionSpacing) {
+            insightsSATCountdown(metrics: metrics)
+                .insightsFullWidthTile()
+
+            if includeFullOverview {
+                overviewSection
+                    .insightsFullWidthTile()
+            } else {
+                overviewSectionFirstRowOnly
+                    .insightsFullWidthTile()
+            }
+
+            if includeFullOverview {
+                categoriesSection
+                    .insightsFullWidthTile()
+
+                trajectorySection
+                    .insightsFullWidthTile()
+            }
+        }
+        .insightsFullWidthTile()
+        .padding(.horizontal, InsightsLayout.horizontalInset)
+    }
+
+    @ViewBuilder
+    private func insightsSATCountdown(metrics: TodayHubLayoutMetrics) -> some View {
+        if SATExamDateStore.hasExamDate, let countdown = SATExamDateStore.countdownLabel() {
+            let emphasisFontSize = metrics.scaled(15 * 2.5)
+
+            Text(insightsPlainText(countdown))
+                .font(GlanceHubFont.bold(emphasisFontSize))
+                .foregroundStyle(HubPalette.espresso)
+                .multilineTextAlignment(.center)
+                .lineLimit(1)
+                .minimumScaleFactor(0.72)
+                .scaleEffect(0.85)
+                .frame(maxWidth: .infinity)
+        } else {
+            insightsSATCountdownPlaceholder()
+        }
+    }
+
+    private func insightsSATCountdownPlaceholder() -> some View {
+        Text(insightsPlainText(satCountdownLineText))
+            .font(GlanceHubFont.regular(15))
+            .foregroundStyle(HubPalette.espressoMuted)
             .multilineTextAlignment(.center)
+            .lineLimit(1)
+            .minimumScaleFactor(0.72)
             .frame(maxWidth: .infinity)
-            .padding(.bottom, GlanceDeviceLayout.proportional(16, in: GlanceDeviceLayout.screenHeight))
     }
 
     // MARK: - Sections
@@ -260,6 +407,7 @@ struct GlanceSATProgressScreen: View {
             )
 
             overviewMetricsGrid(includeSecondRow: includeSecondMetricRow)
+                .insightsFullWidthTile()
                 .background {
                     GeometryReader { geo in
                         Color.clear
@@ -272,6 +420,7 @@ struct GlanceSATProgressScreen: View {
                     }
                 }
         }
+        .insightsFullWidthTile()
         .opacity(appeared ? 1 : 0)
         .offset(y: appeared ? 0 : 12)
         .animation(.easeOut(duration: 0.35), value: appeared)
@@ -317,48 +466,30 @@ struct GlanceSATProgressScreen: View {
         OverviewMetricSquareCell(content: content())
     }
 
-    private func premiumInsightsScroll(proxy: GeometryProxy) -> some View {
+    private func premiumInsightsScroll(metrics: TodayHubLayoutMetrics) -> some View {
         ScrollView(.vertical, showsIndicators: false) {
-            VStack(alignment: .leading, spacing: InsightsLayout.sectionSpacing) {
-                insightsTopSections
-                categoriesSection
-                trajectorySection
+            VStack(alignment: .leading, spacing: 0) {
+                insightsStreakHeader(metrics: metrics)
+                insightsContentColumn(metrics: metrics, includeFullOverview: true)
             }
-            .padding(.horizontal, InsightsLayout.horizontalInset)
-            .padding(.top, insightsTopContentInset(safeAreaTop: proxy.safeAreaInsets.top))
+            .padding(.top, insightsTopContentInset(screenHeight: metrics.size.height))
             .padding(.bottom, InsightsLayout.bottomPadding)
         }
     }
 
     /// Overview first row + solid half-screen paywall panel (grid split → tab bar). No scroll.
-    private func freeInsightsLayout(proxy: GeometryProxy) -> some View {
+    private func freeInsightsLayout(metrics: TodayHubLayoutMetrics) -> some View {
         VStack(alignment: .leading, spacing: 0) {
-            VStack(alignment: .leading, spacing: InsightsLayout.sectionSpacing) {
-                if let satCountdownHeader {
-                    satCountdownHeaderSection(satCountdownHeader)
-                }
-
-                overviewSectionFirstRowOnly
-            }
-            .padding(.horizontal, InsightsLayout.horizontalInset)
-            .fixedSize(horizontal: false, vertical: true)
+            insightsStreakHeader(metrics: metrics)
+            insightsContentColumn(metrics: metrics, includeFullOverview: false)
+                .fixedSize(horizontal: false, vertical: true)
 
             insightsLockedPaywallPanel
                 .frame(maxWidth: .infinity, maxHeight: .infinity)
         }
-        .padding(.top, insightsTopContentInset(safeAreaTop: proxy.safeAreaInsets.top))
+        .padding(.top, insightsTopContentInset(screenHeight: metrics.size.height))
         .padding(.bottom, InsightsLayout.bottomPadding)
-        .frame(width: proxy.size.width, height: proxy.size.height, alignment: .top)
-    }
-
-    private var insightsTopSections: some View {
-        VStack(alignment: .leading, spacing: InsightsLayout.sectionSpacing) {
-            if let satCountdownHeader {
-                satCountdownHeaderSection(satCountdownHeader)
-            }
-
-            overviewSection
-        }
+        .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .top)
     }
 
     /// Full-width solid panel from the overview grid split down to the tab bar.
@@ -395,66 +526,70 @@ struct GlanceSATProgressScreen: View {
         VStack(alignment: .leading, spacing: InsightsLayout.rowSpacing) {
             insightsSectionHeader(
                 title: "Strengths by category",
-                subtitle: categorySectionTrailing
+                subtitle: categorySectionSubtitle
             )
 
             InsightsSolidCard {
-                if displayData.hasMinimumQuizHistory {
-                    VStack(spacing: 18) {
-                        ForEach(Array(displayData.categories.enumerated()), id: \.offset) { index, category in
-                            if index > 0 {
-                                Divider()
-                                    .overlay(HubPalette.espressoFaint.opacity(0.35))
-                            }
-
-                            InsightsCategoryRow(
-                                category: category,
-                                fillFraction: categoryBarFractions.indices.contains(index)
-                                    ? categoryBarFractions[index]
-                                    : 0,
-                                revealProgress: insightsChartReveal,
-                                isReady: categoryIsReady(category.name)
-                            )
+                VStack(spacing: 18) {
+                    ForEach(Array(displayData.categories.enumerated()), id: \.offset) { index, category in
+                        if index > 0 {
+                            Divider()
+                                .overlay(HubPalette.espressoFaint.opacity(0.35))
                         }
+
+                        InsightsCategoryRow(
+                            category: category,
+                            fillFraction: categoryBarFractions.indices.contains(index)
+                                ? categoryBarFractions[index]
+                                : 0,
+                            revealProgress: displayData.hasMinimumQuizHistory ? insightsChartReveal : 0,
+                            isReady: displayData.hasMinimumQuizHistory && categoryIsReady(category.name)
+                        )
                     }
-                } else {
-                    Text(insightsPlainText("Your strengths will appear after 3 quizzes"))
-                        .font(GlanceHubFont.medium(15))
-                        .foregroundStyle(HubPalette.espressoMuted)
-                        .multilineTextAlignment(.center)
-                        .frame(maxWidth: .infinity)
-                        .frame(minHeight: 140)
                 }
             }
+            .insightsFullWidthTile()
             .opacity(appeared ? 1 : 0)
             .offset(y: appeared ? 0 : 10)
             .animation(.easeOut(duration: 0.32).delay(0.06), value: appeared)
         }
+        .insightsFullWidthTile()
+    }
+
+    private var categorySectionSubtitle: String? {
+        if displayData.hasMinimumQuizHistory {
+            return categorySectionTrailing
+        }
+        return "Your strengths will appear after 3 quizzes"
     }
 
     private var trajectorySection: some View {
         VStack(alignment: .leading, spacing: InsightsLayout.rowSpacing) {
             insightsSectionHeader(
                 title: "Quiz trajectory",
-                subtitle: displayData.hasMinimumQuizHistory ? "last 10 days" : nil
+                subtitle: trajectorySectionSubtitle
             )
 
             InsightsSolidCard {
-                if displayData.hasMinimumQuizHistory {
-                    quizSparkline(height: InsightsLayout.trajectoryHeight, showAxes: true)
-                } else {
-                    Text(insightsPlainText("Your trajectory will appear after 3 quizzes"))
-                        .font(GlanceHubFont.medium(15))
-                        .foregroundStyle(HubPalette.espressoMuted)
-                        .multilineTextAlignment(.center)
-                        .frame(maxWidth: .infinity)
-                        .frame(minHeight: InsightsLayout.trajectoryHeight)
-                }
+                quizSparkline(
+                    height: InsightsLayout.trajectoryHeight,
+                    showAxes: true,
+                    points: displayData.hasMinimumQuizHistory ? displayData.recentQuizTrend : []
+                )
             }
+            .insightsFullWidthTile()
         }
+        .insightsFullWidthTile()
         .opacity(appeared ? 1 : 0)
         .offset(y: appeared ? 0 : 12)
         .animation(.easeOut(duration: 0.28).delay(0.12), value: appeared)
+    }
+
+    private var trajectorySectionSubtitle: String? {
+        if displayData.hasMinimumQuizHistory {
+            return "last 10 days"
+        }
+        return "Your trajectory will appear after 3 quizzes"
     }
 
     // MARK: - Metric cells
@@ -662,13 +797,17 @@ struct GlanceSATProgressScreen: View {
     }
 
     private func categoryIsReady(_ name: String) -> Bool {
-        viewModel.isCategoryReady(name)
+        #if DEBUG
+        if debugInsightsUseMockValues {
+            return true
+        }
+        #endif
+        return viewModel.isCategoryReady(name)
     }
 
     @ViewBuilder
-    private func quizSparkline(height: CGFloat, showAxes: Bool) -> some View {
+    private func quizSparkline(height: CGFloat, showAxes: Bool, points: [QuizTrendPoint]) -> some View {
         GeometryReader { geo in
-            let points = displayData.recentQuizTrend
             let width = geo.size.width
             let plotHeight = geo.size.height
             let leftPad: CGFloat = showAxes ? 28 : 4
@@ -678,7 +817,8 @@ struct GlanceSATProgressScreen: View {
             let cgPoints = quizTrendCGPoints(points: points, leftPad: leftPad, plotW: plotW, plotH: plotH)
             let lineShape = quizTrendLinePath(cgPoints: cgPoints)
             let areaShape = quizTrendAreaPath(cgPoints: cgPoints, plotFloor: plotH)
-            let trimEnd = appeared && displayData.hasMinimumQuizHistory ? min(1, max(0, insightsChartReveal)) : 0
+            let hasTrendData = displayData.hasMinimumQuizHistory && !points.isEmpty
+            let trimEnd = appeared && hasTrendData ? min(1, max(0, insightsChartReveal)) : 0
 
             ZStack(alignment: .topLeading) {
                 if showAxes {
@@ -740,7 +880,7 @@ struct GlanceSATProgressScreen: View {
                                 Circle()
                                     .strokeBorder(HubPalette.plantDeep, lineWidth: 2)
                             )
-                            .opacity(displayData.hasMinimumQuizHistory && appeared ? insightsChartReveal : 0)
+                            .opacity(hasTrendData && appeared ? insightsChartReveal : 0)
                             .position(x: point.x, y: point.y)
                     }
                 }
@@ -752,6 +892,13 @@ struct GlanceSATProgressScreen: View {
 }
 
 // MARK: - Components
+
+private extension View {
+    /// Expand Insights tiles/graphs to the column width with symmetric horizontal centering.
+    func insightsFullWidthTile() -> some View {
+        frame(maxWidth: .infinity, alignment: .center)
+    }
+}
 
 private struct OverviewMetricSquareCell<Content: View>: View {
     let content: Content
@@ -783,7 +930,7 @@ private struct InsightsSolidCard<Content: View>: View {
     var body: some View {
         content
             .padding(InsightsLayout.innerPadding)
-            .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .topLeading)
+            .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .top)
             .background {
                 RoundedRectangle(cornerRadius: cornerRadius, style: .continuous)
                     .fill(HubPalette.oatmeal)

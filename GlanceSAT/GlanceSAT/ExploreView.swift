@@ -509,10 +509,30 @@ private func libraryWordLoadingPlaceholder(maxHeight: CGFloat) -> some View {
     .padding(24)
     .frame(maxWidth: .infinity, alignment: .leading)
     .background {
-        GlanceGlassCardChrome.background()
+        HubSolidCardChrome.background()
     }
     .frame(maxHeight: maxHeight, alignment: .center)
     .redacted(reason: .placeholder)
+}
+
+private func libraryWordFailedPlaceholder(maxHeight: CGFloat, onRetry: @escaping () -> Void) -> some View {
+    VStack(spacing: 16) {
+        Text("Failed to load")
+            .font(GlanceHubFont.medium(17))
+            .foregroundStyle(HubPalette.espressoMuted)
+        Button(action: onRetry) {
+            Label("Retry", systemImage: "arrow.clockwise")
+                .font(GlanceHubFont.medium(15))
+        }
+        .buttonStyle(.bordered)
+        .tint(HubPalette.plantDeep)
+    }
+    .frame(maxWidth: .infinity)
+    .padding(24)
+    .background {
+        HubSolidCardChrome.background()
+    }
+    .frame(maxHeight: maxHeight, alignment: .center)
 }
 
 /// TikTok-style vertical paging: one swipe always moves exactly one word.
@@ -667,6 +687,12 @@ private struct LibraryWordPageContainer: View {
                 Group {
                     if let word = viewModel.word(for: wordID) {
                         ExploreWordPageCard(word: word, maxContentHeight: cardMaxHeight)
+                    } else if viewModel.wordLoadState(for: wordID) == .failed {
+                        libraryWordFailedPlaceholder(maxHeight: cardMaxHeight) {
+                            Task {
+                                await viewModel.retryLoadWord(id: wordID, modelContext: modelContext)
+                            }
+                        }
                     } else {
                         libraryWordLoadingPlaceholder(maxHeight: cardMaxHeight)
                     }
@@ -737,7 +763,7 @@ private struct ExploreWordPageCard: View {
         .fixedSize(horizontal: false, vertical: true)
         .animation(.easeInOut(duration: 0.22), value: sensePage)
         .background {
-            GlanceGlassCardChrome.background()
+            HubSolidCardChrome.background()
         }
         .onChange(of: word.id) { _, _ in
             sensePage = 0
@@ -823,7 +849,7 @@ private struct ExploreWordPageCard: View {
                         .padding(.top, 6)
                 }
 
-                if let body = originOrHookBody {
+                if GlanceProductSurface.showsWordEtymologyAndHooks, let body = originOrHookBody {
                     Text(originOrHookTitle)
                         .font(GlanceHubFont.semibold(12))
                         .tracking(0.6)

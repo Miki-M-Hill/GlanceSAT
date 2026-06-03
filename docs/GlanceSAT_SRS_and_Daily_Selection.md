@@ -4,7 +4,7 @@
 |-------|--------|
 | **Audience** | Engineering, product, pedagogy |
 | **Source of truth** | `SRSEngine.swift`, `DailyWordBatchService.swift`, `SupplementalQuizPlanner.swift`, `Word.swift` |
-| **Last updated** | May 2026 |
+| **Last updated** | June 2026 |
 
 ---
 
@@ -90,6 +90,8 @@ Widget Know/Reveal buttons on the vocabulary widget were removed from the UI; qu
 
 ## Part 2 — Daily batch (the “daily 10”)
 
+> **Full walkthrough:** [GlanceSAT_Todays_10_Daily_Words.md](GlanceSAT_Todays_10_Daily_Words.md) — 70/30 split, rolling queue, calendar lock, persisted new/review counts, and diagrams.
+
 **File:** `GlanceSAT/GlanceSAT/DailyWordBatchService.swift`  
 **Cap:** `maxDailyWords = 10`; **effective cap** = `FreemiumLimits.effectiveDailyWordCount` (3 free / 10 premium).
 
@@ -128,42 +130,28 @@ New selection runs only when:
 
 Triggered from: app launch bootstrap, Today tab sync, scene active, timezone change, quiz completion snapshot refresh, etc.
 
-### 2.4 `selectNewBatch` (normal path)
+### 2.4 `selectMixedBatch70_30` (normal path)
 
-Runs when today has no valid persisted batch.
+Runs whenever a **new** batch is built (`selectNewBatchPool` → used by `refresh` for today and the rolling queue).
 
-**Step A — Onboarding seeding (once per baseline)**
+**Target split:** ~**70% review** / ~**30% new** (at least **1** new word when `cap ≥ 1`).
 
-If user completed onboarding and `diagnosticBaseline` changed since last seed:
+| Pool | Predicate | Sort (pre-shuffle) | Quota (cap = 10) |
+|------|-----------|-------------------|------------------|
+| **Review** | `status != "new"` and `nextReviewDate <= targetDate` | `onboardingRank` ↑, `nextReviewDate` ↑ | **7** |
+| **New** | `status == "new"` | `randomSortHash` ↑ | **3** |
 
-- `selectSeededNewBatch` uses difficulty bands from `DiagnosticBaseline`:
+Each pool is oversampled (`quota × 4`), shuffled with `DayKeyedRNG(dayKey + "-review"` / `"-new"`), then truncated to quota.
 
-| Baseline | Difficulty range | Sort bias |
-|----------|------------------|-----------|
-| Getting Started | 1–2 | easier first |
-| Momentum Growing | 2–3 | harder first |
-| Solid Foundation | 3–4 | harder first |
-| Already Ahead | 4–6 | harder first |
+**Deficits:** If reviews are short, fill with extra **new**; if new are short, fill with extra **reviews**.
 
-- Pulls large due pool (`nextReviewDate <= today`), shuffles with `DayKeyedRNG(dayKey)`, fills within band with relaxed ranges, then catalog fallback if needed.
-- Marks baseline applied in `UserDefaults` so this runs **once** per baseline change.
+**Merge:** `reviews + new` → shuffle with `dayKey + "-mixed"` (carousel/quiz order).
 
-**Step B — Standard daily selection** (after seeding handled)
+**Safety:** If still `< cap`, `selectCatalogFallbackBatch` (frequency/difficulty/onboarding rank, day shuffle, prefer unseen).
 
-1. **SRS review pool:** Fetch words where `nextReviewDate <= referenceDate` **and** `status != "new"`, sorted by:
-   - `onboardingRank` ascending (boss targets first)
-   - `nextReviewDate` ascending  
-   Limit: `max(cap * 4, cap)`. Shuffle with `DayKeyedRNG(dayKey + "-review")`. Take first **cap** words.
+**Metadata:** IDs chosen from the new pool are stored in `dailyNewWordIDs[dayKey]` for stable Today “X new · Y review” labels.
 
-2. **Unseen fill:** If fewer than `cap`, add **`status == "new"`** words via `selectShuffledUnseenWords`:
-   - Sorted by `randomSortHash` (avoids alphabetical bias on device)
-   - Excludes already-selected IDs
-
-3. **Catalog fallback:** If still short, `selectCatalogFallbackBatch`:
-   - Sort: `frequencyRank` ↑, `difficulty` ↑, `onboardingRank` ↑
-   - Day-keyed shuffle; prefer **`new`** status words first in the shuffled pool
-
-4. If everything fails, final `selectCatalogFallbackBatch` with empty exclusions.
+**Onboarding seeding:** `selectSeededNewBatch` (difficulty bands from `DiagnosticBaseline`) remains in the file but is **not** invoked by `refresh` as of June 2026.
 
 ### 2.5 Sort descriptors (reference)
 
@@ -191,8 +179,8 @@ FNV-style hash of `calendarDayKey` (+ optional suffix like `"-review"`) seeds a 
 ### 2.7 Today tab vs batch
 
 - **Before primary quiz:** `dailyWords` from batch refresh (persisted or new).
-- **After primary quiz:** Outcome tags use **frozen** primary `rememberedWordIDs` / `missedWordIDs`; batch IDs unchanged.
-- Carousel label: `Today's Words · {n} new · {r} review` (counts from batch composition).
+- **After primary quiz:** Outcome tags use **frozen** primary `rememberedWordIDs` / `missedWordIDs`; batch IDs unchanged until midnight (calendar lock).
+- Carousel label: `Today's Words · {n} new · {r} review` — counts from **`dailyNewWordIDs`** at batch creation, not live `status` after SRS.
 
 ### 2.8 Supplemental quiz fill (not the daily ten)
 
@@ -254,4 +242,4 @@ flowchart TB
 | Freemium cap | `FreemiumLimits.swift` |
 | Quiz SRS flags | `QuizGenerator.swift`, `DailyQuizPersistence.swift` |
 
-For widget timeline behavior, see `GlanceSAT_Widget_Data_and_Timeline.md`. For a broader algorithm index, see `GlanceSAT_Algorithms_Reference.md`.
+For widget timeline behavior, see `GlanceSAT_Widget_Data_and_Timeline.md`. For step-by-step daily selection, see `GlanceSAT_Todays_10_Daily_Words.md`. For a broader algorithm index, see `GlanceSAT_Algorithms_Reference.md`.

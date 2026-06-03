@@ -67,10 +67,11 @@ final class ProgressViewModel: ObservableObject {
         quizAccuracy = quizAccuracyPercent(from: sessions)
         monthlyQuizAccuracyDelta = computeMonthlyQuizAccuracyDelta(from: sessions, now: now)
 
-        let uniqueSessionDayKeys = uniqueDayKeys(from: sessions.map(\.creditedQuizDayKey))
-        activeQuizDays = uniqueSessionDayKeys.count
-        currentStreak = QuizStreakCalculator.currentStreakDays(sessionDayKeys: Set(uniqueSessionDayKeys))
-        bestStreak = longestStreak(dayKeys: uniqueSessionDayKeys)
+        let sessionDayKeys = sessionDayKeysForStreaks(from: sessions, now: now)
+        activeQuizDays = sessionDayKeys.count
+        currentStreak = QuizStreakCalculator.currentStreakDays(sessionDayKeys: sessionDayKeys, referenceDate: now)
+        let strictBest = QuizStreakCalculator.longestStreakDays(sessionDayKeys: sessionDayKeys, referenceDate: now)
+        bestStreak = max(strictBest, currentStreak)
 
         recentQuizzes = computeRecentQuizzes(from: sessions)
         recentQuizTrend = computeTrend(from: sessions, now: now)
@@ -151,24 +152,12 @@ final class ProgressViewModel: ObservableObject {
         return points
     }
 
-    private func uniqueDayKeys(from keys: [String]) -> [String] {
-        Array(Set(keys)).sorted()
-    }
-
-    private func longestStreak(dayKeys: [String]) -> Int {
-        guard !dayKeys.isEmpty else { return 0 }
-        var best = 1
-        var current = 1
-        for i in 1 ..< dayKeys.count {
-            let prev = dayKeys[i - 1]
-            let now = dayKeys[i]
-            if QuizStreakCalculator.previousDayKey(from: now) == prev {
-                current += 1
-                best = max(best, current)
-            } else {
-                current = 1
-            }
+    private func sessionDayKeysForStreaks(from sessions: [QuizSession], now: Date) -> Set<String> {
+        var keys = Set(sessions.map(\.creditedQuizDayKey))
+        let todayKey = DailyWordBatchService.calendarDayKey(for: now)
+        if WidgetDailyState.isPrimaryQuizCompleted(for: todayKey) {
+            keys.insert(todayKey)
         }
-        return best
+        return keys
     }
 }

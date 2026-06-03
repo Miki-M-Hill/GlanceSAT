@@ -4,6 +4,7 @@
 //
 
 import CoreGraphics
+import UIKit
 
 /// Dynamic typography for lock-screen accessory widgets (rectangular + inline budgets).
 enum WidgetLockCardMetrics {
@@ -17,46 +18,106 @@ enum WidgetLockCardMetrics {
         let spacing: CGFloat = 3
         let maxWord: CGFloat = 28
         let minWord: CGFloat = 12
-        let maxBody: CGFloat = 17
-        let minBody: CGFloat = 9
+        let minBody: CGFloat = 8
+        let maxBodyCap: CGFloat = 36
+        let width = max(1, contentSize.width)
 
         var wordSize = maxWord
-        while wordSize > minWord, !fitsSingleLine(text: word, width: contentSize.width, fontSize: wordSize) {
+        while wordSize > minWord,
+              !fitsSingleLine(text: word, width: width, fontSize: wordSize, weight: .semibold) {
             wordSize -= 0.5
         }
+        wordSize = max(minWord, wordSize * 0.85)
 
-        let wordBlock = wordSize * 1.12
-        let bodyBudget = max(14, contentSize.height - spacing - wordBlock)
+        let wordBlock = textHeight(
+            text: word,
+            width: width,
+            fontSize: wordSize,
+            weight: .semibold,
+            maxLines: 1
+        )
+        let bodyBudget = max(10, contentSize.height - spacing - wordBlock)
 
-        var bodySize = maxBody
-        while bodySize > minBody {
-            let lines = estimatedLines(text: subtitle, width: contentSize.width, fontSize: bodySize)
-            let needed = CGFloat(lines) * bodySize * 1.14
-            if needed <= bodyBudget { break }
-            bodySize -= 0.5
-        }
-
-        let bodyLines = estimatedLines(text: subtitle, width: contentSize.width, fontSize: bodySize)
-        let used = wordBlock + spacing + CGFloat(bodyLines) * bodySize * 1.14
-        if used < contentSize.height * 0.94 {
-            let slack = contentSize.height - used
-            wordSize = min(maxWord, wordSize + slack * 0.42)
-        }
+        let bodyCap = max(minBody, min(maxBodyCap, bodyBudget))
+        let bodySize = largestBodySize(
+            text: subtitle,
+            width: width,
+            budget: bodyBudget,
+            minSize: minBody,
+            maxSize: bodyCap
+        )
 
         return Values(wordSize: wordSize, bodySize: bodySize, spacing: spacing)
     }
 
-    private static func fitsSingleLine(text: String, width: CGFloat, fontSize: CGFloat) -> Bool {
-        estimatedWidth(text: text, fontSize: fontSize) <= width
+    /// Largest bold body size that still fits the full definition in the remaining height.
+    private static func largestBodySize(
+        text: String,
+        width: CGFloat,
+        budget: CGFloat,
+        minSize: CGFloat,
+        maxSize: CGFloat
+    ) -> CGFloat {
+        guard !text.isEmpty, budget > 0 else { return minSize }
+
+        var low = minSize
+        var high = maxSize
+        var best = minSize
+
+        while low <= high {
+            let mid = (low + high) / 2
+            let height = textHeight(text: text, width: width, fontSize: mid, weight: .bold)
+            if height <= budget - 1 {
+                best = mid
+                low = mid + 0.25
+            } else {
+                high = mid - 0.25
+            }
+        }
+
+        return best
     }
 
-    private static func estimatedWidth(text: String, fontSize: CGFloat) -> CGFloat {
-        CGFloat(text.count) * fontSize * 0.52
+    private static func fitsSingleLine(
+        text: String,
+        width: CGFloat,
+        fontSize: CGFloat,
+        weight: UIFont.Weight
+    ) -> Bool {
+        let font = UIFont.systemFont(ofSize: fontSize, weight: weight)
+        let measured = (text as NSString).size(withAttributes: [.font: font]).width
+        return measured <= width
     }
 
-    private static func estimatedLines(text: String, width: CGFloat, fontSize: CGFloat) -> Int {
+    private static func textHeight(
+        text: String,
+        width: CGFloat,
+        fontSize: CGFloat,
+        weight: UIFont.Weight,
+        maxLines: Int = 0
+    ) -> CGFloat {
         guard !text.isEmpty else { return 0 }
-        let charsPerLine = max(4, Int(width / max(4.2, fontSize * 0.48)))
-        return max(1, Int(ceil(Double(text.count) / Double(charsPerLine))))
+
+        let font = UIFont.systemFont(ofSize: fontSize, weight: weight)
+        let paragraph = NSMutableParagraphStyle()
+        paragraph.lineBreakMode = .byWordWrapping
+        if maxLines > 0 {
+            paragraph.maximumLineHeight = font.lineHeight
+            paragraph.minimumLineHeight = font.lineHeight
+        }
+
+        var bounds = CGRect(
+            x: 0,
+            y: 0,
+            width: width,
+            height: maxLines > 0 ? font.lineHeight * CGFloat(maxLines) : .greatestFiniteMagnitude
+        )
+        let box = (text as NSString).boundingRect(
+            with: bounds.size,
+            options: [.usesLineFragmentOrigin, .usesFontLeading],
+            attributes: [.font: font, .paragraphStyle: paragraph],
+            context: nil
+        )
+        return ceil(box.height)
     }
 }

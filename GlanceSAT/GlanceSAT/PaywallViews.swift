@@ -67,9 +67,9 @@ struct AppPaywallScreen: View {
                             AppPaywallPlanRow(
                                 title: plan.appPaywallTitle,
                                 priceLabel: entitlementManager.localizedPriceLabel(for: plan),
-                                savingsPercent: entitlementManager.savingsPercent(for: plan, visiblePlans: visiblePlans),
+                                dailyPriceLabel: entitlementManager.localizedDailyPriceLabel(for: plan),
                                 isSelected: selectedPlan == plan,
-                                showsSavings: plan != .oneMonth
+                                showsDailyPrice: plan != .oneMonth
                             ) {
                                 selectedPlan = plan
                             }
@@ -89,9 +89,9 @@ struct AppPaywallScreen: View {
 private struct AppPaywallPlanRow: View {
     let title: String
     let priceLabel: String
-    let savingsPercent: Int?
+    let dailyPriceLabel: String?
     let isSelected: Bool
-    let showsSavings: Bool
+    let showsDailyPrice: Bool
     let onSelect: () -> Void
 
     var body: some View {
@@ -103,8 +103,8 @@ private struct AppPaywallPlanRow: View {
                     Text(priceLabel)
                         .font(.system(size: 15, weight: .medium))
                         .foregroundStyle(OnboardingColors.secondaryText)
-                    if showsSavings, let savingsPercent, savingsPercent > 0 {
-                        Text("Save \(savingsPercent)% vs monthly")
+                    if showsDailyPrice, let dailyPriceLabel {
+                        Text(dailyPriceLabel)
                             .font(.system(size: 15, weight: .semibold))
                             .foregroundStyle(OnboardingColors.hubOrange)
                     }

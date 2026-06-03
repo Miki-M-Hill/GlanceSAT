@@ -33,6 +33,10 @@ final class WidgetStudioViewModel {
         if let st = WidgetStyle(rawValue: styleRaw) {
             selectedStyle = st
         }
+        if !GlanceProductSurface.showsWordEtymologyAndHooks,
+           selectedStyle == .etymology || selectedStyle == .rich {
+            selectedStyle = .definition
+        }
         selectedTheme = WidgetTheme.matchingStoredName(themeRaw)
         switch typoRaw {
         case "small": typographyScale = .small

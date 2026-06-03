@@ -18,6 +18,7 @@ enum WidgetDailyState {
         defaults.set(streakDays, forKey: streakDaysKey)
         defaults.set(Date().timeIntervalSince1970, forKey: lastQuizCompletionTimestampKey)
         WidgetCenter.shared.reloadAllTimelines()
+        WidgetTimelineReloader.scheduleVocabularyReload()
     }
 
     /// Clears the primary-quiz-done flag when it matches `todayKey` (widget returns to word rotation).

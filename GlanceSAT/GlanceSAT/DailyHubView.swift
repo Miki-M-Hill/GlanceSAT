@@ -58,6 +58,7 @@ struct DailyHubView: View {
     @AppStorage("debugShowsPostQuizToday") private var debugShowsPostQuizToday = false
     #if DEBUG
     @AppStorage("debug.forcePreQuizToday") private var debugForcePreQuizToday = false
+    @State private var debugShowsMasteryCelebration = false
     #endif
     /// DEBUG: -1 = follow real state, 0 = force healthy, 1 = force wilted.
     @AppStorage("debugPlantWiltPreview") private var debugPlantWiltPreview = -1
@@ -94,8 +95,8 @@ struct DailyHubView: View {
     @State private var showPlantCelebration = false
     @State private var confettiHasFallen = false
     @State private var plantWiggle = false
-    /// Full spin on Y (degrees); reset without animation when the plant asset changes, then animated to 0 (three full turns).
-    @State private var plantTornadoRotationY: Double = 0
+    /// Celebration twirl (three full turns → rest) via smooth 2D rotation.
+    @State private var plantCelebrationTwirlDegrees: Double = 0
     @State private var plantFallYOffset: CGFloat = 0
     @State private var plantFallScale: CGFloat = 1
     /// Wilt entrance: pitch/tilt from upright into the wilted asset pose (pivots at pot rim).
@@ -120,12 +121,20 @@ struct DailyHubView: View {
         dailyWords
     }
 
-    private var reviewWordCount: Int {
-        displayWords.filter { $0.status.lowercased() != "new" || $0.totalAttempts > 0 || $0.successfulRecalls > 0 }.count
+    private var todayNewWordIDs: Set<UUID> {
+        DailyWordBatchService.loadPersistedTodayNewWordIDs()
     }
 
     private var newWordCount: Int {
-        max(0, displayWords.count - reviewWordCount)
+        let newIDs = todayNewWordIDs
+        if newIDs.isEmpty {
+            return displayWords.filter { $0.status.lowercased() == "new" }.count
+        }
+        return displayWords.filter { newIDs.contains($0.id) }.count
+    }
+
+    private var reviewWordCount: Int {
+        max(0, displayWords.count - newWordCount)
     }
 
     private var quizStreakDays: Int {
@@ -197,11 +206,6 @@ struct DailyHubView: View {
         showWiltedPlant ? evolutionPlantStage.wiltedAccessibilityLabel : evolutionPlantStage.accessibilityLabel
     }
 
-    /// Day 7+ plants are wider in the streak bar and can overlap the centered subtitle.
-    private var streakSubtitleClearsLargePlant: Bool {
-        evolutionPlantStage.evolutionTier >= StreakPlantStage.day7.evolutionTier
-    }
-
     private var hasCompletedQuizForDisplay: Bool {
         #if DEBUG
         if debugForcePreQuizToday {
@@ -214,60 +218,11 @@ struct DailyHubView: View {
         return quizCompletedToday
     }
 
-    private enum StreakBubbleMetrics {
-        static let visibleCount = 7
-        static let emptyTrailing = 3
-        static let scrollWindowThreshold = 5
-        static let maxDayLabel = 1000
-        static let milestoneDays: Set<Int> = [1, 3, 7, 14, 30, 100, 365, 1000]
-    }
-
-    private struct StreakBubbleSlot: Identifiable {
-        let day: Int
-        let completed: Bool
-        let isMilestone: Bool
-
-        var id: Int { day }
-    }
-
-    /// Numbered streak bubbles (1…1000). When streak ≥ 5, window slides so three future days stay visible on the right.
-    private var streakBubbleSlots: [StreakBubbleSlot] {
-        let streak = min(displayedStreakDays, StreakBubbleMetrics.maxDayLabel)
-        let startDay: Int
-        if streak >= StreakBubbleMetrics.scrollWindowThreshold {
-            let filledVisible = StreakBubbleMetrics.visibleCount - StreakBubbleMetrics.emptyTrailing
-            startDay = max(1, streak - filledVisible + 1)
-        } else {
-            startDay = 1
-        }
-
-        let endDay = min(
-            startDay + StreakBubbleMetrics.visibleCount - 1,
-            StreakBubbleMetrics.maxDayLabel
-        )
-
-        let visibleRange = startDay ... endDay
-        return visibleRange.map { day in
-            StreakBubbleSlot(
-                day: day,
-                completed: day <= streak,
-                isMilestone: showsUpcomingMilestoneHighlight(day: day, visibleRange: visibleRange)
-            )
-        }
-    }
-
-    /// Next streak milestone (e.g. 7 after day 6). Highlight only when that day is on-screen in the bubble row.
-    private var nextStreakMilestoneDay: Int? {
-        let streak = displayedStreakDays
-        return StreakBubbleMetrics.milestoneDays.filter { $0 > streak }.min()
-    }
-
-    private func showsUpcomingMilestoneHighlight(day: Int, visibleRange: ClosedRange<Int>) -> Bool {
-        guard let next = nextStreakMilestoneDay, day == next else { return false }
-        return visibleRange.contains(day)
-    }
-
     var body: some View {
+        hubWithModalPresentation
+    }
+
+    private var hubGeometryShell: some View {
         GeometryReader { proxy in
             let metrics = TodayHubLayoutMetrics(
                 size: proxy.size,
@@ -278,123 +233,146 @@ struct DailyHubView: View {
         }
         .frame(maxWidth: .infinity, maxHeight: .infinity)
         .background(HubPalette.linen)
-        .task {
-            await hydrateTodayWordsIfNeeded()
-            prefetchPrimaryQuizIfNeeded()
-            if scrolledCardID == nil {
-                scrolledCardID = displayWords.first?.id
-            }
-        }
-        .onReceive(NotificationCenter.default.publisher(for: .wordDatabaseDidChange)) { _ in
-            quizPreparation.reset()
-            triggerQuizPrefetchIfNeeded()
-            insightsCoordinator.scheduleRefresh(
-                container: modelContext.container,
-                sessions: quizSessions,
-                force: true
-            )
-        }
-        .onAppear {
-            Task {
+    }
+
+    private var hubWithLifecycleObservers: some View {
+        hubGeometryShell
+            .task {
                 await hydrateTodayWordsIfNeeded()
                 prefetchPrimaryQuizIfNeeded()
-            }
-            #if DEBUG
-            if debugForcePreQuizToday {
-                applyDebugPreQuizInMemoryState()
-            } else {
-                restoreTodayQuizCompletionFromWidgetState()
-            }
-            #else
-            restoreTodayQuizCompletionFromWidgetState()
-            #endif
-            runStreakPlantReconcile(playPendingAnimation: true)
-            triggerSupplementalPreloadIfNeeded()
-        }
-        .onChange(of: scenePhase) { _, phase in
-            guard phase == .active else { return }
-            Task {
-                await syncDailyWords()
-                prefetchPrimaryQuizIfNeeded()
-            }
-            guard didRunInitialStreakReconcile else { return }
-            if StreakPlantState.reconcileMissedDays() {
-                triggerWiltFall()
-            }
-        }
-        .onChange(of: entitlementManager.hasPremiumAccess) { _, _ in
-            Task { await syncDailyWords() }
-        }
-        .onChange(of: showDailyQuiz) { _, isPresented in
-            if !isPresented {
-                clearAllOptimisticQuizCTAState()
-                refreshPersistedQuizFlagsDeferred()
-            }
-        }
-        .onChange(of: dailyWords.map(\.id)) { _, _ in
-            triggerQuizPrefetchIfNeeded()
-            guard let first = displayWords.first?.id else {
-                scrolledCardID = nil
-                return
-            }
-            if scrolledCardID == nil || !displayWords.contains(where: { $0.id == scrolledCardID }) {
-                scrolledCardID = first
-            }
-        }
-        .onChange(of: hasCompletedQuizForDisplay) { _, completed in
-            if completed {
-                triggerSupplementalPreloadIfNeeded()
-            } else {
-                postQuizCardModels = []
-                maxPostQuizCardHeight = 0
-                quizPreparation.reset()
-                triggerQuizPrefetchIfNeeded()
-            }
-        }
-        .onChange(of: plantVisualToken) { oldValue, newValue in
-            guard didRunInitialStreakReconcile, oldValue != newValue else { return }
-            guard !isStreakPresentationFrozen else { return }
-            handlePlantVisualChange(from: oldValue, to: newValue)
-        }
-        #if DEBUG
-        .onChange(of: debugPlantWiltPreview) { _, newValue in
-            guard newValue == 1 else { return }
-            triggerWiltFall()
-        }
-        .onReceive(NotificationCenter.default.publisher(for: .debugResetTodayQuiz)) { _ in
-            quizPreparation.reset()
-            refreshPersistedQuizFlags()
-            if debugForcePreQuizToday {
-                applyDebugPreQuizInMemoryState()
-            } else {
-                restoreTodayQuizCompletionFromWidgetState()
-                if !quizCompletedToday {
-                    rememberedWordIDs = []
-                    missedWordIDs = []
-                    frozenPostQuizOutcomesByWordID = [:]
-                    supplementalRememberedWordIDs = []
-                    supplementalMissedWordIDs = []
+                if scrolledCardID == nil {
+                    scrolledCardID = displayWords.first?.id
                 }
             }
-            Task { await WidgetSnapshotWriter.refresh(modelContext: modelContext) }
-        }
-        #endif
-        .fullScreenCover(isPresented: $showDailyQuiz, onDismiss: {
-            resumePayloadForQuiz = nil
-            pendingPresentQuizAsSupplemental = false
-            isDailyQuizContentLoading = false
-            clearAllOptimisticQuizCTAState()
-            refreshPersistedQuizFlagsDeferred()
-            handleDailyQuizDismissed()
-        }) {
-            dailyQuizCover
-        }
-        .alert(quizAlertTitle, isPresented: $showQuizAlert) {
-            Button("OK", role: .cancel) {}
-        } message: {
-            Text(quizAlertMessage)
-        }
+            .onReceive(NotificationCenter.default.publisher(for: .wordDatabaseDidChange)) { _ in
+                quizPreparation.reset()
+                triggerQuizPrefetchIfNeeded()
+                insightsCoordinator.scheduleRefresh(
+                    container: modelContext.container,
+                    sessions: quizSessions,
+                    force: true
+                )
+            }
+            .onAppear {
+                Task {
+                    await hydrateTodayWordsIfNeeded()
+                    prefetchPrimaryQuizIfNeeded()
+                }
+                #if DEBUG
+                if debugForcePreQuizToday {
+                    applyDebugPreQuizInMemoryState()
+                } else {
+                    restoreTodayQuizCompletionFromWidgetState()
+                }
+                #else
+                restoreTodayQuizCompletionFromWidgetState()
+                #endif
+                runStreakPlantReconcile(playPendingAnimation: true)
+                triggerSupplementalPreloadIfNeeded()
+            }
+            .onChange(of: scenePhase) { _, phase in
+                guard phase == .active else { return }
+                Task {
+                    await syncDailyWords()
+                    prefetchPrimaryQuizIfNeeded()
+                }
+                guard didRunInitialStreakReconcile else { return }
+                if StreakPlantState.reconcileMissedDays() {
+                    triggerWiltFall()
+                }
+            }
+            .onChange(of: entitlementManager.hasPremiumAccess) { _, _ in
+                Task { await syncDailyWords() }
+            }
+            .onChange(of: showDailyQuiz) { _, isPresented in
+                if !isPresented {
+                    clearAllOptimisticQuizCTAState()
+                    refreshPersistedQuizFlagsDeferred()
+                }
+            }
+            .onChange(of: dailyWords.map(\.id)) { _, _ in
+                triggerQuizPrefetchIfNeeded()
+                guard let first = displayWords.first?.id else {
+                    scrolledCardID = nil
+                    return
+                }
+                if scrolledCardID == nil || !displayWords.contains(where: { $0.id == scrolledCardID }) {
+                    scrolledCardID = first
+                }
+            }
+            .onChange(of: hasCompletedQuizForDisplay) { _, completed in
+                if completed {
+                    triggerSupplementalPreloadIfNeeded()
+                } else {
+                    postQuizCardModels = []
+                    maxPostQuizCardHeight = 0
+                    quizPreparation.reset()
+                    triggerQuizPrefetchIfNeeded()
+                }
+            }
+            .onChange(of: plantVisualToken) { oldValue, newValue in
+                guard didRunInitialStreakReconcile, oldValue != newValue else { return }
+                guard !isStreakPresentationFrozen else { return }
+                handlePlantVisualChange(from: oldValue, to: newValue)
+            }
+            .modifier(DailyHubDebugLifecycleModifier(
+                onWiltPreview: triggerWiltFall,
+                onResetTodayQuiz: handleDebugResetTodayQuiz,
+                onPreviewMasteryCelebration: { debugShowsMasteryCelebration = true }
+            ))
     }
+
+    @ViewBuilder
+    private var hubWithModalPresentation: some View {
+        hubWithLifecycleObservers
+            .fullScreenCover(isPresented: $showDailyQuiz, onDismiss: handleDailyQuizCoverDismissed) {
+                dailyQuizCover
+            }
+            #if DEBUG
+            .fullScreenCover(isPresented: $debugShowsMasteryCelebration) {
+                DailyQuizMasteryCelebrationView(
+                    words: DailyQuizMasteryCelebrationView.previewWords,
+                    onContinue: { debugShowsMasteryCelebration = false }
+                )
+            }
+            #endif
+            .alert(quizAlertTitle, isPresented: $showQuizAlert) {
+                Button("OK", role: .cancel) {}
+            } message: {
+                Text(quizAlertMessage)
+            }
+    }
+
+    private func handleDailyQuizCoverDismissed() {
+        resumePayloadForQuiz = nil
+        pendingPresentQuizAsSupplemental = false
+        isDailyQuizContentLoading = false
+        clearAllOptimisticQuizCTAState()
+        refreshPersistedQuizFlagsDeferred()
+        handleDailyQuizDismissed()
+    }
+
+    #if DEBUG
+    private func handleDebugResetTodayQuiz() {
+        quizPreparation.reset()
+        refreshPersistedQuizFlags()
+        if debugForcePreQuizToday {
+            applyDebugPreQuizInMemoryState()
+        } else {
+            restoreTodayQuizCompletionFromWidgetState()
+            if !quizCompletedToday {
+                rememberedWordIDs = []
+                missedWordIDs = []
+                frozenPostQuizOutcomesByWordID = [:]
+                supplementalRememberedWordIDs = []
+                supplementalMissedWordIDs = []
+            }
+        }
+        Task { await WidgetSnapshotWriter.refresh(modelContext: modelContext) }
+    }
+    #else
+    private func handleDebugResetTodayQuiz() {}
+    #endif
 
     private var todayNavigationHeaderOpacity: CGFloat {
         let fadeDistance = GlanceDeviceLayout.proportional(56, in: GlanceDeviceLayout.screenHeight)
@@ -411,20 +389,6 @@ struct DailyHubView: View {
         }
     }
 
-    /// Faux header — matches onboarding top chrome title (uppercase GLANCE, sage green, tracking).
-    private func todayPageTitle(metrics: TodayHubLayoutMetrics) -> some View {
-        Text("Glance")
-            .font(.caption.weight(.bold))
-            .tracking(2)
-            .foregroundStyle(Color.primary)
-            .textCase(.uppercase)
-            .frame(maxWidth: .infinity)
-            .padding(.horizontal, metrics.horizontalContentInset)
-            .padding(.top, metrics.glanceHeaderTopPadding)
-            .padding(.bottom, metrics.scaled(16))
-    }
-
-    /// Clears the floating tab bar when scrolled to the end of post-quiz content.
     private func dailyScrollBottomInset(metrics: TodayHubLayoutMetrics) -> CGFloat {
         guard hasCompletedQuizForDisplay else { return max(16, metrics.scaled(16)) }
         let tabBar = RootTabBarLayout.scrollBottomPadding
@@ -453,12 +417,10 @@ struct DailyHubView: View {
                         }
                     )
 
-                todayPageTitle(metrics: metrics)
-                    .opacity(todayNavigationHeaderOpacity)
-
                 dailyHeader(metrics: metrics)
                 quizStateContent(metrics: metrics)
             }
+            .padding(.top, HubScreenHeaderLayout.scrollTopInset(screenHeight: metrics.size.height))
             .padding(.bottom, dailyScrollBottomInset(metrics: metrics))
         }
         .coordinateSpace(name: "todayHubScroll")
@@ -474,13 +436,35 @@ struct DailyHubView: View {
     }
 
     private func dailyHeader(metrics: TodayHubLayoutMetrics) -> some View {
-        streakBar(metrics: metrics)
-            .padding(.horizontal, metrics.horizontalContentInset)
-            .padding(.top, metrics.scaled(4))
-            .padding(
-                .bottom,
-                hasCompletedQuizForDisplay ? metrics.postQuizGlassSpacing : metrics.headerBottomPaddingPreQuiz
-            )
+        Group {
+            if hasCompletedQuizForDisplay {
+                SharedStreakBarView(
+                    metrics: metrics,
+                    streakDays: displayedStreakDays,
+                    evolutionPlantStage: evolutionPlantStage,
+                    titleOpacity: todayNavigationHeaderOpacity
+                ) {
+                    streakPlantVisual(metrics: metrics)
+                }
+            } else {
+                SharedStreakBarView(
+                    metrics: metrics,
+                    streakDays: displayedStreakDays,
+                    evolutionPlantStage: evolutionPlantStage,
+                    titleOpacity: todayNavigationHeaderOpacity,
+                    contentHorizontalInset: 0
+                ) {
+                    streakPlantVisual(metrics: metrics)
+                }
+                .todayWordCardWidthAligned(metrics: metrics)
+            }
+        }
+        .padding(
+            .bottom,
+            hasCompletedQuizForDisplay
+                ? metrics.postQuizGlassSpacing
+                : metrics.preQuizUniformSectionSpacing
+        )
     }
 
     @ViewBuilder
@@ -504,12 +488,18 @@ struct DailyHubView: View {
         }
     }
 
+    @ViewBuilder
     private func preQuizContent(metrics: TodayHubLayoutMetrics) -> some View {
-        VStack(alignment: .leading, spacing: metrics.scaled(12)) {
+        let cardsToCTAGap = metrics.preQuizLabelToCardsSpacing
+
+        VStack(alignment: .leading, spacing: 0) {
             carouselSection(metrics: metrics)
 
+            Spacer()
+                .frame(height: cardsToCTAGap)
+
             dailyCheckInHero(metrics: metrics)
-                .padding(.horizontal, metrics.horizontalContentInset)
+                .todayWordCardWidthAligned(metrics: metrics)
         }
     }
 
@@ -573,9 +563,7 @@ struct DailyHubView: View {
                 }
 
                 ToolbarItem(placement: .principal) {
-                    Text("Glance")
-                        .font(GlanceHubFont.semibold(17))
-                        .foregroundStyle(HubPalette.espresso)
+                    GlanceScreenTitle()
                         .frame(height: 44)
                 }
             }
@@ -585,121 +573,46 @@ struct DailyHubView: View {
         }
     }
 
-    private func streakBar(metrics: TodayHubLayoutMetrics) -> some View {
-        let subtitleClearsPlant = streakSubtitleClearsLargePlant
-        let plantStage = evolutionPlantStage
-        let subtitleFontSize = metrics.scaled(subtitleClearsPlant ? 17 : 18)
-        let subtitleLeadingInset = subtitleClearsPlant
-            ? metrics.streakPlantImageSize(for: plantStage) + metrics.scaled(10)
-            : metrics.scaled(12)
-
-        return ZStack(alignment: .top) {
-            Text("\(displayedStreakDays) day streak - \(evolutionPlantStage.message)")
-                .font(GlanceHubFont.semibold(subtitleFontSize))
-                .foregroundStyle(HubPalette.espressoMuted)
-                .lineLimit(1)
-                .minimumScaleFactor(subtitleClearsPlant ? 0.78 : 0.72)
-                .multilineTextAlignment(subtitleClearsPlant ? .leading : .center)
-                .frame(maxWidth: .infinity, alignment: subtitleClearsPlant ? .leading : .center)
-                .padding(.leading, subtitleLeadingInset)
-                .padding(.trailing, metrics.scaled(12))
-
-            HStack(spacing: 16) {
-                streakPlantVisual(metrics: metrics)
-
-                HStack(spacing: 9) {
-                    ForEach(streakBubbleSlots) { slot in
-                        streakDay(
-                            day: slot.day,
-                            completed: slot.completed,
-                            isMilestone: slot.isMilestone,
-                            metrics: metrics
-                        )
-                    }
-                }
-                .padding(.top, metrics.streakBubbleTopPadding)
-            }
-            .frame(maxWidth: .infinity, alignment: .leading)
-        }
-        .padding(.horizontal, metrics.streakBarHorizontalPadding)
-        .padding(.vertical, metrics.streakBarVerticalPadding)
-        .background(streakGlassBackground)
-    }
-
-    private var streakGlassBackground: some View {
-        GlanceAdaptiveGlassBackground(
-            cornerRadius: 24,
-            fillGradient: colorScheme == .dark ? nil : streakFillGradient,
-            strokeGradient: colorScheme == .dark ? nil : streakStrokeGradient
-        )
-    }
-
-    private var streakFillGradient: LinearGradient {
-        LinearGradient(
-            colors: [
-                Color.white.opacity(0.62),
-                HubPalette.linen.opacity(0.35),
-                plantAccent.opacity(0.10),
-            ],
-            startPoint: .topLeading,
-            endPoint: .bottomTrailing
-        )
-    }
-
-    private var streakStrokeGradient: LinearGradient {
-        LinearGradient(
-            colors: [
-                Color.white.opacity(0.72),
-                plantAccent.opacity(0.20),
-                Color.black.opacity(0.035),
-            ],
-            startPoint: .topLeading,
-            endPoint: .bottomTrailing
-        )
-    }
-
     private var plantPotPivot: UnitPoint {
         UnitPoint(x: 0.5, y: 0.88)
     }
 
     private func streakPlantVisual(metrics: TodayHubLayoutMetrics) -> some View {
-        let plantSize = metrics.streakPlantImageSize(for: evolutionPlantStage)
-        let glowSize = metrics.scaled(78)
+        let plantBounds = StreakBarLayout.scaledPlantBounds(scaled: metrics.scaled)
+        let displayScale = StreakBarLayout.plantDisplayScale(for: evolutionPlantStage)
+        let plantVerticalOffset = StreakBarLayout.plantVerticalOffset(for: evolutionPlantStage, bounds: plantBounds)
+        let celebrationWiggle = showPlantCelebration ? (plantWiggle ? 5.5 : -5.5) : 0.0
 
         return ZStack {
-            Circle()
-                .fill(plantAccent.opacity(0.10))
-                .frame(width: glowSize, height: glowSize)
-                .blur(radius: 4)
-
             Image(plantAssetName)
                 .resizable()
                 .renderingMode(.original)
                 .interpolation(.high)
                 .antialiased(true)
                 .scaledToFit()
-                .frame(width: plantSize, height: plantSize)
+                .frame(maxWidth: plantBounds.width, maxHeight: plantBounds.height)
+                .scaleEffect(displayScale, anchor: StreakBarLayout.plantScaleAnchor)
                 .scaleEffect(
                     plantTwirlSettleScale * plantFallScale * (showPlantCelebration ? 1.06 : 1.0),
                     anchor: plantPotPivot
                 )
-                .offset(y: plantFallYOffset + plantWiltStemLift)
+                .offset(y: plantVerticalOffset + plantFallYOffset + plantWiltStemLift)
                 .rotation3DEffect(
-                    .degrees(plantTornadoRotationY),
-                    axis: (x: 0, y: 1, z: 0),
-                    anchor: plantPotPivot,
-                    anchorZ: 0,
-                    perspective: 0.78
-                )
-                .rotation3DEffect(
-                    .degrees(plantTornadoRotationY * 0.1 + plantWiltDroopPitch),
+                    .degrees(plantWiltDroopPitch),
                     axis: (x: 1, y: 0, z: 0),
                     anchor: plantPotPivot,
                     anchorZ: 0,
                     perspective: 0.62
                 )
+                .rotation3DEffect(
+                    .degrees(plantCelebrationTwirlDegrees),
+                    axis: (x: 0, y: 1, z: 0),
+                    anchor: plantPotPivot,
+                    anchorZ: 0,
+                    perspective: 0.62
+                )
                 .rotationEffect(
-                    .degrees(plantTornadoRotationY * 0.26 + plantWiltDroopRoll + (showPlantCelebration ? (plantWiggle ? 5.5 : -5.5) : 0)),
+                    .degrees(plantWiltDroopRoll + celebrationWiggle),
                     anchor: plantPotPivot
                 )
                 .id(plantAssetName)
@@ -717,18 +630,17 @@ struct DailyHubView: View {
                 }
             }
         }
-        .frame(width: metrics.streakPlantFrame, height: metrics.streakPlantFrame)
-        .offset(y: evolutionPlantStage == .day0 && !showWiltedPlant ? metrics.scaled(5) : 0)
         .animation(.spring(response: 0.38, dampingFraction: 0.58), value: plantVisualToken)
+        .animation(.spring(response: 0.74, dampingFraction: 0.54), value: plantCelebrationTwirlDegrees)
         .animation(.easeIn(duration: 1.12), value: confettiHasFallen)
         .animation(.easeOut(duration: 0.24), value: showPlantCelebration)
         .accessibilityLabel("Streak plant, \(streakPlantAccessibilityLabel)")
         .allowsHitTesting(false)
     }
 
-    /// Slight shrink while spun edge-on so the twirl reads as moving through space.
+    /// Slight shrink while spun edge-on on the Y axis so the twirl reads as moving through space.
     private var plantTwirlSettleScale: CGFloat {
-        let progress = plantTornadoRotationY / 1080.0
+        let progress = plantCelebrationTwirlDegrees / 1080.0
         return CGFloat(0.86 + 0.14 * (1.0 - progress))
     }
 
@@ -828,7 +740,9 @@ struct DailyHubView: View {
         showPlantCelebration = false
         confettiHasFallen = true
         plantWiggle = false
-        plantTornadoRotationY = 0
+        withAnimation(.easeOut(duration: 0.24)) {
+            plantCelebrationTwirlDegrees = 0
+        }
         plantFallYOffset = 0
         plantFallScale = 1
 
@@ -865,13 +779,15 @@ struct DailyHubView: View {
         plantFallYOffset = 0
         plantFallScale = 1
         resetWiltDroopPose()
+
         var reset = Transaction()
         reset.disablesAnimations = true
         withTransaction(reset) {
-            plantTornadoRotationY = 1080
+            plantCelebrationTwirlDegrees = 1080
         }
+
         withAnimation(.spring(response: 0.74, dampingFraction: 0.54)) {
-            plantTornadoRotationY = 0
+            plantCelebrationTwirlDegrees = 0
         }
         triggerPlantCelebration()
     }
@@ -906,68 +822,10 @@ struct DailyHubView: View {
         }
     }
 
-    private func streakDay(day: Int, completed: Bool, isMilestone: Bool, metrics: TodayHubLayoutMetrics) -> some View {
-        let bubbleSize = metrics.streakBubbleSize(isMilestone: isMilestone)
-        let labelFontSize: CGFloat = day >= 100 ? 9 : (day >= 10 ? 10 : 11)
-
-        return VStack(spacing: 5) {
-            Text("\(day)")
-                .font(GlanceHubFont.semibold(labelFontSize))
-                .foregroundStyle(
-                    isMilestone ? HubPalette.espresso : HubPalette.espressoMuted
-                )
-                .lineLimit(1)
-                .minimumScaleFactor(0.7)
-
-            ZStack {
-                if isMilestone, !completed {
-                    Circle()
-                        .strokeBorder(HubPalette.ember.opacity(0.55), lineWidth: 1.4)
-                        .frame(width: bubbleSize + 4, height: bubbleSize + 4)
-                }
-
-                Circle()
-                    .fill(completed ? plantAccent : HubPalette.oatmeal.opacity(0.72))
-                    .frame(width: bubbleSize, height: bubbleSize)
-                    .overlay(
-                        Circle()
-                            .strokeBorder(
-                                milestoneStrokeColor(completed: completed, isMilestone: isMilestone),
-                                lineWidth: isMilestone ? 1.2 : 0.8
-                            )
-                    )
-
-                if completed {
-                    Image(systemName: "checkmark")
-                        .font(GlanceHubFont.bold(isMilestone ? 12 : 11))
-                        .foregroundStyle(HubPalette.linen)
-                }
-            }
-        }
-        .frame(maxWidth: .infinity)
-        .accessibilityLabel(streakBubbleAccessibilityLabel(day: day, completed: completed, isMilestone: isMilestone))
-    }
-
-    private func milestoneStrokeColor(completed: Bool, isMilestone: Bool) -> Color {
-        guard isMilestone else {
-            return Color.white.opacity(completed ? 0.42 : 0.58)
-        }
-        if completed {
-            return HubPalette.ember.opacity(0.65)
-        }
-        return Color.white.opacity(0.58)
-    }
-
-    private func streakBubbleAccessibilityLabel(day: Int, completed: Bool, isMilestone: Bool) -> String {
-        let status = completed ? "completed" : "upcoming"
-        let milestone = isMilestone ? ", milestone day" : ""
-        return "Streak day \(day), \(status)\(milestone)"
-    }
-
     @ViewBuilder
     private func dailyCheckInHero(metrics: TodayHubLayoutMetrics) -> some View {
-        let heroPadding = metrics.scaled(18)
-        let heroSpacing = metrics.scaled(8)
+        let heroPadding = metrics.scaled(20)
+        let heroSpacing = metrics.scaled(10)
 
         if hasCompletedQuizForDisplay {
             VStack(alignment: .leading, spacing: heroSpacing) {
@@ -1005,10 +863,7 @@ struct DailyHubView: View {
                 }
             }
             .padding(heroPadding)
-            .background {
-                heroGlassBackground
-                    .allowsHitTesting(false)
-            }
+            .background(HubSolidCardChrome.background())
         } else {
             VStack(alignment: .leading, spacing: heroSpacing) {
                 Text(heroCopy)
@@ -1023,16 +878,8 @@ struct DailyHubView: View {
                 dailyQuizCTA(metrics: metrics)
             }
             .padding(heroPadding)
-            .background(heroGlassBackground)
+            .background(HubSolidCardChrome.background())
         }
-    }
-
-    private var heroGlassBackground: some View {
-        GlanceAdaptiveGlassBackground(
-            cornerRadius: 28,
-            fillGradient: colorScheme == .dark ? nil : heroFillGradient,
-            strokeGradient: colorScheme == .dark ? nil : heroStrokeGradient
-        )
     }
 
     private func postQuizSecondaryQuizButton(title: String, action: @escaping () -> Void) -> some View {
@@ -1055,30 +902,6 @@ struct DailyHubView: View {
         }
         .buttonStyle(.plain)
         .contentShape(shape)
-    }
-
-    private var heroFillGradient: LinearGradient {
-        LinearGradient(
-            colors: [
-                Color.white.opacity(0.62),
-                HubPalette.linen.opacity(0.38),
-                HubPalette.amberAccent.opacity(0.10),
-            ],
-            startPoint: .topLeading,
-            endPoint: .bottomTrailing
-        )
-    }
-
-    private var heroStrokeGradient: LinearGradient {
-        LinearGradient(
-            colors: [
-                Color.white.opacity(0.78),
-                HubPalette.ember.opacity(0.18),
-                Color.black.opacity(0.04),
-            ],
-            startPoint: .topLeading,
-            endPoint: .bottomTrailing
-        )
     }
 
     private var heroCopy: String {
@@ -1140,7 +963,7 @@ struct DailyHubView: View {
     private func carouselSection(metrics: TodayHubLayoutMetrics) -> some View {
         let inset = max(0, (metrics.layoutWidth - metrics.cardWidth) / 2)
 
-        return VStack(alignment: .center, spacing: metrics.carouselSectionSpacing) {
+        return VStack(alignment: .center, spacing: metrics.preQuizLabelToCardsSpacing) {
             if !hasCompletedQuizForDisplay {
                 VStack(alignment: .center, spacing: metrics.todaysWordsLabelSpacing) {
                     Text("Today's Words · \(newWordCount) new · \(reviewWordCount) review")
@@ -1215,6 +1038,7 @@ struct DailyHubView: View {
         }
         .scrollTargetBehavior(.viewAligned)
         .scrollPosition(id: $scrolledCardID, anchor: .center)
+        .frame(minHeight: metrics.preQuizCardMinHeight)
     }
 
     private func carouselCardIsFocused(wordID: Word.ID) -> Bool {
@@ -1263,8 +1087,8 @@ struct DailyHubView: View {
             return
         }
 
-        let titleSize = max(28, (34 * metrics.verticalScale).rounded(.toNearestOrAwayFromZero))
-        let padding = max(16, (22 * metrics.verticalScale).rounded(.toNearestOrAwayFromZero))
+        let titleSize = max(30, (36 * metrics.verticalScale).rounded(.toNearestOrAwayFromZero))
+        let padding = max(18, (24 * metrics.verticalScale).rounded(.toNearestOrAwayFromZero))
 
         postQuizCardModels = displayWords.map { word in
             DailyHubPostQuizCardModel(
@@ -1281,8 +1105,10 @@ struct DailyHubView: View {
                         exampleSentence: $0.exampleSentence
                     )
                 },
-                originTitle: word.cardOriginOrHookBody == nil ? nil : word.cardOriginOrHookTitle,
-                originBody: word.cardOriginOrHookBody,
+                originTitle: GlanceProductSurface.showsWordEtymologyAndHooks && word.cardOriginOrHookBody != nil
+                    ? word.cardOriginOrHookTitle
+                    : nil,
+                originBody: GlanceProductSurface.showsWordEtymologyAndHooks ? word.cardOriginOrHookBody : nil,
                 connotationSource: word
             )
         }
@@ -1302,7 +1128,7 @@ struct DailyHubView: View {
         .padding(GlanceDeviceLayout.proportional(22, in: GlanceDeviceLayout.screenHeight))
         .frame(maxWidth: .infinity, alignment: .leading)
         .background {
-            GlanceAdaptiveGlassBackground(cornerRadius: 24)
+            HubSolidCardChrome.background()
         }
     }
 
@@ -1324,11 +1150,11 @@ struct DailyHubView: View {
             }
         } label: {
             Text(showPreQuizResumeCTA ? "Resume Daily Quiz" : "Start Daily Quiz")
-                .font(GlanceHubFont.semibold(17))
+                .font(GlanceHubFont.semibold(18))
                 .tracking(0.4)
                 .foregroundStyle(HubPalette.oatmeal)
                 .frame(maxWidth: .infinity)
-                .padding(.vertical, metrics.scaled(17))
+                .padding(.vertical, metrics.scaled(20))
                 .background(
                     Capsule(style: .continuous)
                         .fill(HubPalette.plantPot.opacity(0.86))
@@ -1855,6 +1681,16 @@ struct DailyHubView: View {
     }
 }
 
+// MARK: - Pre-quiz width alignment
+
+private extension View {
+    /// Matches word-card width and centers horizontally in the Today hub scroll column.
+    func todayWordCardWidthAligned(metrics: TodayHubLayoutMetrics) -> some View {
+        frame(width: metrics.cardWidth)
+            .frame(maxWidth: .infinity)
+    }
+}
+
 // MARK: - Post-quiz carousel (precomputed display models)
 
 private struct DailyHubPostQuizSenseDisplay: Equatable {
@@ -1891,7 +1727,7 @@ private struct DailyHubPostQuizCard: View {
         .padding(model.cardPadding)
         .frame(width: cardWidth, alignment: .topLeading)
         .fixedSize(horizontal: false, vertical: true)
-        .background(GlanceGlassCardChrome.background())
+        .background(HubSolidCardChrome.background())
         .onChange(of: model.id) { _, _ in
             sensePage = 0
         }
@@ -2102,11 +1938,11 @@ private struct DailyHubWordCapsule: View {
     let isPostQuiz: Bool
 
     private var titleFontSize: CGFloat {
-        max(28, (34 * layoutScale).rounded(.toNearestOrAwayFromZero))
+        max(30, (36 * layoutScale).rounded(.toNearestOrAwayFromZero))
     }
 
     private var cardPadding: CGFloat {
-        max(16, (22 * layoutScale).rounded(.toNearestOrAwayFromZero))
+        max(18, (24 * layoutScale).rounded(.toNearestOrAwayFromZero))
     }
 
     @State private var sensePage = 0
@@ -2124,16 +1960,24 @@ private struct DailyHubWordCapsule: View {
     }
 
     var body: some View {
-        cardBody
-            .padding(cardPadding)
-            .frame(width: cardWidth, alignment: .topLeading)
-            .frame(minHeight: minCardHeight ?? 0, alignment: .topLeading)
-            .fixedSize(horizontal: false, vertical: true)
-            .background(wordCardGlassBackground)
-            .onChange(of: word.id) { _, _ in
-                sensePage = 0
+        Group {
+            if let minCardHeight, !isPostQuiz {
+                cardBody
+                    .padding(cardPadding)
+                    .frame(width: cardWidth, alignment: .leading)
+                    .frame(minHeight: minCardHeight, alignment: .center)
+            } else {
+                cardBody
+                    .padding(cardPadding)
+                    .frame(width: cardWidth, alignment: .leading)
+                    .fixedSize(horizontal: false, vertical: true)
             }
-            .accessibilityElement(children: .contain)
+        }
+        .background(wordCardGlassBackground)
+        .onChange(of: word.id) { _, _ in
+            sensePage = 0
+        }
+        .accessibilityElement(children: .contain)
     }
 
     private var cardBody: some View {
@@ -2160,7 +2004,7 @@ private struct DailyHubWordCapsule: View {
     }
 
     private var wordCardGlassBackground: some View {
-        GlanceGlassCardChrome.background()
+        HubSolidCardChrome.background()
     }
 
     private var preQuizCardHeader: some View {
@@ -2237,8 +2081,10 @@ private struct DailyHubWordCapsule: View {
 
     @ViewBuilder
     private var revealedContent: some View {
-        let originTitle = trimmedOriginOrHookBody == nil ? nil : originOrHookSectionTitle
-        let originBody = trimmedOriginOrHookBody
+        let originTitle: String? = GlanceProductSurface.showsWordEtymologyAndHooks && trimmedOriginOrHookBody != nil
+            ? originOrHookSectionTitle
+            : nil
+        let originBody: String? = GlanceProductSurface.showsWordEtymologyAndHooks ? trimmedOriginOrHookBody : nil
 
         if senses.count <= 1, let only = senses.first {
             hubSenseDetail(
@@ -2294,7 +2140,9 @@ private struct DailyHubWordCapsule: View {
         VStack(spacing: 8) {
             lockedPreviewRow(title: "Definition")
             lockedPreviewRow(title: "Example")
-            lockedPreviewRow(title: word.cardOriginOrHookTitle)
+            if GlanceProductSurface.showsWordEtymologyAndHooks {
+                lockedPreviewRow(title: word.cardOriginOrHookTitle)
+            }
         }
         .padding(.top, 4)
     }
@@ -2521,6 +2369,31 @@ private enum DailyHubPreviewData {
                 nextReviewDate: due.addingTimeInterval(TimeInterval(-index) * 60)
             )
         }
+    }
+}
+
+private struct DailyHubDebugLifecycleModifier: ViewModifier {
+    @AppStorage("debugPlantWiltPreview") private var debugPlantWiltPreview = -1
+    let onWiltPreview: () -> Void
+    let onResetTodayQuiz: () -> Void
+    let onPreviewMasteryCelebration: () -> Void
+
+    func body(content: Content) -> some View {
+        #if DEBUG
+        content
+            .onChange(of: debugPlantWiltPreview) { _, newValue in
+                guard newValue == 1 else { return }
+                onWiltPreview()
+            }
+            .onReceive(NotificationCenter.default.publisher(for: .debugResetTodayQuiz)) { _ in
+                onResetTodayQuiz()
+            }
+            .onReceive(NotificationCenter.default.publisher(for: .debugPreviewMasteryCelebration)) { _ in
+                onPreviewMasteryCelebration()
+            }
+        #else
+        content
+        #endif
     }
 }
 

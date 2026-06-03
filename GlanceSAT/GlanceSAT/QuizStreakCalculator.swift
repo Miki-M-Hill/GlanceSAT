@@ -51,6 +51,31 @@ enum QuizStreakCalculator {
         return streak
     }
 
+    /// Longest run of consecutive quiz days in history (strict calendar adjacency, normalized keys).
+    static func longestStreakDays(
+        sessionDayKeys: Set<String>,
+        calendar: Calendar = .current,
+        referenceDate: Date = Date()
+    ) -> Int {
+        let normalized = sessionDayKeys.map {
+            DailyWordBatchService.clampedCalendarDayKey($0, referenceDate: referenceDate, calendar: calendar)
+        }
+        let sorted = Array(Set(normalized)).sorted()
+        guard !sorted.isEmpty else { return 0 }
+
+        var best = 1
+        var run = 1
+        for index in 1 ..< sorted.count {
+            if previousDayKey(from: sorted[index], calendar: calendar) == sorted[index - 1] {
+                run += 1
+                best = max(best, run)
+            } else {
+                run = 1
+            }
+        }
+        return best
+    }
+
     /// Legacy date-based API; prefer `sessionDayKeys` when `QuizSession.calendarDayKey` is available.
     static func currentStreakDays(
         sessionDays: Set<Date>,

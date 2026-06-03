@@ -1,0 +1,645 @@
+# GlanceSAT Category 2 Hooks (639 Words) — New Pass
+
+- Source set: Category 2 from `GlanceSAT_Word_Etymology_vs_Hook.md`
+- Total hooks: **639**
+- Constraint target: each hook under 15 words
+
+- **Acerbic**: axe signal: biting.
+- **Acumen**: axe scene: keen insight.
+- **Acute**: axe mode = sharp.
+- **Adroit**: add mode = skillful.
+- **Adulation**: add mode = extreme praise.
+- **Aerial**: aeri clue: somehow related to the air.
+- **Aesthetic**: aest move — artistic.
+- **Agile**: tag clue: quick.
+- **Alacrity**: owl trick means eagerness.
+- **Alias**: owl move — false name.
+- **Aloof**: owl clue: reserved.
+- **Altercation**: owl signal: dispute.
+- **Amalgamate**: ham vibe: bring together.
+- **Ameliorate**: ham clue: improve.
+- **Amenity**: ham clue: item that increases comfort.
+- **Anguish**: ant move — extreme sadness.
+- **Antiquated**: ant trick means old.
+- **Anxiety**: ant clue: intense uneasiness.
+- **Arable**: car move — suitable for growing crops.
+- **Arbitrary**: car clue: based on factors that appear random.
+- **Arbitration**: car scene: process.
+- **Arboreal**: car clue: of.
+- **Arcane**: car signal: obscure.
+- **Archaic**: car mode = of.
+- **Ardor**: car vibe: extreme vigor.
+- **Arid**: car clue: excessively dry.
+- **Artisan**: car clue: craftsman.
+- **Ascetic**: ace signal: practicing restraint as a means of.
+- **Astute**: ace signal: very clever.
+- **Audacious**: audio clue: excessively bold.
+- **Audible**: audio mode = able to be heard.
+- **Augment**: audio move — add to.
+- **Austere**: audio trick means very bare.
+- **Avarice**: avar scene: excessive greed.
+- **Balk**: bat vibe: stop.
+- **Bane**: bat move — burden.
+- **Behemoth**: bee mode = something of tremendous power.
+- **Bias**: bike vibe: tendency.
+- **Bilk**: bike signal: cheat.
+- **Blandish**: bell scene: coax by using flattery.
+- **Blemish**: bell trick means imperfection.
+- **Blight**: bell trick means plague.
+- **Boisterous**: boat trick means loud and full of energy.
+- **Bolster**: boat move — support.
+- **Bombastic**: boat trick means excessively confident.
+- **Boon**: boat vibe: gift.
+- **Bourgeois**: boat move — middle-class person.
+- **Brazen**: bread clue: excessively bold.
+- **Brusque**: bread clue: short.
+- **Buffet**: boot mode = strike with force.
+- **Burnish**: boot signal: polish.
+- **Buttress**: boot vibe: support.
+- **Cadence**: cat signal: rhythm.
+- **Cajole**: cat trick means urge.
+- **Calamity**: cat trick means event with disastrous consequences.
+- **Calibrate**: cat trick means set.
+- **Callous**: cat move — harsh.
+- **Calumny**: cat move — false statement meant to damage someone's.
+- **Camaraderie**: cat signal: brotherhood.
+- **Candor**: cat trick means honesty.
+- **Canny**: cat signal: shrewd.
+- **Canvas**: cat trick means piece of cloth on which an.
+- **Capitulate**: cat mode = surrender.
+- **Capricious**: cat scene: subject to whim.
+- **Captivate**: cat vibe: get the attention of.
+- **Carouse**: cat signal: party.
+- **Carp**: cat trick means annoy.
+- **Catalog**: cat move — list.
+- **Catalyze**: cat vibe: charge.
+- **Caucus**: cat signal: meeting of members of a political.
+- **Caustic**: cat vibe: bitter.
+- **Cavort**: cat signal: leap about.
+- **Censure**: cell mode = harsh criticism.
+- **Chaos**: chain trick means absolute disorder.
+- **Cherish**: chain signal: feel.
+- **Chide**: chain mode = voice disapproval.
+- **Clamor**: claw signal: loud noise.
+- **Clandestine**: claw trick means secret.
+- **Cleave**: claw vibe: divide into parts.
+- **Clemency**: claw trick means mercy.
+- **Cloying**: claw move — disgustingly.
+- **Coagulate**: coat vibe: thicken.
+- **Coerce**: coat scene: make somebody do something by force.
+- **Cogent**: coat mode = intellectually convincing.
+- **Coherent**: coat clue: logically consistent.
+- **Collusion**: coat mode = secret agreement.
+- **Colossus**: coat vibe: gigantic statue.
+- **Combustion**: coat move — act.
+- **Commendation**: coat scene: notice of approval.
+- **Commodious**: coat scene: roomy.
+- **Compensate**: coat signal: make an appropriate payment for something.
+- **Complacency**: coat signal: self-satisfied ignorance of danger.
+- **Complement**: coat scene: complete.
+- **Compliment**: coat vibe: expression of esteem.
+- **Compound**: coat scene: combine parts.
+- **Comprehensive**: coat scene: including everything.
+- **Compress**: coat move — apply pressure.
+- **Compunction**: coat signal: distress caused by feeling guilty.
+- **Conciliatory**: coat move — friendly.
+- **Concise**: coat scene: brief and direct in expression.
+- **Concoct**: coat signal: fabricate.
+- **Concomitant**: coat signal: accompanying in a subordinate fashion.
+- **Concord**: coat clue: harmonious agreement.
+- **Condone**: coat scene: pardon.
+- **Conduit**: coat move — pipe.
+- **Confection**: coat trick means sweet.
+- **Conflagration**: coat vibe: great fire.
+- **Confound**: coat vibe: frustrate.
+- **Congruity**: coat mode = quality of being in agreement.
+- **Conjecture**: coat move — inference formed without complete evidence.
+- **Connive**: coat move — plot.
+- **Consecrate**: coat mode = dedicate something to a holy purpose.
+- **Consensus**: coat clue: agreement of opinion.
+- **Consign**: coat mode = give something over to another’s care.
+- **Consolation**: coat vibe: act of comforting.
+- **Consonant**: coat clue: in harmony.
+- **Constituent**: coat signal: essential part.
+- **Constrain**: coat clue: forcibly restrict.
+- **Consummate**: coat vibe: complete a deal.
+- **Consumption**: coat scene: act of consuming.
+- **Contentious**: coat vibe: having a tendency to quarrel.
+- **Conundrum**: coat signal: puzzle.
+- **Convoluted**: coat clue: intricate.
+- **Copious**: coat trick means profuse.
+- **Cordial**: coat clue: warm.
+- **Corroborate**: coat move — support with evidence.
+- **Corrosive**: coat mode = having the tendency to erode.
+- **Coup**: coat vibe: brilliant.
+- **Covert**: coat signal: secretly engaged in.
+- **Covet**: coat vibe: desire enviously.
+- **Crescendo**: crown mode = steady increase in intensity.
+- **Criteria**: crown clue: standards by which something is judged.
+- **Culmination**: cue trick means climax toward which something progresses.
+- **Cultivate**: cue scene: nurture.
+- **Cunning**: cue trick means sly.
+- **Cupidity**: cue trick means greed.
+- **Cursory**: cue clue: brief to the point of being.
+- **Curt**: cue mode = abruptly and rudely short.
+- **Curtail**: cue scene: lessen.
+- **Daunting**: dash mode = intimidating.
+- **Debauch**: deck scene: corrupt by means of sensual pleasures.
+- **Defamatory**: deck vibe: harmful toward another’s reputation.
+- **Defer**: deck scene: postpone something.
+- **Defile**: deck trick means make unclean.
+- **Deft**: deck trick means skillful.
+- **Defunct**: deck mode = no longer used.
+- **Delegate**: deck trick means hand over responsibility for something.
+- **Deleterious**: deck clue: harmful.
+- **Deliberate**: deck signal: intentional.
+- **Demarcation**: deck vibe: marking of boundaries.
+- **Demure**: deck signal: quiet.
+- **Denounce**: deck signal: criticize publicly.
+- **Deplore**: deck mode = feel.
+- **Depravity**: deck vibe: wickedness.
+- **Deprecate**: deck clue: belittle.
+- **Derelict**: deck clue: abandoned.
+- **Deride**: deck signal: laugh at mockingly.
+- **Derivative**: deck move — taken directly from a source.
+- **Desiccated**: deck signal: dried up.
+- **Desolate**: deck move — deserted.
+- **Despondent**: deck move — feeling depressed.
+- **Despot**: deck vibe: one who has total power and.
+- **Destitute**: deck trick means impoverished.
+- **Devious**: deck signal: not straightforward.
+- **Didactic**: dice clue: intended to instruct.
+- **Dilatory**: dice vibe: tending to delay.
+- **Diligent**: dice mode = showing care in doing one’s work.
+- **Diminutive**: dice clue: small.
+- **Dirge**: dice signal: mournful song.
+- **Discern**: dice scene: perceive.
+- **Discomfit**: dice signal: thwart.
+- **Discordant**: dice trick means not agreeing.
+- **Discrepancy**: dice trick means difference.
+- **Discretion**: dice mode = careful judgment.
+- **Disparage**: dice signal: criticize.
+- **Dispatch**: dice signal: send off to accomplish a duty.
+- **Disperse**: dice move — scatter.
+- **Disrepute**: dice trick means state of being held in low.
+- **Dissemble**: dice move — conceal.
+- **Dither**: dice trick means be indecisive.
+- **Divine**: dice scene: godly.
+- **Divisive**: dice trick means causing dissent.
+- **Docile**: dough clue: easily taught.
+- **Dogmatic**: dough clue: aggressively and arrogantly certain about unproved.
+- **Dour**: dough clue: stern.
+- **Dubious**: duke vibe: doubtful.
+- **Duplicity**: duke move — crafty dishonesty.
+- **Dynamic**: dyna scene: actively changing.
+- **Eclectic**: echo clue: consisting of a diverse variety of.
+- **Ecstatic**: echo signal: intensely and overpoweringly happy.
+- **Efficacious**: effect vibe: effective.
+- **Effrontery**: effect signal: impudence.
+- **Elaborate**: elevator move — complex.
+- **Elated**: elevator mode = overjoyed.
+- **Elegy**: elevator scene: speech given in honor of a.
+- **Elude**: elevator move — evade.
+- **Embellish**: ember signal: decorate.
+- **Embezzle**: ember signal: steal money by falsifying records.
+- **Emote**: ember scene: express emotion.
+- **Empirical**: ember vibe: based on observation.
+- **Emulate**: ember vibe: imitate.
+- **Encore**: engine clue: extra performance demanded by applause.
+- **Encumber**: engine move — weigh down.
+- **Enervate**: engine mode = weaken.
+- **Enfranchise**: engine mode = grant the vote to.
+- **Engender**: engine mode = bring about.
+- **Enigmatic**: engine move — mystifying.
+- **Enmity**: engine mode = ill will.
+- **Ennui**: engine clue: boredom.
+- **Entail**: engine move — include as a necessary step.
+- **Epistolary**: episode signal: relating to.
+- **Epitome**: episode vibe: perfect example.
+- **Eschew**: escape trick means shun.
+- **Esoteric**: escape signal: understood by only a select few.
+- **Espouse**: escape move — take up as a cause.
+- **Ethereal**: ethe trick means heavenly.
+- **Excursion**: exit mode = trip.
+- **Exigent**: exit vibe: urgent.
+- **Extraneous**: exit move — irrelevant.
+- **Fabricate**: fan move — make up.
+- **Facile**: fan signal: easy.
+- **Facilitate**: fan vibe: make an action.
+- **Fallacious**: fan move — incorrect.
+- **Fastidious**: fan scene: meticulous.
+- **Fathom**: fan mode = understand.
+- **Fatuous**: fan trick means silly.
+- **Feasible**: fence move — possible to do.
+- **Fecund**: fence mode = fruitful.
+- **Feral**: fence clue: wild.
+- **Fervent**: fence mode = ardent.
+- **Fetid**: fence vibe: having a foul odor.
+- **Fetter**: fence signal: chain.
+- **Fickle**: fire signal: shifting in character.
+- **Figurative**: fire mode = using figures of speech.
+- **Flabbergasted**: flash signal: astounded.
+- **Flaccid**: flash signal: limp.
+- **Flagrant**: flash clue: offensive.
+- **Florid**: flash scene: flowery.
+- **Flout**: flash move — disregard.
+- **Foil**: phone trick means thwart.
+- **Forage**: phone move — graze.
+- **Forlorn**: phone vibe: lonely.
+- **Fortitude**: phone clue: strength.
+- **Fortuitous**: phone trick means happening by chance.
+- **Forum**: phone mode = medium for lecture.
+- **Foster**: phone vibe: stimulate.
+- **Fraught**: frame scene: filled.
+- **Frenetic**: frame mode = frenzied.
+- **Frivolous**: frame signal: of little importance.
+- **Frugal**: frame scene: thrifty.
+- **Furtive**: fuse vibe: secretive.
+- **Galvanize**: gas trick means stimulate people into urgent action.
+- **Garish**: gas signal: gaudy.
+- **Garrulous**: gas mode = talkative.
+- **Genial**: jet vibe: friendly.
+- **Gluttony**: glue scene: overindulgence in food.
+- **Goad**: goat vibe: urge.
+- **Gourmand**: goat move — someone fond of eating and drinking.
+- **Grandiose**: grill clue: on a magnificent.
+- **Gratuitous**: grill clue: uncalled for.
+- **Grievous**: grill move — injurious.
+- **Guile**: goo vibe: deceitful.
+- **Hackneyed**: hammer mode = unoriginal.
+- **Hallowed**: hammer clue: revered.
+- **Harangue**: hammer mode = ranting speech.
+- **Hardy**: hammer trick means robust.
+- **Harrowing**: hammer trick means greatly distressing.
+- **Haughty**: hammer trick means disdainfully proud.
+- **Hegemony**: helmet mode = domination over others.
+- **Heinous**: helmet vibe: shockingly wicked.
+- **Hiatus**: hive trick means break.
+- **Hypothetical**: hype scene: supposed.
+- **Imperative**: image signal: necessary.
+- **Imperious**: image clue: commanding.
+- **Impetuous**: image mode = rash.
+- **Inane**: ink clue: silly and meaningless.
+- **Incendiary**: ink vibe: person who agitates.
+- **Inchoate**: ink move — unformed.
+- **Inclination**: ink vibe: tendency.
+- **Increment**: ink vibe: enlargement.
+- **Incumbent**: ink signal: one who holds an office.
+- **Indigent**: ink trick means very poor.
+- **Ingenious**: ink move — clever.
+- **Ingenuous**: ink move — not devious.
+- **Iniquity**: ink mode = wickedness.
+- **Innate**: ink trick means inborn.
+- **Innuendo**: ink move — insinuation.
+- **Insidious**: ink vibe: appealing but imperceptibly harmful.
+- **Insular**: ink move — separated and narrow-minded.
+- **Integral**: ink vibe: necessary for completeness.
+- **Intimation**: ink scene: indirect suggestion.
+- **Inure**: ink mode = accustom someone to something difficult.
+- **Invective**: ink scene: angry verbal attack.
+- **Inveterate**: ink clue: stubbornly established by habit.
+- **Inviolable**: ink signal: secure from assault.
+- **Irascible**: ear clue: easily angered.
+- **Iridescent**: ear mode = showing rainbow colors.
+- **Irreverence**: ear trick means disrespect.
+- **Jubilant**: juice scene: extremely joyful.
+- **Judicious**: juice scene: having.
+- **Juxtaposition**: juice trick means act of placing two things side.
+- **Knell**: knel move — solemn sound of a bell.
+- **Kudos**: kudo move — praise for an achievement.
+- **Laconic**: ladder signal: terse in speech.
+- **Languid**: ladder move — sluggish from fatigue.
+- **Largess**: ladder scene: generous giving of lavish gifts.
+- **Latent**: ladder clue: hidden.
+- **Laudatory**: ladder signal: expressing admiration.
+- **Lavish**: ladder scene: given without limits.
+- **Legerdemain**: lemon signal: deception.
+- **Lenient**: lemon clue: demonstrating tolerance.
+- **Lethargic**: lemon vibe: in a state of sluggishness.
+- **Liability**: light move — something for which one is legally.
+- **Libertarian**: light move — advocating principles of liberty and free.
+- **Licentious**: light mode = displaying a lack of moral.
+- **Limpid**: light trick means clear.
+- **Linchpin**: light trick means something that holds separate parts together.
+- **Lithe**: light clue: graceful.
+- **Litigant**: light scene: someone engaged in a lawsuit.
+- **Lurid**: lumen move — ghastly.
+- **Maelstrom**: mask vibe: destructive whirlpool which rapidly sucks in.
+- **Malleable**: mask vibe: capable of being shaped.
+- **Mandate**: mask move — authoritative command.
+- **Manifest**: mask mode = easily understandable.
+- **Manifold**: mask signal: diverse.
+- **Maudlin**: mask trick means weakly sentimental.
+- **Maverick**: mask trick means independent.
+- **Mawkish**: mask signal: characterized by sick sentimentality.
+- **Maxim**: mask clue: common saying expressing a principle of.
+- **Meager**: metal signal: deficient in size.
+- **Medley**: metal mode = mixture of differing things.
+- **Mendacious**: metal scene: having a lying.
+- **Mercurial**: metal trick means characterized by rapid change.
+- **Meritorious**: metal mode = worthy of esteem.
+- **Meticulous**: metal mode = extremely careful with details.
+- **Mitigate**: mirror signal: make less violent.
+- **Moderate**: motor mode = not extreme.
+- **Modicum**: motor clue: small amount of something.
+- **Modulate**: motor clue: pass from one state to another.
+- **Mollify**: motor mode = soften in temper.
+- **Morass**: motor mode = swampy bog.
+- **Mores**: motor scene: moral attitudes and fixed customs of.
+- **Morose**: motor vibe: gloomy.
+- **Multifarious**: music move — having great diversity.
+- **Mundane**: music mode = concerned with the world rather than.
+- **Munificence**: music signal: generosity in giving.
+- **Mutable**: music trick means able to change.
+- **Myriad**: myri mode = consisting of a very great number.
+- **Nadir**: nail signal: lowest point of something.
+- **Nascent**: nail move — in the process of being born.
+- **Nebulous**: needle move — vaguely defined.
+- **Nefarious**: needle signal: heinously villainous.
+- **Negligent**: needle trick means habitually careless.
+- **Nocturnal**: notebook move — relating to.
+- **Noisome**: notebook trick means unpleasant.
+- **Nomadic**: notebook signal: wandering from place to place.
+- **Nominal**: notebook clue: trifling.
+- **Nonchalant**: notebook vibe: having a lack of concern.
+- **Nondescript**: notebook trick means lacking a distinctive character.
+- **Notorious**: notebook scene: widely and unfavorably known.
+- **Notwithstanding**: notebook scene: in spite of.
+- **Noxious**: notebook move — harmful.
+- **Nuance**: noodle scene: slight variation in meaning.
+- **Nurture**: noodle scene: assist the development of.
+- **Obdurate**: orb signal: unyielding to persuasion.
+- **Obfuscate**: orb mode = render incomprehensible.
+- **Oblique**: orb move — diverging from a straight line.
+- **Oblivious**: orb vibe: lacking consciousness.
+- **Obscure**: orb mode = unclear.
+- **Obsequious**: orb signal: excessively compliant.
+- **Obsolete**: orb vibe: no longer used.
+- **Obstinate**: orb trick means not yielding easily.
+- **Obstreperous**: orb move — noisy.
+- **Obtuse**: orb trick means lacking quickness of sensibility.
+- **Odious**: odio trick means instilling hatred.
+- **Officious**: office mode = excessively eager to offer unwanted help.
+- **Ominous**: home signal: foreboding.
+- **Onerous**: onion mode = burdensome.
+- **Opulent**: open trick means characterized by rich abundance verging on.
+- **Oration**: orbit trick means speech delivered in a formal.
+- **Ornate**: orbit trick means highly elaborate.
+- **Oscillate**: oasis mode = sway from one side to the.
+- **Ostensible**: oasis mode = appearing as such.
+- **Ostentatious**: oasis signal: excessively showy.
+- **Ostracism**: oasis signal: exclusion from a group.
+- **Pacific**: pan move — peaceful.
+- **Palatable**: pan move — agreeable to the taste.
+- **Palliate**: pan vibe: reduce the severity of.
+- **Pallid**: pan mode = lacking color.
+- **Paradigm**: pan signal: example that is a perfect pattern.
+- **Paradox**: pan vibe: apparently contradictory statement that is perhaps.
+- **Paragon**: pan scene: model of excellence.
+- **Paramount**: pan mode = greatest in importance.
+- **Pariah**: pan vibe: outcast.
+- **Parody**: pan trick means satirical imitation.
+- **Parsimony**: pan vibe: frugality.
+- **Partisan**: pan clue: follower.
+- **Patent**: pan move — readily seen.
+- **Pathos**: pan scene: emotion of sympathy.
+- **Paucity**: pan scene: small in quantity.
+- **Pejorative**: pen signal: derogatory.
+- **Penchant**: pen trick means tendency.
+- **Penitent**: pen trick means remorseful.
+- **Penultimate**: pen clue: next to last.
+- **Penurious**: pen clue: miserly.
+- **Perfunctory**: pen scene: showing little interest.
+- **Permeate**: pen vibe: spread throughout.
+- **Pernicious**: pen signal: extremely destructive.
+- **Perpetuate**: pen scene: cause to continue indefinitely.
+- **Perplex**: pen trick means confuse.
+- **Perspicacity**: pen scene: shrewdness.
+- **Pert**: pen signal: flippant.
+- **Pertinacious**: pen move — stubbornly persistent.
+- **Perusal**: pen move — careful examination.
+- **Pervasive**: pen scene: having the tendency to spread throughout.
+- **Petulance**: pen scene: rudeness.
+- **Phlegmatic**: phone scene: calm and unemotional.
+- **Pillage**: pie mode = seize.
+- **Pinnacle**: pie vibe: highest point.
+- **Pithy**: pie trick means concisely meaningful.
+- **Pittance**: pie move — very small amount.
+- **Placate**: plug clue: ease the anger of.
+- **Placid**: plug trick means calm.
+- **Platitude**: plug mode = uninspired remark.
+- **Plaudits**: plug scene: enthusiastic approval.
+- **Plausible**: plug scene: believable.
+- **Plenitude**: plug vibe: abundance.
+- **Plethora**: plug trick means abundance.
+- **Pliable**: plug trick means flexible.
+- **Poignant**: pocket clue: deeply affecting.
+- **Polemic**: pocket move — aggressive argument against a specific opinion.
+- **Postulate**: pocket mode = assume as true for the sake.
+- **Potable**: pocket move — suitable for drinking.
+- **Potentate**: pocket move — one who has great power.
+- **Pragmatic**: printer signal: practical.
+- **Precipice**: printer vibe: face of a cliff.
+- **Precipitate**: printer scene: cause something to happen suddenly.
+- **Precocious**: printer mode = advanced.
+- **Preponderance**: printer scene: superiority in importance.
+- **Prescribe**: printer clue: lay down a rule.
+- **Presumptuous**: printer vibe: disrespectfully bold.
+- **Pretense**: printer trick means appearance.
+- **Privation**: printer move — lacking basic necessities.
+- **Probity**: printer trick means virtue.
+- **Procure**: printer clue: obtain.
+- **Profane**: printer vibe: lewd.
+- **Profligate**: printer mode = dissolute.
+- **Profuse**: printer signal: plentiful.
+- **Promulgate**: printer trick means proclaim.
+- **Propagate**: printer trick means multiply.
+- **Propensity**: printer signal: inclination.
+- **Propitious**: printer vibe: favorable.
+- **Propriety**: printer signal: quality.
+- **Prosaic**: printer trick means plain.
+- **Proscribe**: printer mode = condemn.
+- **Protean**: printer signal: able to change shape.
+- **Prowess**: printer trick means extraordinary ability.
+- **Prudence**: printer scene: cautious.
+- **Prurient**: printer clue: eliciting.
+- **Puerile**: punch move — juvenile.
+- **Pulchritude**: punch scene: physical beauty.
+- **Punctilious**: punch clue: eager to follow rules.
+- **Pungent**: punch trick means having a pointed.
+- **Punitive**: punch move — involving punishment.
+- **Quagmire**: queen vibe: difficult situation.
+- **Quaint**: queen clue: charmingly old-fashioned.
+- **Quandary**: queen trick means perplexed.
+- **Quell**: queen move — control.
+- **Querulous**: queen move — whiny.
+- **Quixotic**: queen clue: idealistic.
+- **Quotidian**: queen trick means daily.
+- **Rail**: radar vibe: scold.
+- **Rancid**: radar signal: having a terrible taste.
+- **Rancor**: radar clue: deep.
+- **Rapport**: radar move — mutual understanding and harmony.
+- **Rash**: radar move — hasty.
+- **Raucous**: radar vibe: harshly loud and disorderly.
+- **Raze**: radar move — demolish.
+- **Rebuke**: red scene: scold.
+- **Recalcitrant**: red move — defiant.
+- **Reciprocate**: red mode = give in return.
+- **Reclusive**: red mode = solitary.
+- **Reconcile**: red move — return to harmony.
+- **Rectitude**: red scene: uprightness.
+- **Redoubtable**: red trick means formidable.
+- **Refract**: red move — distort.
+- **Refurbish**: red signal: restore.
+- **Refute**: red vibe: prove wrong.
+- **Regurgitate**: red vibe: vomit.
+- **Relegate**: red move — assign to the proper place.
+- **Relish**: red vibe: enjoy.
+- **Remedial**: red move — intended to repair gaps in students’.
+- **Remiss**: red clue: negligent.
+- **Renovate**: red mode = restore.
+- **Renown**: red move — honor.
+- **Renunciation**: red vibe: reject.
+- **Repentant**: red move — penitent.
+- **Replete**: red signal: full.
+- **Repose**: red scene: rest.
+- **Reprehensible**: red mode = deserving rebuke.
+- **Reprieve**: red scene: temporary delay of punishment.
+- **Reproach**: red clue: scold.
+- **Reprobate**: red clue: evil.
+- **Reprove**: red move — scold.
+- **Repudiate**: red cue: reject.
+- **Repulse**: red mode = disgust.
+- **Reputable**: red clue: of good reputation.
+- **Requisition**: red clue: demand for goods.
+- **Rescind**: red signal: take back.
+- **Resilient**: red scene: able to recover from misfortune.
+- **Resolute**: red vibe: firm.
+- **Resolve**: red mode = find a solution.
+- **Respite**: red scene: break.
+- **Resplendent**: red vibe: shiny.
+- **Restitution**: red move — restoration to the rightful owner.
+- **Restive**: red clue: resistant.
+- **Revel**: red move — enjoy intensely.
+- **Revere**: red scene: esteem.
+- **Rhapsodize**: rhap mode = engage in excessive enthusiasm.
+- **Ribald**: river vibe: coarsely.
+- **Rife**: river trick means abundant.
+- **Ruminate**: ruby vibe: contemplate.
+- **Ruse**: ruby trick means trick.
+- **Saccharine**: salt move — overly.
+- **Sacrosanct**: salt trick means holy.
+- **Sagacity**: salt mode = shrewdness.
+- **Salient**: salt clue: significant.
+- **Salutation**: salt signal: greeting.
+- **Salve**: salt trick means soothing balm.
+- **Sanctimonious**: salt scene: giving a hypocritical appearance of piety.
+- **Sanguine**: salt move — optimistic.
+- **Satiate**: salt vibe: satisfy excessively.
+- **Scathing**: scooter signal: sharp.
+- **Scintillating**: scooter clue: sparkling.
+- **Scrupulous**: scooter clue: painstaking.
+- **Scrutinize**: scooter mode = examine closely and critically.
+- **Scurrilous**: scooter vibe: vulgar.
+- **Semaphore**: seat scene: visual signal.
+- **Seminal**: seat vibe: original.
+- **Sensual**: seat move — involving sensory gratification.
+- **Sensuous**: seat signal: involving sensory gratification.
+- **Serendipity**: seat scene: luck.
+- **Serene**: seat mode = calm.
+- **Servile**: seat vibe: subservient.
+- **Sinuous**: signal vibe: lithe.
+- **Sobriety**: soda scene: sedate.
+- **Solicitous**: soda move — concerned.
+- **Solipsistic**: soda signal: believing that oneself is all that.
+- **Soluble**: soda move — able to dissolve.
+- **Solvent**: soda clue: substance that can dissolve other substances.
+- **Sophomoric**: soda signal: immature.
+- **Sovereign**: soda scene: having absolute authority in a certain.
+- **Speculative**: spoon mode = not based in fact.
+- **Spurious**: spoon clue: false but designed to seem plausible.
+- **Stagnate**: star vibe: become.
+- **Staid**: star scene: sedate.
+- **Stingy**: star signal: not generous.
+- **Stoic**: star vibe: unaffected by passion.
+- **Stolid**: star clue: expressing little sensibility.
+- **Strenuous**: star clue: requiring tremendous energy.
+- **Strident**: star clue: harsh.
+- **Stupefy**: star mode = astonish.
+- **Sublime**: suit scene: lofty.
+- **Submissive**: suit vibe: easily yielding to authority.
+- **Substantiate**: suit clue: provide evidence that supports a claim.
+- **Succinct**: suit signal: marked by compact precision.
+- **Surfeit**: suit mode = overabundant supply.
+- **Surmise**: suit vibe: infer with little evidence.
+- **Surreptitious**: suit trick means stealthy.
+- **Surrogate**: suit mode = one acting in place of another.
+- **Sycophant**: syco clue: one who flatters for self-gain.
+- **Tacit**: tape scene: expressed without words.
+- **Taciturn**: tape clue: not inclined to talk.
+- **Tantamount**: tape clue: equivalent in value.
+- **Tedious**: tennis move — tiresome because of length.
+- **Temerity**: tennis scene: audacity.
+- **Temperance**: tennis vibe: moderation in action.
+- **Tenuous**: tennis move — having little substance.
+- **Timorous**: tiger mode = timid.
+- **Tirade**: tiger trick means long speech marked by harsh.
+- **Toady**: toast scene: one who flatters in the hope.
+- **Tome**: toast clue: large book.
+- **Torpid**: toast trick means lethargic.
+- **Torrid**: toast vibe: giving off intense heat.
+- **Tortuous**: toast scene: winding.
+- **Tractable**: train vibe: easily controlled.
+- **Tranquil**: train mode = calm.
+- **Travesty**: train clue: grossly inferior imitation.
+- **Tremulous**: train clue: fearful.
+- **Trenchant**: train trick means effective.
+- **Trepidation**: train signal: fear.
+- **Trite**: train clue: not original.
+- **Truculent**: train clue: ready to fight.
+- **Truncate**: train vibe: shorten by cutting off.
+- **Turgid**: tube trick means swollen.
+- **Turpitude**: tube move — depravity.
+- **Ubiquitous**: ubiq trick means existing everywhere.
+- **Umbrage**: umbr clue: resentment.
+- **Unctuous**: undo signal: smooth.
+- **Undulate**: undo signal: move in waves.
+- **Upbraid**: uphill vibe: criticize.
+- **Usurp**: usur clue: seize by force.
+- **Utilitarian**: util signal: relating to.
+- **Utopia**: utop scene: imaginary and remote place of perfection.
+- **Vacillate**: van move — fluctuate.
+- **Validate**: van clue: confirm.
+- **Vapid**: van vibe: lacking liveliness.
+- **Variegated**: van clue: diversified.
+- **Vehemently**: vest move — marked by intense force.
+- **Venerable**: vest scene: deserving of respect because of age.
+- **Venerate**: vest signal: regard with respect.
+- **Verbose**: vest signal: wordy.
+- **Verdant**: vest scene: green in tint.
+- **Vestige**: vest signal: mark.
+- **Vex**: vest trick means confuse.
+- **Vicarious**: video trick means experiencing through another.
+- **Vicissitude**: video vibe: event that occurs by chance.
+- **Vigilant**: video trick means watchful.
+- **Vilify**: video signal: lower in importance.
+- **Vindicate**: video clue: avenge.
+- **Vindictive**: video vibe: vengeful.
+- **Virtuoso**: video vibe: one who excels in an art.
+- **Viscous**: video signal: not free flowing.
+- **Vitriolic**: video vibe: having a caustic quality.
+- **Vituperate**: video clue: berate.
+- **Vocation**: vocal mode = work in which someone is employed.
+- **Wallow**: wallet vibe: roll oneself indolently.
+- **Wane**: wallet vibe: decrease in size.
+- **Wanton**: wallet move — undisciplined.
+- **Whimsical**: whistle signal: fanciful.
+- **Wily**: window trick means crafty.
+- **Winsome**: window move — charming.
+- **Wistful**: window clue: full of yearning.
+- **Wizened**: window clue: dry.
+- **Wrath**: wrench vibe: vengeful anger.
+- **Yoke**: yoke move — join.
+- **Zealous**: zebra signal: fervent.
+- **Zenith**: zebra signal: highest point.
+- **Zephyr**: zebra vibe: gentle breeze.

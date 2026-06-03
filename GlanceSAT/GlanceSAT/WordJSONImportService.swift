@@ -15,7 +15,12 @@ enum WordJSONImportService {
     private static let randomSortBackfillKey = "hasBackfilledRandomSortHash_v1"
 
     /// Loads bundled JSON once per install; subsequent launches skip the 1.1MB decode entirely.
+    /// Concurrent callers coalesce onto a single in-flight import task.
     static func importIfNeeded(container: ModelContainer) async {
+        await ImportCoordinator.shared.importIfNeeded(container: container)
+    }
+
+    fileprivate static func performImportIfNeeded(container: ModelContainer) async {
         let defaults = UserDefaults.standard
         if databaseHasWords(container: container) {
             if !defaults.bool(forKey: hasSeededDatabaseKey) {
@@ -96,5 +101,26 @@ enum WordJSONImportService {
             try? context.save()
         }
         UserDefaults.standard.set(true, forKey: randomSortBackfillKey)
+    }
+}
+
+/// Serializes `importIfNeeded` so cold launch and post-onboarding cannot run duplicate imports.
+private actor ImportCoordinator {
+    static let shared = ImportCoordinator()
+
+    private var inFlightImport: Task<Void, Never>?
+
+    func importIfNeeded(container: ModelContainer) async {
+        if let inFlightImport {
+            await inFlightImport.value
+            return
+        }
+
+        let task = Task {
+            await WordJSONImportService.performImportIfNeeded(container: container)
+        }
+        inFlightImport = task
+        await task.value
+        inFlightImport = nil
     }
 }

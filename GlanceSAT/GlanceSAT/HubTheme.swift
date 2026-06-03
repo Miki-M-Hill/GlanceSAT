@@ -25,6 +25,19 @@ enum GlanceHubFont {
     }
 }
 
+/// Uppercase screen chrome shared by Today, quiz, Insights, and onboarding headers.
+struct GlanceScreenTitle: View {
+    var title: String = "Glance"
+
+    var body: some View {
+        Text(title)
+            .font(.caption.weight(.bold))
+            .tracking(2)
+            .foregroundStyle(Color.primary)
+            .textCase(.uppercase)
+    }
+}
+
 /// Legacy palette names mapped onto Glance's semantic Charcoal and Linen system.
 enum HubPalette {
     static let linen = Color.Theme.backgroundPrimary
@@ -101,12 +114,12 @@ struct TodayHubLayoutMetrics: Equatable {
     // MARK: Design baseline (iPhone 17 Pro class — do not change these constants)
 
     private static let referenceContentHeight: CGFloat = 780
-    static let basePreQuizCarouselHeight: CGFloat = 292
+    static let basePreQuizCarouselHeight: CGFloat = 432
     /// Fixed post-quiz pager height so `scrollTargetBehavior` paging never skips cards.
     static let basePostQuizCarouselHeight: CGFloat = 380
     static let basePostQuizGlassSpacing: CGFloat = 16
     static let baseHeaderTopPadding: CGFloat = 8
-    static let baseHeaderBottomPaddingPreQuiz: CGFloat = 26
+    static let baseHeaderBottomPaddingPreQuiz: CGFloat = 18
     static let baseStreakBarHorizontalPadding: CGFloat = 14
     static let baseStreakBarVerticalPadding: CGFloat = 10
     static let baseStreakBubbleTopPadding: CGFloat = 30
@@ -132,11 +145,16 @@ struct TodayHubLayoutMetrics: Equatable {
 
     var layoutWidth: CGFloat { size.width }
     var horizontalContentInset: CGFloat { scaled(22) }
-    var cardWidth: CGFloat { max(scaled(280), layoutWidth - (horizontalContentInset * 2)) }
+    var cardHorizontalInset: CGFloat { scaled(18) }
+    var cardWidth: CGFloat { max(scaled(300), layoutWidth - (cardHorizontalInset * 2)) }
     var scrollContentMinHeight: CGFloat { size.height }
 
     var preQuizCarouselHeight: CGFloat { scaled(Self.basePreQuizCarouselHeight) }
-    var preQuizCardMinHeight: CGFloat { GlanceDeviceLayout.heightFraction(0.14, in: size.height) }
+    /// Taller pre-quiz cards; inner text/spacing unchanged.
+    var preQuizCardMinHeight: CGFloat { GlanceDeviceLayout.heightFraction(0.162, in: size.height) * 1.82 }
+    var preQuizUniformSectionSpacing: CGFloat { scaled(20) }
+    /// Vertical gap between the pre-quiz “Today’s Words…” label and the carousel, and carousel → CTA.
+    var preQuizLabelToCardsSpacing: CGFloat { scaled(10) }
     var glanceHeaderTopPadding: CGFloat {
         min(
             max(safeArea.top - scaled(16), scaled(2)),
@@ -216,6 +234,28 @@ enum WordCardChrome {
     static let partOfSpeechInactiveFill = HubPalette.oatmealDeep.opacity(0.45)
     static let partOfSpeechInactiveForeground = HubPalette.espressoMuted
     static let partOfSpeechInactiveStroke = Color.white.opacity(0.42)
+}
+
+/// Solid oatmeal card surface shared by Insights metric tiles and Today hub cards.
+enum HubSolidCardChrome {
+    static let cornerRadius: CGFloat = 28
+    static let streakBarCornerRadius: CGFloat = 24
+
+    static func background(cornerRadius: CGFloat = cornerRadius) -> some View {
+        RoundedRectangle(cornerRadius: cornerRadius, style: .continuous)
+            .fill(HubPalette.oatmeal)
+            .overlay(
+                RoundedRectangle(cornerRadius: cornerRadius, style: .continuous)
+                    .strokeBorder(HubPalette.espressoFaint.opacity(0.35), lineWidth: 0.7)
+            )
+    }
+}
+
+/// Shared top chrome inset for Today and Insights tab headers.
+enum HubScreenHeaderLayout {
+    static func scrollTopInset(screenHeight: CGFloat) -> CGFloat {
+        GlanceDeviceLayout.heightFraction(0.02, in: screenHeight)
+    }
 }
 
 /// Frosted glass word cards and bubbles on Today and Library.

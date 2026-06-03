@@ -18,10 +18,16 @@ enum DebugInsightsControls {
 
     static func showPlaceholderData() {
         useMockValues = true
+        NotificationCenter.default.post(name: .debugInsightsMockDataDidChange, object: nil)
     }
 
     static func showLiveData() {
         useMockValues = false
+        NotificationCenter.default.post(name: .debugInsightsMockDataDidChange, object: nil)
     }
+}
+
+extension Notification.Name {
+    static let debugInsightsMockDataDidChange = Notification.Name("com.mikihill.GlanceSAT.debug.insightsMockDataDidChange")
 }
 #endif

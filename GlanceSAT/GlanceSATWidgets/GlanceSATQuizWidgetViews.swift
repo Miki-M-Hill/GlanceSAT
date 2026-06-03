@@ -12,6 +12,10 @@ struct GlanceSATQuizWidgetRootView: View {
 
     @Environment(\.widgetFamily) private var family
 
+    private var isActivelyCelebrating: Bool {
+        entry.isCelebrating || WidgetPrefsReader.isInQuizCelebrationWindow()
+    }
+
     private var deepLinkURL: URL {
         WidgetDeepLink.libraryURL(wordID: entry.word.id)
     }
@@ -20,7 +24,7 @@ struct GlanceSATQuizWidgetRootView: View {
         Group {
             if entry.isStaleSnapshot {
                 GlanceSATWidgetStaleView(family: family, deepLinkURL: deepLinkURL)
-            } else if entry.isCelebrating {
+            } else if isActivelyCelebrating {
                 GlanceSATWidgetCelebrationView(
                     family: family,
                     streakDays: WidgetPrefsReader.streakDays()

@@ -10,6 +10,7 @@ import Foundation
 
 extension Notification.Name {
     static let debugResetTodayQuiz = Notification.Name("com.mikihill.GlanceSAT.debug.resetTodayQuiz")
+    static let debugPreviewMasteryCelebration = Notification.Name("com.mikihill.GlanceSAT.debug.previewMasteryCelebration")
 }
 
 enum DebugTodayQuizControls {
@@ -47,6 +48,10 @@ enum DebugTodayQuizControls {
         forcePreQuizToday = false
         showsPostQuizToday = false
         NotificationCenter.default.post(name: .debugResetTodayQuiz, object: nil)
+    }
+
+    static func previewMasteryCelebration() {
+        NotificationCenter.default.post(name: .debugPreviewMasteryCelebration, object: nil)
     }
 }
 #endif

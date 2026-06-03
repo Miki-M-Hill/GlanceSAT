@@ -36,6 +36,7 @@ struct OnboardingView: View {
     @State private var calibrationComplete = false
     @State private var calibrationShowsReveal = false
     @State private var calibrationContentOpacity: Double = 1
+    @State private var showsThreeDayDownsellSheet = false
 
     private let screenCount = 9
 
@@ -143,7 +144,9 @@ struct OnboardingView: View {
                 page: page,
                 screenCount: screenCount,
                 showsBackButton: page > 0 && page < 7,
-                onBack: { goBack() }
+                onBack: { goBack() },
+                showsCloseButton: page == OnboardingFlowPage.paywall,
+                onClose: { showsThreeDayDownsellSheet = true }
             )
             onboardingTabView
             bottomChrome
@@ -319,7 +322,7 @@ struct OnboardingView: View {
 
                     if isFirstSAT == true {
                         VStack(alignment: .center, spacing: 14) {
-                            Text("What is your dream score?")
+                            Text("What is your dream Reading & Writing score?")
                                 .font(.system(size: 18, weight: .semibold))
                                 .foregroundStyle(OnboardingColors.primaryText)
                                 .lineSpacing(4)
@@ -431,7 +434,7 @@ struct OnboardingView: View {
                     metrics: metrics
                 )
 
-                Spacer(minLength: 40)
+                Spacer(minLength: metrics.isCompact ? 18 : 28)
 
                 PersonalizedPlanInfographic(
                     satTestDate: satTestDate,
@@ -441,7 +444,7 @@ struct OnboardingView: View {
                     isCompact: metrics.isCompact
                 )
 
-                Spacer(minLength: 0)
+                Spacer(minLength: metrics.isCompact ? 16 : 24)
             }
         }
     }
@@ -454,7 +457,8 @@ struct OnboardingView: View {
             selectedPlan: $selectedPaywallPlan,
             metrics: OnboardingLayoutMetrics.resolve(),
             entitlementManager: entitlementManager,
-            paywallErrorMessage: $paywallErrorMessage
+            paywallErrorMessage: $paywallErrorMessage,
+            showsThreeDayDownsellSheet: $showsThreeDayDownsellSheet
         )
         .task(id: page) {
             guard page == OnboardingFlowPage.paywall else { return }
@@ -799,11 +803,32 @@ struct OnboardingView: View {
 private struct OnboardingTopChrome: View {
     let page: Int
     let screenCount: Int
+
     let showsBackButton: Bool
     let onBack: () -> Void
+    var showsCloseButton: Bool = false
+    var onClose: (() -> Void)?
 
     var body: some View {
         VStack(spacing: 10) {
+            if showsCloseButton {
+                HStack {
+                    Button {
+                        onClose?()
+                    } label: {
+                        Image(systemName: "xmark")
+                            .font(.system(size: 14, weight: .semibold))
+                            .foregroundStyle(OnboardingColors.primaryText)
+                            .frame(width: 32, height: 32)
+                    }
+                    .buttonStyle(.plain)
+                    .accessibilityLabel("Close")
+
+                    Spacer()
+                }
+                .padding(.horizontal, OnboardingLayout.horizontalPadding)
+            }
+
             ZStack {
                 HStack {
                     if showsBackButton {
@@ -1416,13 +1441,11 @@ private struct PersonalizedPlanInfographic: View {
     let dreamScoreLabel: String?
     let isCompact: Bool
 
-    private var usesMomentumGrowingTileGrid: Bool {
-        startingPoint == .momentumGrowing
-    }
-
     var body: some View {
-        VStack(alignment: .center, spacing: isCompact ? 28 : 36) {
-            VStack(alignment: .leading, spacing: isCompact ? 22 : 28) {
+        let tileSpacing = isCompact ? 10.0 : 14.0
+
+        VStack(alignment: .center, spacing: isCompact ? 22 : 28) {
+            VStack(alignment: .leading, spacing: isCompact ? 18 : 24) {
                 PersonalizedPlanBullet(
                     symbol: "text.book.closed.fill",
                     text: "10 carefully selected SAT words each day"
@@ -1439,34 +1462,36 @@ private struct PersonalizedPlanInfographic: View {
             .frame(maxWidth: .infinity, alignment: .leading)
             .onboardingPremiumCard(cornerRadius: 20, padding: isCompact ? 16 : 20)
 
-            VStack(spacing: isCompact ? 12 : 14) {
-                HStack(alignment: .top, spacing: isCompact ? 12 : 16) {
+            VStack(spacing: tileSpacing) {
+                HStack(spacing: tileSpacing) {
                     PersonalizedPlanTile(
                         symbol: "calendar",
-                        value: satTestDate?.displayTitle ?? "-",
-                        isCompact: isCompact,
-                        lockSquareAspect: usesMomentumGrowingTileGrid
+                        value: satTestDate?.infographicTileTitle ?? "-",
+                        isCompact: isCompact
                     )
+                    .frame(maxWidth: .infinity)
+
                     PersonalizedPlanTile(
                         symbol: "flag.fill",
                         value: startingPoint?.rawValue ?? "-",
-                        isCompact: isCompact,
-                        lockSquareAspect: usesMomentumGrowingTileGrid
+                        isCompact: isCompact
                     )
+                    .frame(maxWidth: .infinity)
                 }
-                HStack(alignment: .top, spacing: isCompact ? 12 : 16) {
+                HStack(spacing: tileSpacing) {
                     PersonalizedPlanTile(
                         symbol: "bell.fill",
                         value: reminderTime,
-                        isCompact: isCompact,
-                        lockSquareAspect: usesMomentumGrowingTileGrid
+                        isCompact: isCompact
                     )
+                    .frame(maxWidth: .infinity)
+
                     PersonalizedPlanTile(
                         symbol: "target",
                         value: dreamScoreLabel ?? "-",
-                        isCompact: isCompact,
-                        lockSquareAspect: usesMomentumGrowingTileGrid
+                        isCompact: isCompact
                     )
+                    .frame(maxWidth: .infinity)
                 }
             }
             .frame(maxWidth: .infinity, alignment: .center)
@@ -1479,11 +1504,11 @@ private struct PersonalizedPlanBullet: View {
     let text: String
 
     var body: some View {
-        HStack(alignment: .center, spacing: 12) {
+        HStack(alignment: .top, spacing: 12) {
             Image(systemName: symbol)
                 .font(.system(size: 18, weight: .semibold))
                 .foregroundStyle(OnboardingColors.sageGreen)
-                .frame(width: 28, height: 28, alignment: .center)
+                .frame(width: 28, height: 28, alignment: .top)
 
             Text(text)
                 .font(.system(size: 17, weight: .regular))
@@ -1498,35 +1523,34 @@ private struct PersonalizedPlanTile: View {
     let symbol: String
     let value: String
     let isCompact: Bool
-    /// Equal square tiles when the starting level is Momentum Growing (longer label).
-    var lockSquareAspect: Bool = false
+
+    private static let tileAspectRatio: CGFloat = 1.62
+
+    /// Reserves two lines so labels like “Already Ahead” align across the 2×2 grid.
+    private var valueAreaMinHeight: CGFloat {
+        let fontSize = isCompact ? 14.0 : 15.0
+        return fontSize * 1.3 * 2
+    }
 
     var body: some View {
-        let content = VStack(spacing: isCompact ? 6 : 8) {
+        VStack(spacing: isCompact ? 5 : 7) {
             Image(systemName: symbol)
-                .font(.system(size: isCompact ? 20 : 22, weight: .semibold))
+                .font(.system(size: isCompact ? 18 : 20, weight: .semibold))
                 .foregroundStyle(OnboardingColors.sageGreen)
-                .frame(height: isCompact ? 24 : 26)
+                .frame(height: isCompact ? 22 : 24)
 
             Text(value)
-                .font(.system(size: isCompact ? 15 : 16, weight: .semibold))
+                .font(.system(size: isCompact ? 14 : 15, weight: .semibold))
                 .foregroundStyle(OnboardingColors.primaryText)
                 .multilineTextAlignment(.center)
                 .lineLimit(2)
                 .minimumScaleFactor(0.5)
-                .frame(maxWidth: .infinity, maxHeight: lockSquareAspect ? .infinity : nil, alignment: .center)
+                .frame(maxWidth: .infinity, minHeight: valueAreaMinHeight, alignment: .center)
         }
-        .frame(maxWidth: .infinity, maxHeight: lockSquareAspect ? .infinity : nil)
-        .padding(.vertical, isCompact ? 10 : 12)
-
-        Group {
-            if lockSquareAspect {
-                content.aspectRatio(1, contentMode: .fit)
-            } else {
-                content
-            }
-        }
+        .frame(maxWidth: .infinity)
+        .padding(.vertical, isCompact ? 8 : 10)
         .onboardingTileCard()
+        .aspectRatio(Self.tileAspectRatio, contentMode: .fit)
     }
 }
 
@@ -1889,9 +1913,9 @@ private struct OnboardingPaywallScreen: View {
     let metrics: OnboardingLayoutMetrics
     @ObservedObject var entitlementManager: EntitlementManager
     @Binding var paywallErrorMessage: String?
+    @Binding var showsThreeDayDownsellSheet: Bool
 
     @AppStorage("activeThreeDayPassExpiration") private var activeThreeDayPassExpiration: Double = 0
-    @State private var showsThreeDayDownsellSheet = false
     @State private var pendingNavigationAfterThreeDayPass = false
 
     // MARK: - Purchase / restore (primary CTA + restore button)
@@ -1958,22 +1982,6 @@ private struct OnboardingPaywallScreen: View {
 
     var body: some View {
         VStack(spacing: 0) {
-            HStack {
-                Button {
-                    showsThreeDayDownsellSheet = true
-                } label: {
-                    Image(systemName: "xmark")
-                        .font(.system(size: 14, weight: .semibold))
-                        .foregroundStyle(OnboardingColors.primaryText)
-                        .frame(width: 32, height: 32)
-                }
-                .buttonStyle(.plain)
-
-                Spacer()
-            }
-            .padding(.horizontal, OnboardingLayout.horizontalPadding)
-            .padding(.top, 4)
-
             GeometryReader { proxy in
                 VStack(alignment: .center, spacing: 0) {
                     Text(paywallTitle)
@@ -2003,9 +2011,9 @@ private struct OnboardingPaywallScreen: View {
                             PaywallPlanRow(
                                 title: plan.onboardingTitle,
                                 priceLabel: entitlementManager.localizedPriceLabel(for: plan),
-                                savingsPercent: entitlementManager.savingsPercent(for: plan, visiblePlans: visiblePlans),
+                                dailyPriceLabel: entitlementManager.localizedDailyPriceLabel(for: plan),
                                 isSelected: selectedPlan == plan,
-                                showsSavings: plan != .oneMonth
+                                showsDailyPrice: plan != .oneMonth
                             ) {
                                 selectedPlan = plan
                             }
@@ -2029,7 +2037,9 @@ private struct OnboardingPaywallScreen: View {
             )
             .presentationDetents([.medium, .large])
             .presentationDragIndicator(.visible)
+            .presentationBackground(OnboardingColors.linen)
         }
+        .background(OnboardingColors.linen.ignoresSafeArea())
         .onChange(of: activeThreeDayPassExpiration) { _, newValue in
             guard pendingNavigationAfterThreeDayPass else { return }
             guard newValue > Date().timeIntervalSince1970 else { return }
@@ -2050,48 +2060,51 @@ private struct OnboardingThreeDayDownsellSheet: View {
     let onContinueWithoutPass: () -> Void
 
     var body: some View {
-        OnboardingViewport { metrics in
-            let content = VStack(spacing: 12) {
-                OnboardingHeaderBlock(
-                    title: "Not ready to commit?",
-                    metrics: metrics
-                )
+        ZStack {
+            OnboardingColors.linen.ignoresSafeArea()
+            OnboardingViewport { metrics in
+                let content = VStack(spacing: 12) {
+                    OnboardingHeaderBlock(
+                        title: "Not ready to commit?",
+                        metrics: metrics
+                    )
 
-                OnboardingBodyText(
-                    "Get a 3-day full access pass.\nNo card required.",
-                    compactScale: metrics.isCompact
-                )
-                .padding(.top, 8)
+                    OnboardingBodyText(
+                        "Get a 3-day full access pass.\nNo card required.",
+                        compactScale: metrics.isCompact
+                    )
+                    .padding(.top, 8)
 
-                OnboardingPrimaryButton(title: "Start 3-Day Free Pass", isEnabled: true) {
-                    pendingNavigationAfterThreeDayPass = true
-                    activeThreeDayPassExpiration = Date().addingTimeInterval(3 * 24 * 60 * 60).timeIntervalSince1970
-                    EntitlementManager.shared.reapplyAccess()
-                    dismiss()
-                }
-                .padding(.top, 24)
-
-                Button("Continue to widget setup") {
-                    dismiss()
-                    DispatchQueue.main.async {
-                        onContinueWithoutPass()
+                    OnboardingPrimaryButton(title: "Start 3-Day Free Pass", isEnabled: true) {
+                        pendingNavigationAfterThreeDayPass = true
+                        activeThreeDayPassExpiration = Date().addingTimeInterval(3 * 24 * 60 * 60).timeIntervalSince1970
+                        EntitlementManager.shared.reapplyAccess()
+                        dismiss()
                     }
-                }
-                .font(.system(size: 15, weight: .medium))
-                .foregroundStyle(OnboardingColors.secondaryText)
-                .buttonStyle(.plain)
-                .modifier(OnboardingAccessibilityLineLimit(isAccessibilitySize: dynamicTypeSize.isAccessibilitySize))
-            }
-            .padding(.horizontal, OnboardingLayout.horizontalPadding)
-            .padding(.bottom, 24)
+                    .padding(.top, 24)
 
-            Group {
-                if dynamicTypeSize.isAccessibilitySize {
-                    ScrollView(.vertical, showsIndicators: false) {
+                    Button("Continue to widget setup") {
+                        dismiss()
+                        DispatchQueue.main.async {
+                            onContinueWithoutPass()
+                        }
+                    }
+                    .font(.system(size: 15, weight: .medium))
+                    .foregroundStyle(OnboardingColors.secondaryText)
+                    .buttonStyle(.plain)
+                    .modifier(OnboardingAccessibilityLineLimit(isAccessibilitySize: dynamicTypeSize.isAccessibilitySize))
+                }
+                .padding(.horizontal, OnboardingLayout.horizontalPadding)
+                .padding(.bottom, 24)
+
+                Group {
+                    if dynamicTypeSize.isAccessibilitySize {
+                        ScrollView(.vertical, showsIndicators: false) {
+                            content
+                        }
+                    } else {
                         content
                     }
-                } else {
-                    content
                 }
             }
         }
@@ -2101,9 +2114,9 @@ private struct OnboardingThreeDayDownsellSheet: View {
 private struct PaywallPlanRow: View {
     let title: String
     let priceLabel: String
-    let savingsPercent: Int?
+    let dailyPriceLabel: String?
     let isSelected: Bool
-    let showsSavings: Bool
+    let showsDailyPrice: Bool
     let onSelect: () -> Void
 
     var body: some View {
@@ -2117,8 +2130,8 @@ private struct PaywallPlanRow: View {
                         .font(.system(size: 15, weight: .medium))
                         .foregroundStyle(OnboardingColors.secondaryText)
 
-                    if showsSavings, let savingsPercent, savingsPercent > 0 {
-                        Text("Save \(savingsPercent)% vs monthly")
+                    if showsDailyPrice, let dailyPriceLabel {
+                        Text(dailyPriceLabel)
                             .font(.system(size: 15, weight: .semibold))
                             .foregroundStyle(OnboardingColors.hubOrange)
                     }
@@ -2164,6 +2177,14 @@ enum SATTestDate: String, CaseIterable {
         case .within90: return "Within 90 days"
         case .laterThisYear: return "Later this year"
         case .undecided: return "I haven't decided yet"
+        }
+    }
+
+    /// Shorter label for the personalized-plan tile so it aligns with single-line peers.
+    var infographicTileTitle: String {
+        switch self {
+        case .undecided: return "Undecided"
+        default: return displayTitle
         }
     }
 

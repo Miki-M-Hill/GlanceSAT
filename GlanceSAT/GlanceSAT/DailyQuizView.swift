@@ -14,6 +14,7 @@ struct DailyQuizCompletion {
     let missedWordIDs: Set<UUID>
     let isSupplementalRound: Bool
     let questionSlotKeys: Set<String>
+    let newlyMasteredWords: [DailyQuizMasteredWord]
 }
 
 struct DailyQuizView: View {
@@ -42,6 +43,8 @@ struct DailyQuizView: View {
     @State private var questionShownAt = Date.now
     @State private var rememberedWordIDs: Set<UUID> = []
     @State private var missedWordIDs: Set<UUID> = []
+    @State private var newlyMasteredWords: [DailyQuizMasteredWord] = []
+    @State private var showsMasteryCelebration = false
     @State private var didApplyResume = false
     /// Slide transitions only when advancing; enter/resume stays centered with no motion.
     @State private var shouldAnimateBetweenQuestions = false
@@ -79,6 +82,11 @@ struct DailyQuizView: View {
                 quizLoadingPlaceholder
             } else if questions.isEmpty {
                 ContentUnavailableView("No questions", systemImage: "questionmark.circle")
+            } else if quizComplete, showsMasteryCelebration {
+                DailyQuizMasteryCelebrationView(
+                    words: newlyMasteredWords,
+                    onContinue: { dismiss() }
+                )
             } else if quizComplete {
                 quizCompleteSummary
             } else {
@@ -477,7 +485,13 @@ struct DailyQuizView: View {
             Spacer()
 
             Button {
-                dismiss()
+                if shouldShowMasteryCelebration {
+                    withAnimation(.spring(response: 0.45, dampingFraction: 0.88)) {
+                        showsMasteryCelebration = true
+                    }
+                } else {
+                    dismiss()
+                }
             } label: {
                 Text("Return to Today's Words")
                     .font(.headline.bold())
@@ -500,6 +514,10 @@ struct DailyQuizView: View {
     }
 
     // MARK: - Actions
+
+    private var shouldShowMasteryCelebration: Bool {
+        !isSupplementalPersistence && !newlyMasteredWords.isEmpty
+    }
 
     private func handleOptionTap(option: String, question: QuizQuestion) {
         guard !isAnswerRevealed else { return }
@@ -581,7 +599,15 @@ struct DailyQuizView: View {
 
     private func applySRSUpdate(for question: QuizQuestion, quality: Int) {
         guard question.appliesSRS else { return }
-        _ = SRSEngine.calculateNextReview(word: question.targetWord, quality: quality)
+        let word = question.targetWord
+        let wasMastered = word.status.lowercased() == "mastered"
+        _ = SRSEngine.calculateNextReview(word: word, quality: quality)
+        if !wasMastered, word.status.lowercased() == "mastered" {
+            let mastered = DailyQuizMasteredWord(word: word)
+            if !newlyMasteredWords.contains(where: { $0.id == mastered.id }) {
+                newlyMasteredWords.append(mastered)
+            }
+        }
         try? modelContext.save()
     }
 
@@ -643,7 +669,8 @@ struct DailyQuizView: View {
                 isSupplementalRound: isSupplementalPersistence,
                 questionSlotKeys: Set(questions.map {
                     QuizGenerator.questionSlotKey(targetID: $0.targetWord.id, type: $0.questionType)
-                })
+                }),
+                newlyMasteredWords: newlyMasteredWords
             )
         )
     }
@@ -714,7 +741,14 @@ struct DailyQuizView: View {
 
     return NavigationStack {
         DailyQuizView(questions: questions)
-            .navigationTitle("Glance")
+            .navigationTitle("")
+            .navigationBarTitleDisplayMode(.inline)
+            .toolbar {
+                ToolbarItem(placement: .principal) {
+                    GlanceScreenTitle()
+                        .frame(height: 44)
+                }
+            }
             .modelContainer(container)
     }
 }

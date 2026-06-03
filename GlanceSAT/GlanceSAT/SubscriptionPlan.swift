@@ -24,7 +24,7 @@ enum SubscriptionPlan: String, CaseIterable, Identifiable, Sendable {
     var onboardingTitle: String {
         switch self {
         case .oneMonth: return "SAT Sprint (1 month)"
-        case .threeMonth: return "Just for you (3 months)"
+        case .threeMonth: return "Test Season (3 months)"
         case .annual: return "Full SAT Prep (annual)"
         }
     }
@@ -32,7 +32,7 @@ enum SubscriptionPlan: String, CaseIterable, Identifiable, Sendable {
     var appPaywallTitle: String {
         switch self {
         case .oneMonth: return "1 month"
-        case .threeMonth: return "3 months"
+        case .threeMonth: return "Test Season"
         case .annual: return "Annual"
         }
     }
@@ -43,6 +43,23 @@ enum SubscriptionPlan: String, CaseIterable, Identifiable, Sendable {
         case .oneMonth: return "$9.99 / mo"
         case .threeMonth: return "$24.99 / 3 mo"
         case .annual: return "$49.99 / yr"
+        }
+    }
+
+    /// Calendar days used for approximate per-day pricing on non-monthly plans.
+    var billingDayCount: Int {
+        switch self {
+        case .oneMonth: return 30
+        case .threeMonth: return 90
+        case .annual: return 365
+        }
+    }
+
+    var fallbackDailyPriceLabel: String? {
+        switch self {
+        case .oneMonth: return nil
+        case .threeMonth: return "~$0.30 per day"
+        case .annual: return "~$0.15 per day"
         }
     }
 

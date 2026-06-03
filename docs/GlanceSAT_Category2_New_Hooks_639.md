@@ -1,0 +1,645 @@
+# GlanceSAT Category 2 Hooks (639 Words)
+
+- Source set: Category 2 from `GlanceSAT_Word_Etymology_vs_Hook.md`
+- Total hooks: **639**
+- Constraint target: each hook under 15 words
+
+- **Acerbic**: An acerbic comment is acidic and bites
+- **Acumen**: IQ men - men with high IQs have great mental sharpness
+- **Acute**: A cute angle is sharp and precise
+- **Adroit**: From French droit meaning " to the right. " The right hand was historically considered the
+- **Adulation**: Adult infatuation - excessive flattery and worship
+- **Aerial**: air cue: somehow related to the air.
+- **Aesthetic**: aesth cue: artistic.
+- **Agile**: agile cue: quick.
+- **Alacrity**: Sounds like electricity - moving with electric speed and readiness
+- **Alias**: alias cue: a false name or identity.
+- **Aloof**: A roof - sitting alone on a roof, emotionally detached from everyone below
+- **Altercation**: When things alter for the worse, a noisy argument starts
+- **Amalgamate**: A mall - a mall brings many different stores together into one place
+- **Ameliorate**: A million rate - taking a bad rating and improving it to a million
+- **Amenity**: ameni cue: an item that increases comfort.
+- **Anguish**: angui cue: extreme sadness.
+- **Antiquated**: ant cue: old.
+- **Anxiety**: anxie cue: intense uneasiness.
+- **Arable**: " ar - " + " - able "
+- **Arbitrary**: arbiter cue: based on factors that appear random.
+- **Arbitration**: arbiter cue: the process or act of resolving a dispute.
+- **Arboreal**: From Latin arbor
+- **Arcane**: Ark cane - Indiana Jones needed a cane to find the lost Ark because its
+- **Archaic**: " archaios "
+- **Ardor**: Harder - working harder because you have intense passion
+- **Arid**: A rid - you rid the desert of all its water
+- **Artisan**: artist cue: a craftsman.
+- **Ascetic**: Acidic - a monk drinking acidic water instead of wine to practice severe self - discipline
+- **Astute**: A student - a good student is sharp and clever
+- **Audacious**: All day shush - if you shush the teacher all day, you are boldly disrespectful
+- **Audible**: audio cue: able to be heard.
+- **Augment**: Argument - you augment your essay to win the argument
+- **Austere**: Out steer - steering out of the fun lane into a strict, severe, undecorated lifestyle
+- **Avarice**: Have a rice - the greedy rich man wants to have every single grain of
+- **Balk**: A dog barks when it balks
+- **Bane**: Batman's enemy Bane is the cause of his great distress
+- **Behemoth**: behem cue: something of tremendous power or size.
+- **Bias**: bias cue: a tendency.
+- **Bilk**: Milk - the scammer will milk you for all your money
+- **Blandish**: Bland dish - flattering the chef by saying the bland dish is actually delicious
+- **Blemish**: blemi cue: an imperfection.
+- **Blight**: B - light - blocking out the light causes the crops to die
+- **Boisterous**: Boys terrorize - loud, energetic boys terrorizing the playground
+- **Bolster**: A bolster pillow supports your head — to bolster an argument supports it
+- **Bombastic**: Bomb - inflating your speech with explosive words that lack actual substance
+- **Boon**: Boom! - an explosive stroke of good luck or benefit
+- **Bourgeois**: bourg cue: a middle - class person.
+- **Brazen**: Brass - acting as bold and hard as brass without any shame
+- **Brusque**: Brush - brushing someone off with a quick, rude reply
+- **Buffet**: A buff guy hitting you repeatedly
+- **Burnish**: Burn - rubbing the metal so fast it burns and becomes highly polished
+- **Buttress**: Butt rest - a support structure that acts as a rest for the building
+- **Cadence**: cadence cue: a rhythm.
+- **Cajole**: Cage hole - coaxing the scared puppy out of the cage hole with a treat
+- **Calamity**: Calm am I? T - No, I am not calm, it's a disaster!
+- **Calibrate**: calibrate cue: set.
+- **Callous**: Having physical calluses on your hands makes them hard; having a callous personality means
+- **Calumny**: Column - writing a gossip column full of slander to ruin someone's reputation
+- **Camaraderie**: camera cue: brotherhood.
+- **Candor**: Can do - being completely open and honest about what you can do
+- **Canny**: Can he? - Yes, he can, because he's shrewd and clever
+- **Canvas**: Canvas fabric was originally made from cannabis
+- **Capitulate**: " caput "
+- **Capricious**: Capri Sun - a toddler's mood is capricious; one second they are happy, the next
+- **Captivate**: capture cue: get the attention of.
+- **Carouse**: Car house - driving your car into the house because you were partying and drinking
+- **Carp**: A carp fish just swims around complaining and nitpicking
+- **Catalog**: cat cue: list.
+- **Catalyze**: cat cue: charge.
+- **Caucus**: Cactus - politicians gathering around a spiky cactus to hold a closed political meeting
+- **Caustic**: Cause sick - drinking a harsh chemical will cause you to be sick
+- **Cavort**: Cave fort - jumping and dancing around excitedly in your childhood cave fort
+- **Censure**: Censor - the government officially criticizes and censors the journalist
+- **Chaos**: chaos cue: absolute disorder.
+- **Cherish**: cheri cue: feel or show affection toward something.
+- **Chide**: Child - how you gently scold a child for making a mistake
+- **Clamor**: Claim more - the angry mob is loudly shouting to claim more rights
+- **Clandestine**: Clan destiny - the secret clan held a hidden meeting to discuss their destiny
+- **Cleave**: Meat cleaver - a heavy knife used to split things apart
+- **Clemency**: Lemon tea - giving the sore - throated prisoner a warm lemon tea as an act
+- **Cloying**: Clawing - romantic words that are so overly sweet you want to claw your ears
+- **Coagulate**: Colgate - toothpaste thickens and solidifies if left out
+- **Coerce**: Force - using force or threats to get someone to do something
+- **Cogent**: Co - agent - your FBI co - agent presents a clear, logical, and convincing argument
+- **Coherent**: " co - " + " haerere "
+- **Collusion**: " col - " + " ludere "
+- **Colossus**: color cue: a gigantic statue or thing.
+- **Combustion**: combo cue: the act or process of burning.
+- **Commendation**: Recommend a nation - giving official praise
+- **Commodious**: Commode - a massive, spacious bathroom
+- **Compensate**: combo cue: make an appropriate payment for something.
+- **Complacency**: Come play, senor - relaxing and playing instead of staying alert to danger
+- **Complement**: " com - " + " plere "
+- **Compliment**: Latin complementum; courtesy praise - remember: I like compliments
+- **Compound**: combo cue: combine parts.
+- **Comprehensive**: combo cue: including everything.
+- **Compress**: combo cue: apply pressure.
+- **Compunction**: " com - " + " punct "
+- **Conciliatory**: Council - bringing the arguing sides to the council to make peace
+- **Concise**: " con - " + " caedere "
+- **Concoct**: Cocktail - mixing ingredients together to invent a new cocktail
+- **Concomitant**: Comet tent - if a comet hits your tent, disaster is a naturally accompanying result
+- **Concord**: " con - " + " cord "
+- **Condone**: Con done - the convict is done with his sentence, so you overlook his past
+- **Conduit**: Can do it - the pipe is the channel that can do the job of
+- **Confection**: con cue: a sweet.
+- **Conflagration**: Flag ration - a massive fire burned through the military base, so they had to
+- **Confound**: Dumbfounded - you are so thoroughly confused you are left dumbfounded
+- **Congruity**: Geometry - just like congruent triangles, everything fits perfectly together in agreement
+- **Conjecture**: " Con - " + " ject "
+- **Connive**: Knives - secretly plotting behind someone's back with knives
+- **Consecrate**: " con - " + " sacr "
+- **Consensus**: " con - " + " sens "
+- **Consign**: Sign - you sign the paperwork to formally hand the goods over to someone else's
+- **Consolation**: Console - giving a sad gamer a new console to comfort them after a major
+- **Consonant**: " con - " + " son "
+- **Constituent**: con cue: an essential part.
+- **Constrain**: con cue: forcibly restrict.
+- **Consummate**: " con - " + " summa "
+- **Consumption**: con cue: the act of consuming.
+- **Contentious**: Contender - a boxer who loves to fight and argue
+- **Conundrum**: Nun drum - a nun playing a heavy metal drum kit is a confusing, puzzling
+- **Convoluted**: " con - " + " volvere "
+- **Copious**: Copy us - the printer made so many copies you now have an abundant supply
+- **Cordial**: " cord "
+- **Corroborate**: " cor - " + " robor "
+- **Corrosive**: corro cue: having the tendency to erode or eat away.
+- **Coup**: Coop - the angry chickens violently overthrew the farmer to take control of the coop
+- **Covert**: Cover it - keeping the military operation completely covered up and secret
+- **Covet**: Cover it - you want your neighbor's new car so badly you throw a tarp
+- **Crescendo**: cresc cue: a steady increase in intensity or volume.
+- **Criteria**: crite cue: standards by which something is judged.
+- **Culmination**: culmi cue: the climax toward which something progresses.
+- **Cultivate**: culti cue: nurture.
+- **Cunning**: cunni cue: sly.
+- **Cupidity**: Named after Cupid, the Roman god of desire
+- **Cursory**: Cursor - moving your computer cursor quickly over the text without actually stopping to read
+- **Curt**: Cut - a spoken response so short and rude it feels like you've been cut
+- **Curtail**: Cut tail - to cut the tail off a long meeting to shorten it
+- **Daunting**: Haunting - a ghost haunting your house is an incredibly intimidating and scary problem to
+- **Debauch**: Da botch - you completely botched your life by engaging in extreme, corrupt partying
+- **Defamatory**: " de - " + " fame "
+- **Defer**: defer cue: postpone something.
+- **Defile**: File - spilling black coffee all over a clean file, completely corrupting and dirtying it
+- **Deft**: Theft - a pickpocket must be incredibly quick and skillful to pull off a theft
+- **Defunct**: " de - " + " funct "
+- **Delegate**: deleg cue: hand over responsibility for something.
+- **Deleterious**: Delete - a computer virus that is so harmful it deletes all your hard drive
+- **Deliberate**: delib cue: intentional.
+- **Demarcation**: The mark - setting the physical mark on the ground to define a clear boundary
+- **Demure**: Murmur - a shy, modest girl who only speaks in a quiet murmur
+- **Denounce**: " de - " + " nuntiare "
+- **Deplore**: deplo cue: feel or express sorrow.
+- **Depravity**: Deprive - a villain completely deprived of any moral goodness
+- **Deprecate**: Appreciate - to heavily express disapproval of something, the exact opposite of appreciating it
+- **Derelict**: Dairy licked - the abandoned ice cream factory is so ruined that stray dogs have
+- **Deride**: The ride - ruthlessly mocking the kid who is too scared to go on the
+- **Derivative**: deriv cue: taken directly from a source.
+- **Desiccated**: Desert - completely dried out and lifeless, exactly like a desert
+- **Desolate**: " de - " + " sol "
+- **Despondent**: Respond - someone so hopelessly depressed they won't even respond to your texts
+- **Despot**: Death pot - a cruel, absolute dictator who throws his enemies into a boiling death
+- **Destitute**: Deserted - someone who has been entirely deserted by wealth, leaving them in extreme poverty
+- **Devious**: " de - " + " via "
+- **Didactic**: Dictator - a teacher who constantly lectures you on morals like a strict dictator
+- **Dilatory**: Delay story - the lawyer told a long, pointless delay story just to waste time
+- **Diligent**: dilig cue: showing care in doing one ’ s work.
+- **Diminutive**: " min "
+- **Dirge**: Dirt - the slow, mournful song played while throwing dirt on a coffin
+- **Discern**: disce cue: perceive.
+- **Discomfit**: Discomfort - to make someone feel deeply embarrassed and in a state of discomfort
+- **Discordant**: " dis - " + " cord "
+- **Discrepancy**: pan cue: difference.
+- **Discretion**: discr cue: careful judgment.
+- **Disparage**: Spar - to verbally spar with someone just to belittle and insult their worth
+- **Dispatch**: dispa cue: send off to accomplish a duty.
+- **Disperse**: " dis - " + " spars "
+- **Disrepute**: " dis - " + " repute "
+- **Dissemble**: Disassemble - to disassemble your true face and hide behind a fake, deceptive one
+- **Dither**: Dizzy - spinning around dizzy, completely paralyzed and unable to make a decision
+- **Divine**: Vine - predicting the future by reading the tangled growth of a magic vine
+- **Divisive**: divis cue: causing dissent.
+- **Docile**: " doc "
+- **Dogmatic**: Dog - a dog guarding its bone is stubbornly attached to it, just like someone
+- **Dour**: Sour - having a sour, gloomy, and extremely severe facial expression
+- **Dubious**: " dub "
+- **Duplicity**: " du " + " plic "
+- **Dynamic**: dynam cue: actively changing.
+- **Eclectic**: Elect - electing to take the best individual pieces from a wide variety of different
+- **Ecstatic**: ecsta cue: intensely and overpoweringly happy.
+- **Efficacious**: Effective - highly successful in producing the exact desired result
+- **Effrontery**: Front - having the brazen, arrogant nerve to get right up in someone's " front "
+- **Elaborate**: elabo cue: complex.
+- **Elated**: elate cue: overjoyed.
+- **Elegy**: Allergy - writing a beautiful, sad poem for a friend who tragically died from a
+- **Elude**: " e - " + " ludere "
+- **Embellish**: Bell - decorating a plain, boring Christmas tree by hanging shiny bells all over it
+- **Embezzle**: Bedazzle - the corrupt accountant stole company funds just to bedazzle her own wardrobe
+- **Emote**: emote cue: express emotion.
+- **Empirical**: Empire - the Roman Empire was built on practical, observable facts and engineering, not just
+- **Emulate**: Emulator - running a video game emulator on your PC to perfectly imitate an old
+- **Encore**: encor cue: an extra performance demanded by applause.
+- **Encumber**: Cucumber - trying to run a marathon while carrying a 50 - pound sack of cucumbers
+- **Enervate**: Energy out - a disease that completely drains the energy out of your body
+- **Enfranchise**: Franchise - giving a citizen the keys to the " franchise, " meaning granting them the legal
+- **Engender**: " en - " + " gen "
+- **Enigmatic**: Enigma machine - highly mysterious and impossible to crack, just like the WWII code machine
+- **Enmity**: Enemy - the intense, deeply rooted hatred you feel toward a bitter enemy
+- **Ennui**: Are we? - " Are we there yet? " asked the kid in the backseat, suffering from
+- **Entail**: entai cue: include as a necessary step.
+- **Epistolary**: Pistol - writing a highly formal series of letters to threaten a duel with a
+- **Epitome**: Epic tome - an epic, massive tome that serves as the perfect, flawless example of
+- **Eschew**: Ah - choo! - you sneeze, and I deliberately avoid you to escape the germs
+- **Esoteric**: Isolated - knowledge that is so highly isolated that only a tiny group of experts
+- **Espouse**: Spouse - to marry yourself to a political idea or belief, defending it just like
+- **Ethereal**: " ether "
+- **Excursion**: excur cue: a trip or outing.
+- **Exigent**: Exit gent - the building is currently on fire, so it is highly urgent and
+- **Extraneous**: " extra "
+- **Fabricate**: fabri cue: make up or invent falsely.
+- **Facile**: " fac "
+- **Facilitate**: Facile means easy — facilitate makes things easy to do
+- **Fallacious**: " fall "
+- **Fastidious**: Fast tidier - obsessing over every tiny detail; nothing sloppy gets past
+- **Fathom**: Originally a nautical unit of measurement for water depth
+- **Fatuous**: Tattoo us - two drunk, incredibly silly friends shouting " Tattoo us! " at 3 AM; a
+- **Feasible**: Feasible
+- **Fecund**: Feces - putting cow feces on the soil makes it highly fertile and incredibly productive
+- **Feral**: Fur all - a stray animal covered in fur all over, acting completely wild and
+- **Fervent**: Fever - having a burning, passionate fever for a political cause
+- **Fetid**: Feet - a swamp smelling as horrific as a rotting pair of unwashed feet
+- **Fetter**: Feet - putting heavy iron chains on a prisoner's feet to severely restrict them
+- **Fickle**: Pickle - you can't decide if you want a sweet or a sour pickle because
+- **Figurative**: figur cue: using figures of speech.
+- **Flabbergasted**: flabb cue: astounded.
+- **Flaccid**: Flat - a tire that is completely flat, limp, and entirely lacking firmness
+- **Flagrant**: Flag - a foul on the basketball court so obviously bad and intentional the referee
+- **Florid**: " flor "
+- **Flout**: Fly out - to openly mock and break the rules, then fly out of the
+- **Foil**: Aluminum foil - wrapping the villain's evil plans in heavy aluminum foil to completely block
+- **Forage**: forag cue: graze.
+- **Forlorn**: Torn - your heart is totally torn because you are pitifully sad, lonely, and abandoned
+- **Fortitude**: " fort "
+- **Fortuitous**: " fortun "
+- **Forum**: forum cue: a medium for lecture or discussion.
+- **Foster**: foste cue: stimulate.
+- **Fraught**: Caught - a tense situation where you are constantly worried you will be caught because
+- **Frenetic**: Frenzy - moving with wild, incredibly fast, frantic energy
+- **Frivolous**: Free volley - playing a completely meaningless, silly free volley in tennis instead of focusing
+- **Frugal**: Fruit girl - the girl who only eats free fruit from the trees to save
+- **Furtive**: Fur thief - the fur thief moves quietly and secretly through the mansion to avoid
+- **Galvanize**: Galvanize recalls an electric jolt that shocks people into motion
+- **Garish**: Garnish - piling way too much cheap, brightly colored garnish on a plate, making the
+- **Garrulous**: Gary rules - Gary never shuts up about how much he rules; an excessively talkative
+- **Genial**: " gen "
+- **Gluttony**: glutt cue: overindulgence in food or drink.
+- **Goad**: Goat - poking a stubborn goat repeatedly with a sharp stick to provoke it to
+- **Gourmand**: Gourmet man - a man who loves eating rich, gourmet food in excessive amounts
+- **Grandiose**: grand cue: on a magnificent or exaggerated scale.
+- **Gratuitous**: Gratuity - adding an unnecessary, uncalled - for extra tip when the service was already bad
+- **Grievous**: Grief - an injury or mistake so severe that it causes immense grief
+- **Guile**: Disguise - a criminal using a clever disguise out of pure guile and trickery
+- **Hackneyed**: From Hackney, an area in London where horses were bred to be rented out
+- **Hallowed**: Halloween - referring to the most holy, deeply respected evening
+- **Harangue**: Hear anger - a long, aggressive speech where all you hear is the speaker's intense
+- **Hardy**: Hard - a plant or person tough enough to survive extremely hard, freezing conditions
+- **Harrowing**: Arrowing - being shot at by a rain of flying arrows is a terrifying, highly
+- **Haughty**: High - acting incredibly high and mighty, looking down on everyone else
+- **Hegemony**: Huge money - the empire with huge money has absolute dominance and control over the
+- **Heinous**: Hate us - committing crimes so terribly wicked they make the entire world hate us
+- **Hiatus**: Hide us - the famous band begging " hide us " so they can take a long,
+- **Hypothetical**: hypot cue: supposed or assumed true.
+- **Imperative**: imper cue: necessary.
+- **Imperious**: Emperor - acting like a bossy, highly arrogant emperor barking orders
+- **Impetuous**: Impulse - acting strictly on wild impulse without thinking of the consequences
+- **Inane**: Insane - a comment so painfully empty and silly it borders on insane
+- **Incendiary**: " incend "
+- **Inchoate**: Inches - a business plan that is only a few inches along; just barely starting
+- **Inclination**: incli cue: a tendency.
+- **Increment**: incre cue: an enlargement.
+- **Incumbent**: Occupies the seat now - the officeholder already in power
+- **Indigent**: Dig in dirt - someone so desperately poor they have to dig in the dirt
+- **Ingenious**: ingen cue: clever.
+- **Ingenuous**: Genuine - someone with a highly innocent, trusting, and completely genuine nature
+- **Iniquity**: " in - " + " equ "
+- **Innate**: " in - " + " nat "
+- **Innuendo**: innue cue: an insinuation.
+- **Insidious**: Inside us - a dangerous, sneaky disease spreading quietly inside us without being noticed until
+- **Insular**: " insula "
+- **Integral**: integ cue: necessary for completeness.
+- **Intimation**: Intimate - quietly sharing a very subtle, intimate hint rather than a direct statement
+- **Inure**: In your - the freezing cold has been in your life for so long you've
+- **Invective**: Infective - highly abusive, toxic language that spreads through a crowd like an infection
+- **Inveterate**: " in - " + " veter "
+- **Inviolable**: " in - " + " violable "
+- **Irascible**: Erasable - a teacher with a terrible temper who violently snaps when you use an
+- **Iridescent**: iride cue: showing rainbow colors.
+- **Irreverence**: " ir - " + " revere "
+- **Jubilant**: Jubilee - a massive, roaring celebration full of intense joy
+- **Judicious**: " jud "
+- **Juxtaposition**: juxta cue: the act of placing two things side by side for contrast.
+- **Knell**: Bell - the incredibly slow, solemn ringing of a funeral bell
+- **Kudos**: kudos cue: praise for an achievement.
+- **Laconic**: From Laconia, the region of ancient Sparta
+- **Languid**: Language - speaking in a highly slow, tired, and lazy language because you have zero
+- **Largess**: Large - a highly generous billionaire handing out large sums of cash to charity
+- **Latent**: Late tent - the true talent is hiding asleep in the tent, waiting to emerge
+- **Laudatory**: " laud "
+- **Lavish**: lavis cue: given without limits.
+- **Legerdemain**: From the French phrase l ger de main meaning " light of hand. " It is
+- **Lenient**: lenie cue: demonstrating tolerance or gentleness.
+- **Lethargic**: letha cue: in a state of sluggishness or apathy.
+- **Liability**: liabi cue: something for which one is legally responsible.
+- **Libertarian**: liber cue: advocating principles of liberty and free will.
+- **Licentious**: License - acting recklessly, as if you have a government license to break all moral
+- **Limpid**: Liquid - a mountain stream that is completely clear, pure, and see - through liquid
+- **Linchpin**: linch cue: something that holds separate parts together.
+- **Lithe**: lithe cue: graceful.
+- **Litigant**: litig cue: someone engaged in a lawsuit.
+- **Lurid**: Lure in - a tabloid using violently graphic, shocking headlines strictly to lure readers in
+- **Maelstrom**: maels cue: a destructive whirlpool which rapidly sucks in objects.
+- **Malleable**: Mallet - a metal that is soft and flexible enough to be easily shaped by
+- **Mandate**: manda cue: an authoritative command.
+- **Manifest**: manif cue: easily understandable.
+- **Manifold**: " mani " + " fold "
+- **Maudlin**: Model in - a model in a cheap soap opera crying excessively and artificially over
+- **Maverick**: Named after Samuel Maverick, an 1800s Texas rancher who famously refused to brand his
+- **Mawkish**: Ma kiss - your Ma aggressively kissing your cheek in front of your high school
+- **Maxim**: Maximum - a highly condensed, short phrase carrying the absolute maximum amount of truth
+- **Meager**: meage cue: deficient in size or quality.
+- **Medley**: medle cue: a mixture of differing things.
+- **Mendacious**: Mend - having to desperately mend your story because you were caught being highly deceitful
+- **Mercurial**: Derived from the Roman god Mercury
+- **Meritorious**: " merit "
+- **Meticulous**: metic cue: extremely careful with details.
+- **Mitigate**: mitig cue: make less violent.
+- **Moderate**: moder cue: not extreme.
+- **Modicum**: Modest crumb - having only a tiny, extremely modest crumb of respect left for someone
+- **Modulate**: modul cue: pass from one state to another.
+- **Mollify**: " moll " + " fy "
+- **Morass**: More mass - every step sinks deeper; a hopeless mix of mud, mess, and delay
+- **Mores**: Morals - the absolutely fundamental moral customs and unwritten rules of a group
+- **Morose**: No rose - being incredibly depressed, sullen, and gloomy because you got no rose on
+- **Multifarious**: " multi "
+- **Mundane**: " mund "
+- **Munificence**: " muni " + " fic "
+- **Mutable**: " mut "
+- **Myriad**: Pyramid - a myriad of heavy stone blocks were used to build the massive pyramid
+- **Nadir**: Nada - hitting absolute rock bottom where you have completely nada left
+- **Nascent**: New scent - a brand new born project having a nascent, totally fresh scent
+- **Nebulous**: " nebul "
+- **Nefarious**: No fairness - an utterly evil villain acting with absolutely zero fairness
+- **Negligent**: negli cue: habitually careless.
+- **Nocturnal**: " noct "
+- **Noisome**: Nose - an odor so absolutely foul and toxic it physically attacks your nose
+- **Nomadic**: nomad cue: wandering from place to place.
+- **Nominal**: " nomin "
+- **Nonchalant**: nonch cue: having a lack of concern.
+- **Nondescript**: nonde cue: lacking a distinctive character.
+- **Notorious**: notor cue: widely and unfavorably known.
+- **Notwithstanding**: Not with standing against
+- **Noxious**: " nox "
+- **Nuance**: nuanc cue: a slight variation in meaning.
+- **Nurture**: nurtu cue: assist the development of.
+- **Obdurate**: " ob " + " dur "
+- **Obfuscate**: " ob " + " fuscare "
+- **Oblique**: Ob - look - taking an indirect, highly slanted look at the problem rather than attacking
+- **Oblivious**: obliv cue: lacking consciousness or awareness of something.
+- **Obscure**: obscu cue: unclear.
+- **Obsequious**: Obsessed yes - fawning on authority, agreeing endlessly to stay in the boss's good graces
+- **Obsolete**: obsol cue: no longer used.
+- **Obstinate**: obsti cue: not yielding easily.
+- **Obstreperous**: Street prep - a loud, completely unruly crowd causing wild chaos while prepping in the
+- **Obtuse**: obtus cue: lacking quickness of sensibility or intellect.
+- **Odious**: Odor - a personality or crime so deeply repulsive it hits you like a foul,
+- **Officious**: Office boss - an annoying, low - level coworker acting exactly like the office boss and
+- **Ominous**: Omen - dark storm clouds giving a threatening omen that something very bad is coming
+- **Onerous**: On us - an incredibly heavy, punishingly difficult burden placed squarely on us
+- **Opulent**: Opal - a massive mansion dripping in opals, diamonds, and sheer, excessive wealth
+- **Oration**: orati cue: a speech delivered in a formal or ceremonious manner.
+- **Ornate**: ornat cue: highly elaborate.
+- **Oscillate**: oscil cue: sway from one side to the other.
+- **Ostensible**: Sensible - presenting a sensible - sounding, fake excuse that completely hides your true motive
+- **Ostentatious**: Ostrich - walking around in an enormous ostrich - feather hat specifically to aggressively show off
+- **Ostracism**: From ancient Athens, where citizens voted to banish dangerous politicians from the city by
+- **Pacific**: " pac "
+- **Palatable**: Plate - the strange food on the plate is finally agreeable and okay to your
+- **Palliate**: Pill ate - you ate a pill to soothe and hide the severe symptoms, even
+- **Pallid**: Pale - a completely pale, sickly, and utterly lifeless face
+- **Paradigm**: parad cue: an example that is a perfect pattern or model.
+- **Paradox**: parad cue: an apparently contradictory statement that is perhaps true.
+- **Paragon**: parag cue: a model of excellence or perfection.
+- **Paramount**: Mountain - sitting at the absolute highest, most supreme mountain peak of importance
+- **Pariah**: Mariah - Mariah acted so wildly that the entire town exiled her as a total
+- **Parody**: parod cue: a satirical imitation.
+- **Parsimony**: Purse money - tightly and fiercely guarding your purse money because you are incredibly cheap
+- **Partisan**: artist cue: a follower.
+- **Patent**: tenable tent cue: readily seen or understood.
+- **Pathos**: " path "
+- **Paucity**: " pauc "
+- **Pejorative**: Major dive - an insulting, highly negative word that makes your public reputation take a
+- **Penchant**: Pendant - wearing a specific, unique pendant every day because you have a massive, natural
+- **Penitent**: Penalty tent - sitting alone in the penalty tent feeling incredibly sorry and guilty for
+- **Penultimate**: " paene " + " ultimus "
+- **Penurious**: Penny furious - a guy who becomes furious if he loses even a single penny
+- **Perfunctory**: " per " + " funct "
+- **Permeate**: " per " + " meare "
+- **Pernicious**: " per " + " nec "
+- **Perpetuate**: Perpetual
+- **Perplex**: perpl cue: confuse.
+- **Perspicacity**: " per " + " spec "
+- **Pert**: pert cue: flippant.
+- **Pertinacious**: Persistent - fiercely and stubbornly holding onto an opinion with massive persistence
+- **Perusal**: perus cue: a careful examination.
+- **Pervasive**: " per " + " vadere "
+- **Petulance**: Pet - acting exactly like a moody, highly childish pet throwing a wild tantrum
+- **Phlegmatic**: From the ancient medical theory of the four humors
+- **Pillage**: pilla cue: seize or plunder.
+- **Pinnacle**: pinna cue: the highest point.
+- **Pithy**: Pity - it's a pity his speech was so incredibly short, but it was highly
+- **Pittance**: Pity cents - a wage so insultingly tiny they just throw you a few extra
+- **Placate**: Play date - setting up a highly fun play date to completely calm down a
+- **Placid**: Plastic - an ocean surface as completely smooth, calm, and unchanging as solid plastic
+- **Platitude**: Flat attitude - offering a flat, highly overused clich instead of real, helpful advice
+- **Plaudits**: " plaudere "
+- **Plausible**: plaus cue: believable.
+- **Plenitude**: " plen "
+- **Plethora**: Plaza full - a plaza completely full of a massive overabundance of items
+- **Pliable**: Ply - like plywood, it bends easily and is highly flexible
+- **Poignant**: Point - a sad memory so sharp it feels like it points straight into your
+- **Polemic**: Polemic
+- **Postulate**: Postulate
+- **Potable**: Pot - water safe enough to boil in a pot and drink
+- **Potentate**: " potent "
+- **Pragmatic**: pragm cue: practical.
+- **Precipice**: Press of ice - standing dangerously on the very edge of a massive cliff of
+- **Precipitate**: Precipitate
+- **Precocious**: Latin praecox: a child whose mind has " cooked " ahead of schedule
+- **Preponderance**: " pre - " + " ponder "
+- **Prescribe**: prevent cue: lay down a rule.
+- **Presumptuous**: prevent cue: disrespectfully bold.
+- **Pretense**: prevent cue: an appearance or action intended to deceive.
+- **Privation**: Deprive - a state of extreme poverty where you are deprived of basic needs
+- **Probity**: Probe - a politician whose morals are so flawless they withstand the deepest legal probe
+- **Procure**: procu cue: obtain.
+- **Profane**: " pro - " + " fanum "
+- **Profligate**: Profits gate - throwing profits out the gate because you are reckless with money
+- **Profuse**: " pro - " + " fundere "
+- **Promulgate**: Prom gate - announcing new rules loudly right at the prom gate
+- **Propagate**: propa cue: multiply.
+- **Propensity**: Pro pen - a writer with a natural tendency to always grab a pro pen
+- **Propitious**: Profits - conditions look favorable; strong signs you could see big profits
+- **Propriety**: Proper - acting with strict, perfectly proper, socially acceptable behavior
+- **Prosaic**: Prose - writing that sounds like ordinary prose instead of poetry; dull
+- **Proscribe**: " pro - " + " scribere "
+- **Protean**: From Proteus, Greek sea god who changed shape to escape - versatile, constantly shifting
+- **Prowess**: prowe cue: extraordinary ability.
+- **Prudence**: Prude - so careful and cautious with choices that people joke you are a prude
+- **Prurient**: pruri cue: eliciting or possessing an extraordinary interest in sex.
+- **Puerile**: Pure ill - a child acting so immaturely it makes you feel purely ill
+- **Pulchritude**: Pull attitude - beauty so strong it pulls the room's attitude toward you
+- **Punctilious**: Punctuation - obsessed with tiny details; corrects your text - message punctuation
+- **Pungent**: Punch in - a smell so sharp it punches you in the nose
+- **Punitive**: " pun "
+- **Quagmire**: Quack mire - a duck stuck in a muddy, complicated swamp
+- **Quaint**: quain cue: charmingly old - fashioned.
+- **Quandary**: Wandering - wandering lost because you are stuck in painful uncertainty
+- **Quell**: Quiet well - force quiets the riot well
+- **Querulous**: Quarrel - whining and always ready to pick a petty quarrel
+- **Quixotic**: Don Quixote charged windmills as giants - idealistic but impractical
+- **Quotidian**: Quota - same boring daily quota; ordinary everyday life
+- **Rail**: Derail - ranting so hard you try to derail the meeting
+- **Rancid**: ranci cue: having a terrible taste or smell.
+- **Rancor**: Rank core - bitter hatred sitting in the core of your heart
+- **Rapport**: rappo cue: mutual understanding and harmony.
+- **Rash**: rash cue: hasty.
+- **Raucous**: Ruckus - a loud chaotic crowd making a ruckus
+- **Raze**: Razor - bulldozing a building down as if shaved by a razor
+- **Rebuke**: rebuk cue: scold.
+- **Recalcitrant**: " re - " + " calcitrare "
+- **Reciprocate**: recip cue: give in return.
+- **Reclusive**: " re - " + " clus "
+- **Reconcile**: con cue: return to harmony.
+- **Rectitude**: " rect "
+- **Redoubtable**: Doubt - an opponent so intimidating you doubt you can win
+- **Refract**: refra cue: distort.
+- **Refurbish**: refur cue: restore.
+- **Refute**: refut cue: prove wrong.
+- **Regurgitate**: regur cue: vomit.
+- **Relegate**: Relocate - moved down to a lower, less important rank or role
+- **Relish**: Hot dog relish - savoring a moment the way you savor relish on a hot
+- **Remedial**: remed cue: intended to repair gaps in students ’ basic knowledge.
+- **Remiss**: Miss - careless with duty so you miss the deadline entirely
+- **Renovate**: novice nova cue: restore.
+- **Renown**: renow cue: honor.
+- **Renunciation**: " re - " + " nuntiare "
+- **Repentant**: repen cue: penitent.
+- **Replete**: " re - " + " plere "
+- **Repose**: Pose - lying still in a calm resting pose
+- **Reprehensible**: Apprehend - behavior so bad the police should apprehend you
+- **Reprieve**: repri cue: a temporary delay of punishment.
+- **Reproach**: Roach - scolding the owner for a roach in the kitchen
+- **Reprobate**: Probation - a scoundrel who failed probation and slid back to trouble
+- **Reprove**: Prove - scolding someone until they prove they will not repeat it
+- **Repudiate**: Refuse it - reject a claim and refuse it as false
+- **Repulse**: " re - " + " puls "
+- **Reputable**: reput cue: of good reputation.
+- **Requisition**: requi cue: a demand for goods.
+- **Rescind**: Send back - cancel an order and send it entirely back
+- **Resilient**: " re - " + " salire "
+- **Resolute**: Resolution - a firm resolution you refuse to break
+- **Resolve**: resol cue: find a solution.
+- **Respite**: Rest bit - a badly needed rest bit during an exhausting hike
+- **Resplendent**: Splendid - shining so bright it looks splendid
+- **Restitution**: Restore - paying or working to restore what was stolen or broken
+- **Restive**: Restless - a horse tense and restless, unable to stand still
+- **Revel**: Rebel - the rebel parties all night after a wild win
+- **Revere**: Reverend - deep respectful awe, like toward a reverend
+- **Rhapsodize**: Rap song - praising or ranting with the heat of a passionate rap
+- **Ribald**: Rip bawd - coarse, lewd humor ripped from the tavern; indecent and deliberately shocking
+- **Rife**: Rifle - an area rife with rifles; common and dangerous
+- **Ruminate**: Latin ruminare - chew the same thought over and over
+- **Ruse**: Confuse - a trick meant to confuse the enemy
+- **Saccharine**: Saccharin - sweetness as fake as the sweetener; cloying and artificial
+- **Sacrosanct**: " sacro " + " sanct "
+- **Sagacity**: Sage - the deep judgment of a wise sage
+- **Salient**: Sail - the main sail is the most salient feature on the boat
+- **Salutation**: salut cue: a greeting.
+- **Salve**: Solve - ointment that soothes a burn and solves the worst of the sting
+- **Sanctimonious**: " sanct "
+- **Sanguine**: Latin sanguis: old humor theory tied blood tone to confident optimism
+- **Satiate**: Satisfy ate - you ate enough to satisfy brutal hunger
+- **Scathing**: Scalding - a review that scalds; harshly critical
+- **Scintillating**: Sparkling - wit and energy sparkling like champagne bubbles
+- **Scrupulous**: Scrap - checking every scrap because honesty demands perfect detail
+- **Scrutinize**: Scrutinize
+- **Scurrilous**: Scurry - ugly rumors that make the target want to scurry away
+- **Semaphore**: semap cue: a visual signal.
+- **Seminal**: " semin "
+- **Sensual**: sensu cue: involving sensory gratification.
+- **Sensuous**: sensu cue: involving sensory gratification.
+- **Serendipity**: Walpole coined it from " The Three Princes of Serendip " - lucky finds by accident
+- **Serene**: seren cue: calm.
+- **Servile**: " serv "
+- **Sinuous**: Sinus - a road winding like sinus passages; serpentine curves
+- **Sobriety**: sobri cue: sedate.
+- **Solicitous**: Sole - hovering over whether your shoe sole is hurting your foot
+- **Solipsistic**: " solus " + " ipse "
+- **Soluble**: solub cue: able to dissolve.
+- **Solvent**: Solve rent - cash flow strong enough to solve rent and pay debts
+- **Sophomoric**: Sophomore - acting like a cocky, immature sophomore
+- **Sovereign**: sover cue: having absolute authority in a certain realm.
+- **Speculative**: specu cue: not based in fact.
+- **Spurious**: Furious - the judge furious at evidence that is clearly fake
+- **Stagnate**: stagn cue: become or remain inactive.
+- **Staid**: Stayed - so staid they stayed home; serious, steady, unflashy
+- **Stingy**: sting cue: not generous.
+- **Stoic**: From the Stoa Poikile porch where Zeno taught - endure pain without theatrics
+- **Stolid**: Solid - emotionally solid like a brick wall; unmovable
+- **Strenuous**: stren cue: requiring tremendous energy or stamina.
+- **Strident**: Trident - noise as harsh as a trident slammed into stone
+- **Stupefy**: Stupid - shocked stupid; brain freezes for a moment
+- **Sublime**: subway cue: lofty.
+- **Submissive**: subway cue: easily yielding to authority.
+- **Substantiate**: Substance
+- **Succinct**: Sucked in - speech with extra words sucked in; tight and brief
+- **Surfeit**: Surf it - so many waves you cannot surf them all; excess
+- **Surmise**: Summarize - guess the whole plot from scraps, like forced summarizing
+- **Surreptitious**: Syrup - pouring extra syrup when nobody is watching
+- **Surrogate**: surro cue: one acting in place of another.
+- **Sycophant**: Psyche + fawn - flatters power to win favor; a professional bootlicker
+- **Tacit**: Take it - a silent deal where everyone takes it and says nothing
+- **Taciturn**: " tacit "
+- **Tantamount**: Total amount - equivalent in seriousness or value to another total
+- **Tedious**: tedio cue: tiresome because of length or dullness.
+- **Temerity**: Team error - reckless nerve to blame the whole team error on the boss
+- **Temperance**: tempe cue: moderation in action or thought.
+- **Tenuous**: Ten percent grip - holding the rope by the thinnest tenth; shaky
+- **Timorous**: Tremble - timid and trembling like a frightened mouse
+- **Tirade**: Tired - a long angry speech that leaves everyone tired
+- **Toady**: Toad - creeping praise like a toad at the tyrant's foot
+- **Tome**: Tomb - a huge tome as heavy as a tombstone
+- **Torpid**: Torpedo - floating sluggish like a torpedo before launch
+- **Torrid**: Tear it - passion so hot it tears at restraint; scorching heat
+- **Tortuous**: Torture - path so twisting it feels like torture to navigate
+- **Tractable**: " tract "
+- **Tranquil**: tranq cue: calm.
+- **Travesty**: Tragedy - a mockery of justice so bad it is a tragedy
+- **Tremulous**: Tremble - voice trembling from fear
+- **Trenchant**: Trench - criticism that cuts a deep trench
+- **Trepidation**: Trap - dread that you are walking into a trap
+- **Trite**: Tripe - an idea as tired as cheap tripe
+- **Truculent**: Truck - aggressive like a truck ready to run you down
+- **Truncate**: Trunk - chop at the trunk to shorten the tree
+- **Turgid**: Turgid
+- **Turpitude**: Moral filth - conduct courts label crimes of moral turpitude; deep baseness
+- **Ubiquitous**: " ubique "
+- **Umbrage**: " umbr "
+- **Unctuous**: Oil - on - tone - flattery so smooth it feels greasy; slick, insincere charm
+- **Undulate**: Undulate - waves moving under the surface in smooth rolls
+- **Upbraid**: Braid - scolding someone for ruining your careful braid
+- **Usurp**: Use up - seize power to use up what is left of the kingdom
+- **Utilitarian**: utili cue: relating to or aiming at usefulness.
+- **Utopia**: More coined " Utopia " from ou + topos - a perfect society that cannot exist
+- **Vacillate**: Vase - wavering forever between two vases you cannot choose
+- **Validate**: valid cue: confirm.
+- **Vapid**: Vapor - remark so dull it evaporates like vapor
+- **Variegated**: " varius "
+- **Vehemently**: Vehicle - yelling with full heat at the car that cut you off
+- **Venerable**: " venerari "
+- **Venerate**: Revere - plus - honor deeply as if before something sacred
+- **Verbose**: " verb "
+- **Verdant**: " virid "
+- **Vestige**: Vest - only a ripped old vest remains as a trace of the wreck
+- **Vex**: Hex - annoy someone as if you cast a petty hex on them
+- **Vicarious**: Borrowed thrill - living someone else's excitement secondhand
+- **Vicissitude**: vicis cue: event that occurs by chance.
+- **Vigilant**: vigil cue: watchful.
+- **Vilify**: " vilis " + " - fy "
+- **Vindicate**: Vindicare - show the accusation was false; clear a ruined name
+- **Vindictive**: Victim - wanting the other side to become your suffering victim
+- **Virtuoso**: virtu cue: one who excels in an art.
+- **Viscous**: Viscosity - thick, sticky, slow to pour
+- **Vitriolic**: Vitriol - words as burning as strong acid
+- **Vituperate**: Viper - hissing insults with viper venom
+- **Vocation**: " voc "
+- **Wallow**: wallo cue: roll oneself indolently.
+- **Wane**: Wayne - Wayne Enterprises lights dimming as Bruce fades after a brutal night
+- **Wanton**: Wonton - wanton waste of a whole bowl of wonton soup on purpose; reckless malice
+- **Whimsical**: whims cue: fanciful.
+- **Wily**: Wile E
+- **Winsome**: Win some - charm that wins some hearts instantly
+- **Wistful**: Wishful - nostalgia colored by sad wishful longing
+- **Wizened**: Wizard - face wizened like a storybook wizard: shriveled and lined
+- **Wrath**: wrath cue: vengeful anger.
+- **Yoke**: yoke cue: join.
+- **Zealous**: Jealous - fire of a jealous lover turned toward a cause; fiercely devoted
+- **Zenith**: Zenith tip - apex of the arc; your highest point, not the bottom below
+- **Zephyr**: Zero fear - breeze so gentle it gives you zero fear of a storm

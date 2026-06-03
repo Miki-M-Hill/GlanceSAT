@@ -24,10 +24,17 @@ private enum RootTab: Int, CaseIterable, Hashable {
     }
 }
 
+private enum SplashTiming {
+    static let minimumDisplay: TimeInterval = 1.5
+    static let fadeOutDuration: TimeInterval = 0.35
+}
+
 private struct AppLaunchGate: View {
     @Environment(\.modelContext) private var modelContext
     @State private var showSplashOverlay = true
     @State private var splashOpacity: Double = 1
+    @State private var splashShownAt = Date()
+    @State private var isDismissingSplash = false
 
     var body: some View {
         ZStack {
@@ -41,12 +48,10 @@ private struct AppLaunchGate: View {
             }
         }
         .onAppear {
-            if WidgetDeepLinkRouter.peekPendingWordID() != nil {
-                dismissSplashImmediately()
-            }
+            splashShownAt = Date()
         }
         .onReceive(NotificationCenter.default.publisher(for: AppLaunchState.splashDismissNotification)) { _ in
-            dismissSplashImmediately()
+            scheduleSplashDismiss()
         }
         .task {
             let container = modelContext.container
@@ -54,18 +59,27 @@ private struct AppLaunchGate: View {
                 await AppBootstrap.initializeAppData(container: container)
             }.value
             AppLaunchState.markDataLoaded()
-            try? await Task.sleep(for: .milliseconds(500))
-            withAnimation(.easeInOut(duration: 0.3)) {
-                splashOpacity = 0
-            }
-            try? await Task.sleep(for: .milliseconds(300))
-            showSplashOverlay = false
+            scheduleSplashDismiss()
         }
     }
 
-    private func dismissSplashImmediately() {
-        splashOpacity = 0
-        showSplashOverlay = false
+    private func scheduleSplashDismiss() {
+        guard showSplashOverlay, !isDismissingSplash else { return }
+        isDismissingSplash = true
+
+        Task { @MainActor in
+            let elapsed = Date().timeIntervalSince(splashShownAt)
+            let remaining = max(0, SplashTiming.minimumDisplay - elapsed)
+            if remaining > 0 {
+                try? await Task.sleep(for: .seconds(remaining))
+            }
+
+            withAnimation(.easeInOut(duration: SplashTiming.fadeOutDuration)) {
+                splashOpacity = 0
+            }
+            try? await Task.sleep(for: .seconds(SplashTiming.fadeOutDuration))
+            showSplashOverlay = false
+        }
     }
 }
 
@@ -83,6 +97,7 @@ private struct AppRootView: View {
     @AppStorage("debugStreakDayOverride") private var debugStreakDayOverride = -1
     @AppStorage("debugShowsPostQuizToday") private var debugShowsPostQuizToday = false
     @AppStorage("debugPlantWiltPreview") private var debugPlantWiltPreview = -1
+    @AppStorage("debugInsightsUseMockValues") private var debugInsightsUseMockValues = false
     @State private var selectedTab: RootTab
     @State private var mountedTabs: Set<RootTab> = [.today]
     @State private var pendingLibraryWordID: UUID?
@@ -152,7 +167,6 @@ private struct AppRootView: View {
         .onOpenURL { url in
             guard WidgetDeepLinkRouter.handleIncomingURL(url) else { return }
             AppLaunchState.markDataLoaded()
-            AppLaunchState.dismissSplashImmediately()
             if WidgetDeepLinkRouter.consumeNavigateToPaywallFromWidget() {
                 paywallPresenter.presentPaywall()
                 return
@@ -527,6 +541,25 @@ private struct AppRootView: View {
                     }
                 } label: {
                     Label("Preview post-quiz Today", systemImage: DebugTodayQuizControls.showsPostQuizToday ? "checkmark.rectangle.fill" : "checkmark.rectangle")
+                }
+
+                Button {
+                    DebugTodayQuizControls.previewMasteryCelebration()
+                } label: {
+                    Label("Preview mastery celebration", systemImage: "checkmark.seal.fill")
+                }
+
+                Button {
+                    if debugInsightsUseMockValues {
+                        DebugInsightsControls.showLiveData()
+                    } else {
+                        DebugInsightsControls.showPlaceholderData()
+                    }
+                } label: {
+                    Label(
+                        debugInsightsUseMockValues ? "Use live Insights stats" : "Preview fake Insights stats",
+                        systemImage: debugInsightsUseMockValues ? "chart.line.uptrend.xyaxis" : "chart.bar.fill"
+                    )
                 }
 
                 Button {

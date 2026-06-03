@@ -64,6 +64,7 @@ struct WidgetWordSnapshot: Codable, Sendable, Identifiable {
     var exampleSentence: String
     var etymology: String?
     var memoryHookText: String?
+    var semanticCharge: String
     /// Blank-filled example sentence for the quiz widget prompt.
     var sentenceQuizPrompt: String
     /// Shuffled sentence-completion options for the quiz widget (up to four).
@@ -84,8 +85,30 @@ struct WidgetWordSnapshot: Codable, Sendable, Identifiable {
         } else {
             memoryHookText = nil
         }
+        semanticCharge = WordJSONRecord.normalizedSemanticCharge(word.semanticCharge)
         sentenceQuizPrompt = ""
         synonymQuizOptions = []
         synonymQuizCorrectAnswer = ""
+    }
+
+    init(from decoder: Decoder) throws {
+        let container = try decoder.container(keyedBy: CodingKeys.self)
+        id = try container.decode(UUID.self, forKey: .id)
+        word = try container.decode(String.self, forKey: .word)
+        partOfSpeech = try container.decode(String.self, forKey: .partOfSpeech)
+        definition = try container.decode(String.self, forKey: .definition)
+        exampleSentence = try container.decode(String.self, forKey: .exampleSentence)
+        etymology = try container.decodeIfPresent(String.self, forKey: .etymology)
+        memoryHookText = try container.decodeIfPresent(String.self, forKey: .memoryHookText)
+        let rawCharge = try container.decodeIfPresent(String.self, forKey: .semanticCharge) ?? "neutral"
+        semanticCharge = WordJSONRecord.normalizedSemanticCharge(rawCharge)
+        sentenceQuizPrompt = try container.decodeIfPresent(String.self, forKey: .sentenceQuizPrompt) ?? ""
+        synonymQuizOptions = try container.decodeIfPresent([String].self, forKey: .synonymQuizOptions) ?? []
+        synonymQuizCorrectAnswer = try container.decodeIfPresent(String.self, forKey: .synonymQuizCorrectAnswer) ?? ""
+    }
+
+    private enum CodingKeys: String, CodingKey {
+        case id, word, partOfSpeech, definition, exampleSentence, etymology, memoryHookText, semanticCharge
+        case sentenceQuizPrompt, synonymQuizOptions, synonymQuizCorrectAnswer
     }
 }

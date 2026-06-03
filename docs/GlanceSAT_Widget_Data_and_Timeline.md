@@ -5,7 +5,7 @@
 | **Audience** | Engineering, product |
 | **Extensions** | `GlanceSATWidgets` target |
 | **App Group** | `group.com.glance.GlanceSAT` |
-| **Last updated** | May 2026 |
+| **Last updated** | June 2026 |
 
 ---
 
@@ -53,7 +53,7 @@ sequenceDiagram
 | `widget.prefs.*` | Style, theme, typography |
 | `widget.primaryQuizCompletedDayKey` | Primary quiz done today → post-quiz UI |
 | `widget.streakDays` | Streak count on celebration/rest |
-| `widget.lastQuizCompletionTimestamp` | 5-minute celebration window |
+| `widget.lastQuizCompletionTimestamp` | 60-second celebration window |
 | `widget.subscription.hasPremium` / `freemiumLimitReached` | Paywall lock state |
 | `satExamDateSeconds` | SAT countdown widget |
 | `widget.interactions.dismissedWordIDs` | Words hidden after interaction (legacy dismiss) |
@@ -82,6 +82,8 @@ Gallery copy:
 
 ## 3. Vocabulary widget timeline
 
+> **Full walkthrough:** [GlanceSAT_Widget_Daily_Rotation.md](GlanceSAT_Widget_Daily_Rotation.md) — 48 half-hour slots, `slot % wordCount` mapping, vocab vs quiz offset, celebration/post-quiz, worked examples for 10 words.
+
 **Files:** `GlanceSATVocabularyWidget.swift`, `WidgetTimelineBuilder.swift`
 
 ### 3.1 Policy
@@ -94,7 +96,7 @@ Gallery copy:
 | Mode | Entries | Horizon |
 |------|---------|---------|
 | **Normal rotation** | One entry per remaining **:00** and **:30** slot from `now` through **23:30** local | Rest of **today only** |
-| **Celebration** (≤ 5 min after primary quiz completion timestamp) | `now` (celebrating) + `completion + 5 min` + slots from resume time | Through end of today |
+| **Celebration** (≤ **60s** after primary quiz completion timestamp) | `now` (celebrating) + `completion + 60s` + slots from resume time | Through end of today |
 | **Post-quiz day** (after celebration or flag set) | Same half-hour slots; words still rotate; **no** hook/example actions (`isPostQuizCompletedDay`) | Through end of today |
 | **Stale snapshot** | Single entry at `now` | Reload at `.atEnd` (host should refresh) |
 | **Freemium daily limit** | Single locked entry | Reload at `.atEnd` |

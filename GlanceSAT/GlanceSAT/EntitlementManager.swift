@@ -199,6 +199,20 @@ final class EntitlementManager: ObservableObject {
         return package.localizedPriceString
     }
 
+    /// Approximate daily cost for annual / 3-month plans (monthly omits this line).
+    func localizedDailyPriceLabel(for plan: SubscriptionPlan) -> String? {
+        guard plan != .oneMonth else { return nil }
+        if let package = packagesByPlan[plan] {
+            let total = package.storeProduct.price as NSDecimalNumber
+            return Self.formatDailyPriceLabel(
+                total: total,
+                dayCount: plan.billingDayCount,
+                locale: Locale.current
+            )
+        }
+        return plan.fallbackDailyPriceLabel
+    }
+
     func savingsPercent(for plan: SubscriptionPlan, visiblePlans: [SubscriptionPlan]) -> Int? {
         guard plan != .oneMonth,
               let monthly = packagesByPlan[.oneMonth],
@@ -222,6 +236,30 @@ final class EntitlementManager: ObservableObject {
         guard baseline > 0 else { return nil }
         let saved = max(0, baseline - selectedPrice.doubleValue)
         return Int((saved / baseline * 100).rounded())
+    }
+
+    private static func formatDailyPriceLabel(
+        total: NSDecimalNumber,
+        dayCount: Int,
+        locale: Locale
+    ) -> String {
+        guard dayCount > 0 else { return "" }
+        let daily = total.dividing(by: NSDecimalNumber(value: dayCount))
+        let roundedDaily = roundDailyPriceToFriendlyAmount(daily)
+        let formatter = NumberFormatter()
+        formatter.numberStyle = .currency
+        formatter.locale = locale
+        formatter.maximumFractionDigits = 2
+        formatter.minimumFractionDigits = 2
+        let formatted = formatter.string(from: roundedDaily) ?? roundedDaily.stringValue
+        return "~\(formatted) per day"
+    }
+
+    /// Rounds to the nearest nickel so paywall copy stays simple (e.g. $0.15, $0.30).
+    private static func roundDailyPriceToFriendlyAmount(_ daily: NSDecimalNumber) -> NSDecimalNumber {
+        let cents = daily.multiplying(by: 100).doubleValue
+        let roundedCents = (cents / 5.0).rounded() * 5.0
+        return NSDecimalNumber(value: roundedCents / 100.0)
     }
 
   func purchase(plan: SubscriptionPlan) async throws -> PaywallTransactionResult {

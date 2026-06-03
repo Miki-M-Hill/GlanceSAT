@@ -7,17 +7,27 @@ import Foundation
 import SwiftData
 import SwiftUI
 
+enum WordLoadState: Equatable {
+    case loading
+    case loaded
+    case failed
+}
+
 @MainActor
 @Observable
 final class LibraryViewModel {
+    private static let wordFetchTimeout: TimeInterval = 2.5
+
     private(set) var orderedWordIDs: [UUID] = []
     private(set) var wordCache: [UUID: Word] = [:]
+    private(set) var wordLoadStates: [UUID: WordLoadState] = [:]
     private(set) var isLoadingIndex = false
     private(set) var isLoadingMore = false
     private(set) var indexRevision = 0
 
     private var modelContainer: ModelContainer?
     private var indexTask: Task<Void, Never>?
+    private var loadWordTasks: [UUID: Task<Void, Never>] = [:]
     private var activeFilter = LibraryCatalogFilter()
     private var filteredScanDBOffset = 0
     private var reachedEnd = false
@@ -111,8 +121,16 @@ final class LibraryViewModel {
         wordCache[id]
     }
 
+    func wordLoadState(for id: UUID) -> WordLoadState? {
+        if wordCache[id] != nil { return .loaded }
+        return wordLoadStates[id]
+    }
+
     func clearWordCache() {
+        loadWordTasks.values.forEach { $0.cancel() }
+        loadWordTasks = [:]
         wordCache = [:]
+        wordLoadStates = [:]
     }
 
     /// Deep-link fast path: hydrate one word synchronously so the pager can render before index rebuild.
@@ -122,6 +140,7 @@ final class LibraryViewModel {
 
         if let word = Self.fetchWord(id: id, modelContext: modelContext) {
             wordCache[id] = word
+            wordLoadStates[id] = .loaded
         }
 
         if orderedWordIDs.isEmpty {
@@ -132,11 +151,48 @@ final class LibraryViewModel {
         }
     }
 
-    /// Indexed main-context fetch (cheap); catalog scans stay on `LibraryCatalogActor`.
+    /// Indexed fetch on a dedicated context; catalog scans stay on `LibraryCatalogActor`.
     func loadWord(id: UUID, modelContext: ModelContext) async {
-        if wordCache[id] != nil { return }
-        guard let word = Self.fetchWord(id: id, modelContext: modelContext) else { return }
-        wordCache[id] = word
+        if wordCache[id] != nil {
+            wordLoadStates[id] = .loaded
+            return
+        }
+
+        if let existing = loadWordTasks[id] {
+            await existing.value
+            return
+        }
+
+        let container = modelContext.container
+        let task = Task { @MainActor in
+            defer { loadWordTasks[id] = nil }
+            wordLoadStates[id] = .loading
+
+            let word = await Self.fetchWordWithTimeout(
+                id: id,
+                container: container,
+                timeout: Self.wordFetchTimeout
+            )
+
+            guard !Task.isCancelled else { return }
+
+            if let word {
+                wordCache[id] = word
+                wordLoadStates[id] = .loaded
+            } else {
+                wordLoadStates[id] = .failed
+            }
+        }
+        loadWordTasks[id] = task
+        await task.value
+    }
+
+    func retryLoadWord(id: UUID, modelContext: ModelContext) async {
+        loadWordTasks[id]?.cancel()
+        loadWordTasks[id] = nil
+        wordCache[id] = nil
+        wordLoadStates[id] = nil
+        await loadWord(id: id, modelContext: modelContext)
     }
 
     func prefetchNeighbors(around id: UUID?, radius: Int = 2, modelContext: ModelContext) async {
@@ -233,10 +289,13 @@ final class LibraryViewModel {
             scrollPosition: nil
         )
         LibraryPagerDiagnostics.auditOrderedWordIDs(adjustedIDs, label: "applyFirstPage", modelContext: nil)
-        let retainedCache = wordCache.filter { Set(adjustedIDs).contains($0.key) }
+        let retainedIDs = Set(adjustedIDs)
+        let retainedCache = wordCache.filter { retainedIDs.contains($0.key) }
+        let retainedLoadStates = wordLoadStates.filter { retainedIDs.contains($0.key) }
         withAnimation(.easeOut(duration: 0.2)) {
             orderedWordIDs = adjustedIDs
             wordCache = retainedCache
+            wordLoadStates = retainedLoadStates
             filteredScanDBOffset = nextDBOffset
             self.reachedEnd = reachedEnd
             isLoadingIndex = false
@@ -299,11 +358,35 @@ final class LibraryViewModel {
         for id in ids where wordCache[id] == nil {
             if let word = Self.fetchWord(id: id, modelContext: context) {
                 wordCache[id] = word
+                wordLoadStates[id] = .loaded
             }
         }
     }
 
-    private static func fetchWord(id: UUID, modelContext: ModelContext) -> Word? {
+    nonisolated private static func fetchWordWithTimeout(
+        id: UUID,
+        container: ModelContainer,
+        timeout: TimeInterval
+    ) async -> Word? {
+        await withTaskGroup(of: Word?.self) { group in
+            group.addTask {
+                await Task.detached(priority: .userInitiated) {
+                    let context = ModelContext(container)
+                    return Self.fetchWord(id: id, modelContext: context)
+                }.value
+            }
+            group.addTask {
+                try? await Task.sleep(nanoseconds: UInt64(timeout * 1_000_000_000))
+                return nil
+            }
+
+            guard let result = await group.next() else { return nil }
+            group.cancelAll()
+            return result
+        }
+    }
+
+    nonisolated private static func fetchWord(id: UUID, modelContext: ModelContext) -> Word? {
         let lookup = id
         var descriptor = FetchDescriptor<Word>(
             predicate: #Predicate<Word> { $0.id == lookup }
