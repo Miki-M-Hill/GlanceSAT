@@ -8,7 +8,7 @@ import WidgetKit
 
 /// Deterministic half-hour widget timeline (10 daily words ↔ 48 slots).
 enum WidgetTimelineBuilder {
-    static let celebrationDuration: TimeInterval = 60
+    static let celebrationDuration: TimeInterval = 30
     static let slotsPerDay = GlanceSATWidgetConstants.timelineSlotsPerDay
     static let slotMinutes = GlanceSATWidgetConstants.rotationIntervalMinutes
 
@@ -229,9 +229,9 @@ enum WidgetTimelineBuilder {
         calendar: Calendar = .current
     ) -> WidgetWordSnapshot {
         guard !words.isEmpty else { return .placeholder }
-        let vocabIndex = wordIndex(for: date, wordCount: words.count, calendar: calendar)
-        let quizIndex = WidgetSlotClock.quizWordIndex(vocabSlotIndex: vocabIndex, wordCount: words.count)
-        return words[quizIndex]
+        let slot = slotIndex(for: date, calendar: calendar)
+        let base = words[WidgetSlotClock.quizWordIndex(vocabSlotIndex: slot, wordCount: words.count)]
+        return base.withSentenceQuizSlot(WidgetSlotClock.widgetSentenceSlotIndex(for: slot))
     }
 
     static func slotIndex(for date: Date, calendar: Calendar = .current) -> Int {

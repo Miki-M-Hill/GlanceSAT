@@ -12,8 +12,12 @@ struct GlanceSATQuizWidgetRootView: View {
 
     @Environment(\.widgetFamily) private var family
 
+    private var isQuizWidgetLocked: Bool {
+        !entry.isGalleryPreview && !WidgetPrefsReader.hasPremiumAccess()
+    }
+
     private var isActivelyCelebrating: Bool {
-        entry.isCelebrating || WidgetPrefsReader.isInQuizCelebrationWindow()
+        !entry.isGalleryPreview && WidgetPrefsReader.isInQuizCelebrationWindow()
     }
 
     private var deepLinkURL: URL {
@@ -22,7 +26,9 @@ struct GlanceSATQuizWidgetRootView: View {
 
     var body: some View {
         Group {
-            if entry.isStaleSnapshot {
+            if isQuizWidgetLocked {
+                GlanceSATQuizWidgetLockedView(family: family)
+            } else if entry.isStaleSnapshot {
                 GlanceSATWidgetStaleView(family: family, deepLinkURL: deepLinkURL)
             } else if isActivelyCelebrating {
                 GlanceSATWidgetCelebrationView(
@@ -41,7 +47,7 @@ struct GlanceSATQuizWidgetRootView: View {
                     deepLinkURL: deepLinkURL
                 )
             } else {
-                switch entry.displayPhase {
+                switch effectiveDisplayPhase {
                 case .quiz, .feedback:
                     GlanceSATQuizPromptView(entry: entry, family: family, deepLinkURL: deepLinkURL)
                 case .vocab:
@@ -49,13 +55,67 @@ struct GlanceSATQuizWidgetRootView: View {
                         entry: GlanceSATEntry(
                             date: entry.date,
                             word: entry.word,
-                            isPostQuizCompletedDay: entry.isPostQuizCompletedDay
+                            isPostQuizCompletedDay: isPostQuizDisplayDay
                         ),
                         family: family,
                         deepLinkURL: deepLinkURL
                     )
                 }
             }
+        }
+    }
+
+    private var isPostQuizDisplayDay: Bool {
+        WidgetTimelineBuilder.isPostQuizDisplayDay()
+    }
+
+    private var effectiveDisplayPhase: WidgetQuizDisplayPhase {
+        WidgetQuizSlotStore.resolvedPhase(slotKey: entry.slotKey, wordID: entry.word.id)
+    }
+}
+
+// MARK: - Premium required
+
+struct GlanceSATQuizWidgetLockedView: View {
+    let family: WidgetFamily
+
+    private var paywallURL: URL { WidgetDeepLink.paywallURL() }
+
+    var body: some View {
+        ZStack {
+            Color.clear
+                .widgetURL(paywallURL)
+
+            VStack(spacing: 8) {
+                Image(systemName: "lock.fill")
+                    .font(.system(size: lockIconSize, weight: .semibold))
+
+                Text("Unlock the quiz widget")
+                    .font(.system(size: messageFontSize, weight: .semibold))
+                    .multilineTextAlignment(.center)
+                    .lineLimit(3)
+                    .minimumScaleFactor(0.65)
+                    .fixedSize(horizontal: false, vertical: true)
+            }
+            .frame(maxWidth: .infinity, maxHeight: .infinity)
+            .padding(contentInsets)
+        }
+    }
+
+    private var lockIconSize: CGFloat {
+        family == .systemLarge ? 28 : 28
+    }
+
+    private var messageFontSize: CGFloat {
+        family == .systemLarge ? 16 : 16
+    }
+
+    private var contentInsets: EdgeInsets {
+        switch family {
+        case .systemMedium:
+            return EdgeInsets(top: 12, leading: 16, bottom: 12, trailing: 16)
+        default:
+            return EdgeInsets(top: 16, leading: 20, bottom: 16, trailing: 20)
         }
     }
 }
@@ -70,11 +130,9 @@ private struct GlanceSATQuizPromptView: View {
     private var interactiveFeedbackState: WidgetQuizSlotState? {
         WidgetQuizSlotStore.matchingState(slotKey: entry.slotKey, wordID: entry.word.id)
     }
+
     private var isFeedback: Bool {
-        if let state = interactiveFeedbackState {
-            return state.phase == .feedback
-        }
-        return entry.displayPhase == .feedback
+        WidgetQuizSlotStore.resolvedPhase(slotKey: entry.slotKey, wordID: entry.word.id) == .feedback
     }
 
     var body: some View {

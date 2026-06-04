@@ -99,11 +99,11 @@ private enum InsightsPresentation {
         monthlyQuizAccuracyDelta: 6,
         bestCheckInStreak: 12,
         categories: [
-            CategoryAccuracy(name: "People & society", accuracy: 0.78),
-            CategoryAccuracy(name: "Self & character", accuracy: 0.84),
-            CategoryAccuracy(name: "Ideas & language", accuracy: 0.86),
-            CategoryAccuracy(name: "Science & nature", accuracy: 0.72),
-            CategoryAccuracy(name: "Power & culture", accuracy: 0.69),
+            CategoryAccuracy(name: "Literature", accuracy: 0.84),
+            CategoryAccuracy(name: "History", accuracy: 0.69),
+            CategoryAccuracy(name: "Social Studies", accuracy: 0.78),
+            CategoryAccuracy(name: "The Humanities", accuracy: 0.86),
+            CategoryAccuracy(name: "Science", accuracy: 0.72),
         ],
         recentQuizTrend: [
             QuizTrendPoint(dayLabel: "", score: 5),
@@ -138,6 +138,8 @@ struct GlanceSATProgressScreen: View {
     @State private var insightsChartReveal: CGFloat = 0
     @State private var categoryBarFractions: [CGFloat] = []
     @State private var overviewTitleFontSizes: [String: CGFloat] = [:]
+    /// Bottom of the first overview metric row — centers the freemium paywall CTA in the gap above the tab bar.
+    @State private var insightsOverviewBottomY: CGFloat = 0
     @State private var satCountdownLineText = "Add your SAT date in settings for a countdown"
     #if DEBUG
     @AppStorage(DebugInsightsControls.useMockValuesKey) private var debugInsightsUseMockValues = false
@@ -212,13 +214,9 @@ struct GlanceSATProgressScreen: View {
         return "\(sessions.count)-\(totalCorrect)-\(sessions.first?.startedAt.timeIntervalSince1970 ?? 0)"
     }
 
-    private var hasPremiumInsightsAccess: Bool {
-        #if DEBUG
-        if debugInsightsUseMockValues {
-            return true
-        }
-        #endif
-        return entitlementManager.hasPremiumAccess
+    /// Layout gate only — DEBUG mock stats must not unlock the full Insights scroll.
+    private var showsInsightsFreemiumLockout: Bool {
+        !entitlementManager.hasPremiumAccess
     }
 
     var body: some View {
@@ -267,7 +265,17 @@ struct GlanceSATProgressScreen: View {
                     force: true
                 )
             }
+            .onChange(of: entitlementManager.hasPremiumAccess) { _, _ in
+                appeared = false
+                playInsightsChartRevealAnimation()
+                withAnimation(.easeOut(duration: 0.4)) {
+                    appeared = true
+                }
+            }
             #if DEBUG
+            .onReceive(NotificationCenter.default.publisher(for: .debugSubscriptionAccessDidChange)) { _ in
+                playInsightsChartRevealAnimation()
+            }
             .onChange(of: debugInsightsUseMockValues) { _, _ in
                 playInsightsChartRevealAnimation()
             }
@@ -294,12 +302,14 @@ struct GlanceSATProgressScreen: View {
     private func insightsNavigationRoot(metrics: TodayHubLayoutMetrics) -> some View {
         NavigationStack {
             Group {
-                if hasPremiumInsightsAccess {
-                    premiumInsightsScroll(metrics: metrics)
-                } else {
+                if showsInsightsFreemiumLockout {
                     freeInsightsLayout(metrics: metrics)
+                } else {
+                    premiumInsightsScroll(metrics: metrics)
                 }
             }
+            .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .top)
+            .id(showsInsightsFreemiumLockout)
             .scrollContentBackground(.hidden)
             .background(HubPalette.linen)
             .glanceNavigationBarChrome(colorScheme: colorScheme, isHidden: true)
@@ -326,7 +336,8 @@ struct GlanceSATProgressScreen: View {
             metrics: metrics,
             streakDays: insightsDisplayedStreakDays,
             evolutionPlantStage: insightsEvolutionPlantStage,
-            wilted: insightsShowWiltedPlant
+            wilted: insightsShowWiltedPlant,
+            contentHorizontalInset: InsightsLayout.horizontalInset
         )
         .padding(.bottom, metrics.postQuizGlassSpacing)
     }
@@ -358,6 +369,7 @@ struct GlanceSATProgressScreen: View {
         }
         .insightsFullWidthTile()
         .padding(.horizontal, InsightsLayout.horizontalInset)
+        .frame(maxWidth: .infinity, alignment: .leading)
     }
 
     @ViewBuilder
@@ -419,6 +431,16 @@ struct GlanceSATProgressScreen: View {
                             }
                     }
                 }
+                .background {
+                    if !includeSecondMetricRow {
+                        GeometryReader { geo in
+                            Color.clear.preference(
+                                key: InsightsOverviewLockLineKey.self,
+                                value: geo.frame(in: .named("insightsFree")).maxY
+                            )
+                        }
+                    }
+                }
         }
         .insightsFullWidthTile()
         .opacity(appeared ? 1 : 0)
@@ -477,23 +499,58 @@ struct GlanceSATProgressScreen: View {
         }
     }
 
-    /// Overview first row + solid half-screen paywall panel (grid split → tab bar). No scroll.
+    /// Matches freemium mock: streak + SAT + overview row 1; paywall copy centered in the gap above the tab bar.
     private func freeInsightsLayout(metrics: TodayHubLayoutMetrics) -> some View {
-        VStack(alignment: .leading, spacing: 0) {
-            insightsStreakHeader(metrics: metrics)
-            insightsContentColumn(metrics: metrics, includeFullOverview: false)
-                .fixedSize(horizontal: false, vertical: true)
+        GeometryReader { proxy in
+            let topInset = insightsTopContentInset(screenHeight: metrics.size.height)
+            let bottomPad = RootTabBarLayout.scrollEndMargin
+            let lockBottom = max(0, proxy.size.height - bottomPad)
+            let lockTop = max(topInset, insightsOverviewBottomY)
+            let lockGapHeight = max(0, lockBottom - lockTop)
+            /// Upper-mid gap: button center lands ~36% down the lock region; subtitle sits 12pt above it.
+            let paywallButtonCenterFromGapTop = lockGapHeight * 0.36
+            let paywallCalloutEstimatedHeight: CGFloat = 96
+            let paywallBlockTop = max(
+                0,
+                paywallButtonCenterFromGapTop - paywallCalloutEstimatedHeight * 0.72
+            )
 
-            insightsLockedPaywallPanel
-                .frame(maxWidth: .infinity, maxHeight: .infinity)
+            ZStack(alignment: .top) {
+                HubPalette.linen
+                    .frame(width: proxy.size.width, height: lockGapHeight)
+                    .offset(y: lockTop)
+
+                VStack(alignment: .leading, spacing: 0) {
+                    insightsStreakHeader(metrics: metrics)
+                    insightsContentColumn(metrics: metrics, includeFullOverview: false)
+                }
+                .frame(maxWidth: .infinity, alignment: .top)
+                .padding(.top, topInset)
+
+                VStack(spacing: 0) {
+                    Spacer()
+                        .frame(height: paywallBlockTop)
+
+                    insightsLockedPaywallCallout
+
+                    Spacer(minLength: 0)
+                }
+                .frame(width: proxy.size.width, height: lockGapHeight)
+                .offset(y: lockTop)
+            }
+            .frame(width: proxy.size.width, height: proxy.size.height, alignment: .top)
         }
-        .padding(.top, insightsTopContentInset(screenHeight: metrics.size.height))
-        .padding(.bottom, InsightsLayout.bottomPadding)
-        .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .top)
+        .coordinateSpace(name: "insightsFree")
+        .onPreferenceChange(InsightsOverviewLockLineKey.self) { lineY in
+            if lineY > 0, abs(lineY - insightsOverviewBottomY) > 0.5 {
+                insightsOverviewBottomY = lineY
+            }
+        }
+        .background(HubPalette.linen)
     }
 
-    /// Full-width solid panel from the overview grid split down to the tab bar.
-    private var insightsLockedPaywallPanel: some View {
+    /// Subtitle directly above CTA — vertical anchor is set by `freeInsightsLayout`.
+    private var insightsLockedPaywallCallout: some View {
         VStack(spacing: 12) {
             Text(insightsPlainText("See your strengths, weaknesses and latest trends"))
                 .font(GlanceHubFont.medium(16))
@@ -501,7 +558,7 @@ struct GlanceSATProgressScreen: View {
                 .multilineTextAlignment(.center)
                 .lineLimit(3)
                 .minimumScaleFactor(0.82)
-                .padding(.horizontal, 28)
+                .fixedSize(horizontal: false, vertical: true)
 
             Button {
                 paywallPresenter.presentPaywall()
@@ -514,11 +571,8 @@ struct GlanceSATProgressScreen: View {
                     .background(HubPalette.plantPot.opacity(0.86), in: Capsule(style: .continuous))
             }
             .buttonStyle(.plain)
-            .padding(.horizontal, 28)
-            .frame(maxWidth: 300)
         }
-        .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .center)
-        .background(HubPalette.linen)
+        .padding(.horizontal, 28)
         .accessibilityElement(children: .contain)
     }
 
@@ -893,6 +947,14 @@ struct GlanceSATProgressScreen: View {
 
 // MARK: - Components
 
+private enum InsightsOverviewLockLineKey: PreferenceKey {
+    static var defaultValue: CGFloat = 0
+
+    static func reduce(value: inout CGFloat, nextValue: () -> CGFloat) {
+        value = max(value, nextValue())
+    }
+}
+
 private extension View {
     /// Expand Insights tiles/graphs to the column width with symmetric horizontal centering.
     func insightsFullWidthTile() -> some View {
@@ -1115,14 +1177,7 @@ private struct InsightsCategoryRow: View {
     }
 
     private func categoryIcon(for name: String) -> String {
-        switch name {
-        case "People & society": return "person.2.fill"
-        case "Self & character": return "figure.stand"
-        case "Ideas & language": return "lightbulb.fill"
-        case "Science & nature": return "leaf.fill"
-        case "Power & culture": return "building.columns.fill"
-        default: return "book.fill"
-        }
+        PassageDomain.insightsIcon(forDisplayTitle: name)
     }
 }
 

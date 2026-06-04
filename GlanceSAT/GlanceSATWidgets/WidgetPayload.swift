@@ -63,6 +63,12 @@ enum WidgetCalendar {
     }
 }
 
+struct WidgetSentenceQuizSlot: Codable, Sendable, Equatable {
+    var prompt: String
+    var options: [String]
+    var correctAnswer: String
+}
+
 struct WidgetWordSnapshot: Codable, Sendable, Identifiable {
     var id: UUID
     var word: String
@@ -76,6 +82,7 @@ struct WidgetWordSnapshot: Codable, Sendable, Identifiable {
     var sentenceQuizPrompt: String
     var synonymQuizOptions: [String]
     var synonymQuizCorrectAnswer: String
+    var sentenceQuizSlots: [WidgetSentenceQuizSlot]
 
     init(
         id: UUID,
@@ -88,7 +95,8 @@ struct WidgetWordSnapshot: Codable, Sendable, Identifiable {
         semanticCharge: String = "neutral",
         sentenceQuizPrompt: String = "",
         synonymQuizOptions: [String] = [],
-        synonymQuizCorrectAnswer: String = ""
+        synonymQuizCorrectAnswer: String = "",
+        sentenceQuizSlots: [WidgetSentenceQuizSlot] = []
     ) {
         self.id = id
         self.word = word
@@ -101,6 +109,7 @@ struct WidgetWordSnapshot: Codable, Sendable, Identifiable {
         self.sentenceQuizPrompt = sentenceQuizPrompt
         self.synonymQuizOptions = synonymQuizOptions
         self.synonymQuizCorrectAnswer = synonymQuizCorrectAnswer
+        self.sentenceQuizSlots = sentenceQuizSlots
     }
 
     init(from decoder: Decoder) throws {
@@ -119,11 +128,24 @@ struct WidgetWordSnapshot: Codable, Sendable, Identifiable {
         sentenceQuizPrompt = try container.decodeIfPresent(String.self, forKey: .sentenceQuizPrompt) ?? ""
         synonymQuizOptions = try container.decodeIfPresent([String].self, forKey: .synonymQuizOptions) ?? []
         synonymQuizCorrectAnswer = try container.decodeIfPresent(String.self, forKey: .synonymQuizCorrectAnswer) ?? ""
+        sentenceQuizSlots = try container.decodeIfPresent([WidgetSentenceQuizSlot].self, forKey: .sentenceQuizSlots) ?? []
+    }
+
+    func withSentenceQuizSlot(_ index: Int) -> WidgetWordSnapshot {
+        guard !sentenceQuizSlots.isEmpty else { return self }
+        let slotCount = sentenceQuizSlots.count
+        let normalized = ((index % slotCount) + slotCount) % slotCount
+        let slot = sentenceQuizSlots[normalized]
+        var copy = self
+        copy.sentenceQuizPrompt = slot.prompt
+        copy.synonymQuizOptions = slot.options
+        copy.synonymQuizCorrectAnswer = slot.correctAnswer
+        return copy
     }
 
     private enum CodingKeys: String, CodingKey {
         case id, word, partOfSpeech, definition, exampleSentence, etymology, memoryHookText, semanticCharge
-        case sentenceQuizPrompt, synonymQuizOptions, synonymQuizCorrectAnswer
+        case sentenceQuizPrompt, synonymQuizOptions, synonymQuizCorrectAnswer, sentenceQuizSlots
     }
 
     var hasSentenceQuiz: Bool {

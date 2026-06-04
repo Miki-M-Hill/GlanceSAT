@@ -15,6 +15,9 @@ final class Word: Identifiable {
     var exampleSentence: String
     /// Alternate sentence for quiz blanks (widget/carousel keep `exampleSentence`).
     var quizSentence: String?
+    /// Extra widget-only example sentences for quiz rotation (not used in-app daily quiz).
+    var widgetSentence2: String?
+    var widgetSentence3: String?
     var etymology: String?
     /// When set with `memoryHookText`, the card shows **Hook** instead of Origin/etymology.
     var memoryHookKind: String?
@@ -25,8 +28,8 @@ final class Word: Identifiable {
     var difficulty: Int
     var frequencyRank: Int
     var category: String
-    /// Rubric passage bucket: `human_social` | `self_character` | `thought_language` | `science_world` | `power_culture`.
-    var passageDomain: String = PassageDomain.thoughtLanguage.rawValue
+    /// SAT passage subject: `literature` | `history` | `social_studies` | `humanities` | `science`.
+    var passageDomain: String = PassageDomain.humanities.rawValue
     /// Bundled rubric valence: `negative` | `neutral` | `positive` | `mixed`.
     var semanticCharge: String = "neutral"
     /// 1–3 strength for `negative` / `positive`; ignored for `neutral` / `mixed`.
@@ -57,6 +60,8 @@ final class Word: Identifiable {
         definition: String,
         exampleSentence: String,
         quizSentence: String? = nil,
+        widgetSentence2: String? = nil,
+        widgetSentence3: String? = nil,
         etymology: String? = nil,
         memoryHookKind: String? = nil,
         memoryHookText: String? = nil,
@@ -65,7 +70,7 @@ final class Word: Identifiable {
         difficulty: Int,
         frequencyRank: Int,
         category: String,
-        passageDomain: String = PassageDomain.thoughtLanguage.rawValue,
+        passageDomain: String = PassageDomain.humanities.rawValue,
         semanticCharge: String = "neutral",
         semanticChargeIntensity: Int = 2,
         tonalFoilId: UUID? = nil,
@@ -88,6 +93,8 @@ final class Word: Identifiable {
         self.definition = definition
         self.exampleSentence = exampleSentence
         self.quizSentence = quizSentence
+        self.widgetSentence2 = widgetSentence2
+        self.widgetSentence3 = widgetSentence3
         self.etymology = etymology
         self.memoryHookKind = memoryHookKind
         self.memoryHookText = memoryHookText
@@ -298,35 +305,84 @@ extension Word {
         }
         return exampleSentence
     }
+
+    /// Widget quiz rotation sentences (`exampleSentence` + alternates); excludes in-app-only `quizSentence`.
+    var widgetQuizExampleSentences: [String] {
+        var result: [String] = []
+        var seen = Set<String>()
+        let candidates: [String?] = [exampleSentence, widgetSentence2, widgetSentence3]
+        for candidate in candidates {
+            guard let trimmed = candidate?.trimmingCharacters(in: .whitespacesAndNewlines), !trimmed.isEmpty else {
+                continue
+            }
+            let key = trimmed.lowercased()
+                .split(whereSeparator: \.isWhitespace)
+                .joined(separator: " ")
+            guard !seen.contains(key) else { continue }
+            seen.insert(key)
+            result.append(trimmed)
+        }
+        return result
+    }
 }
 
-// MARK: - Passage domain (rubric §B)
+// MARK: - Passage domain (official SAT passage subjects)
 
 enum PassageDomain: String, CaseIterable, Sendable, Identifiable {
-    case humanSocial = "human_social"
-    case selfCharacter = "self_character"
-    case thoughtLanguage = "thought_language"
-    case scienceWorld = "science_world"
-    case powerCulture = "power_culture"
+    case literature = "literature"
+    case history = "history"
+    case socialStudies = "social_studies"
+    case humanities = "humanities"
+    case science = "science"
 
     var id: String { rawValue }
 
     /// Stable order for Insights bars and Library filters.
     nonisolated static let displayOrder: [PassageDomain] = [
-        .humanSocial,
-        .selfCharacter,
-        .thoughtLanguage,
-        .scienceWorld,
-        .powerCulture,
+        .literature,
+        .history,
+        .socialStudies,
+        .humanities,
+        .science,
     ]
 
     nonisolated var displayTitle: String {
         switch self {
-        case .humanSocial: return "People & society"
-        case .selfCharacter: return "Self & character"
-        case .thoughtLanguage: return "Ideas & language"
-        case .scienceWorld: return "Science & nature"
-        case .powerCulture: return "Power & culture"
+        case .literature: return "Literature"
+        case .history: return "History"
+        case .socialStudies: return "Social Studies"
+        case .humanities: return "The Humanities"
+        case .science: return "Science"
+        }
+    }
+
+    nonisolated var filterIcon: String {
+        switch self {
+        case .literature: return "text.book.closed"
+        case .history: return "clock"
+        case .socialStudies: return "person.2"
+        case .humanities: return "lightbulb"
+        case .science: return "leaf"
+        }
+    }
+
+    nonisolated var filterSubtitle: String {
+        switch self {
+        case .literature: return "Fiction, poetry, and literary nonfiction"
+        case .history: return "Historical documents and narratives"
+        case .socialStudies: return "Society, civics, and social science"
+        case .humanities: return "Arts, philosophy, and ideas"
+        case .science: return "Natural and applied sciences"
+        }
+    }
+
+    nonisolated var insightsIcon: String {
+        switch self {
+        case .literature: return "text.book.closed.fill"
+        case .history: return "clock.fill"
+        case .socialStudies: return "person.2.fill"
+        case .humanities: return "lightbulb.fill"
+        case .science: return "leaf.fill"
         }
     }
 
@@ -343,33 +399,58 @@ enum PassageDomain: String, CaseIterable, Sendable, Identifiable {
         self = Self.inferred(fromCategorySlug: categorySlug)
     }
 
+    nonisolated static func insightsIcon(forDisplayTitle name: String) -> String {
+        displayOrder.first { $0.displayTitle == name }?.insightsIcon ?? "book.fill"
+    }
+
     nonisolated static func normalizedRaw(_ raw: String) -> String {
         let trimmed = raw.trimmingCharacters(in: .whitespacesAndNewlines).lowercased()
+        if let migrated = legacyRawValues[trimmed] {
+            return migrated.rawValue
+        }
         if PassageDomain(rawValue: trimmed) != nil {
             return trimmed
         }
-        return PassageDomain.thoughtLanguage.rawValue
+        return PassageDomain.humanities.rawValue
     }
 
     nonisolated static func inferred(fromCategorySlug slug: String) -> PassageDomain {
         let c = slug.trimmingCharacters(in: .whitespacesAndNewlines).lowercased()
-        if c == "social-behavior" { return .humanSocial }
-        if ["emotion-character", "emotional", "emotion"].contains(c) { return .selfCharacter }
+        if ["arts-literature", "literary", "arts", "emotion-character", "emotional", "emotion"].contains(c) {
+            return .literature
+        }
+        if [
+            "history", "politics-power", "politics-law", "legal", "political", "conflict-power",
+            "law-ethics", "business-economy", "commerce",
+        ].contains(c) {
+            return .history
+        }
+        if ["social-behavior", "food-culture"].contains(c) {
+            return .socialStudies
+        }
+        if [
+            "science-engineering", "science", "environment", "science-nature", "health-body", "science-method",
+        ].contains(c) {
+            return .science
+        }
         if [
             "intellect-judgment", "logic-reasoning", "language-communication", "academic",
             "general-academic", "formal-register", "language", "perception-quality",
-        ].contains(c) { return .thoughtLanguage }
-        if [
-            "science-engineering", "science", "environment", "science-nature",
-            "health-body", "science-method",
-        ].contains(c) { return .scienceWorld }
-        if [
-            "law-ethics", "politics-power", "politics-law", "legal", "political",
-            "conflict-power", "arts-literature", "literary", "arts", "religion-philosophy",
-            "religion", "history", "business-economy", "commerce", "food-culture",
-        ].contains(c) { return .powerCulture }
-        return .thoughtLanguage
+            "religion-philosophy", "religion",
+        ].contains(c) {
+            return .humanities
+        }
+        return .humanities
     }
+
+    /// Maps pre-SAT-subject passage buckets stored in SwiftData / bundled JSON.
+    private nonisolated static let legacyRawValues: [String: PassageDomain] = [
+        "human_social": .socialStudies,
+        "self_character": .literature,
+        "thought_language": .humanities,
+        "science_world": .science,
+        "power_culture": .history,
+    ]
 }
 
 enum WordConnotationPolarity: String, Sendable {

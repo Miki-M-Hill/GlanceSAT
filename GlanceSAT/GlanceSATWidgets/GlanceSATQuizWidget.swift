@@ -17,6 +17,7 @@ struct GlanceSATQuizEntry: TimelineEntry {
     let isResting: Bool
     let isCelebrating: Bool
     let isPostQuizCompletedDay: Bool
+    let isGalleryPreview: Bool
 
     init(
         date: Date,
@@ -28,7 +29,8 @@ struct GlanceSATQuizEntry: TimelineEntry {
         isStaleSnapshot: Bool = false,
         isResting: Bool = false,
         isCelebrating: Bool = false,
-        isPostQuizCompletedDay: Bool = false
+        isPostQuizCompletedDay: Bool = false,
+        isGalleryPreview: Bool = false
     ) {
         self.date = date
         self.word = word
@@ -40,30 +42,35 @@ struct GlanceSATQuizEntry: TimelineEntry {
         self.isResting = isResting
         self.isCelebrating = isCelebrating
         self.isPostQuizCompletedDay = isPostQuizCompletedDay
+        self.isGalleryPreview = isGalleryPreview
     }
 }
 
 struct GlanceSATQuizProvider: TimelineProvider {
     func placeholder(in context: Context) -> GlanceSATQuizEntry {
-        GlanceSATQuizEntry(
-            date: Date(),
-            word: .placeholder,
-            slotKey: "placeholder_0",
-            displayPhase: .quiz
-        )
+        WidgetGalleryPreview.quizEntry()
     }
 
     func getSnapshot(in context: Context, completion: @escaping (GlanceSATQuizEntry) -> Void) {
-        completion(Self.entry(for: Date()))
+        if context.showsWidgetGalleryPreview {
+            completion(WidgetGalleryPreview.quizEntry())
+        } else {
+            completion(Self.entry(for: Date()))
+        }
     }
 
     func getTimeline(in context: Context, completion: @escaping (Timeline<GlanceSATQuizEntry>) -> Void) {
         Task {
             await WidgetReminderNotificationCoordinator.updateWidgetReminderNotification()
 
+            let now = Date()
+            if !WidgetPrefsReader.hasPremiumAccess() {
+                completion(Self.lockedTimeline(now: now))
+                return
+            }
+
             let payload = WidgetPayloadLoader.load()
             let calendar = Calendar.current
-            let now = Date()
             let todayKey = WidgetCalendar.dayKey(for: now, calendar: calendar)
 
             guard let todayWords = WidgetTimelineBuilder.wordsForDay(todayKey, in: payload) else {
@@ -91,6 +98,8 @@ struct GlanceSATQuizProvider: TimelineProvider {
                 return
             }
 
+            WidgetQuizSlotStore.finalizeExpiredFeedback(now: now)
+
             if let feedbackTimeline = Self.activeFeedbackTimeline(
                 now: now,
                 todayKey: todayKey,
@@ -112,7 +121,25 @@ struct GlanceSATQuizProvider: TimelineProvider {
         }
     }
 
+    private static func lockedEntry(date: Date = Date()) -> GlanceSATQuizEntry {
+        let todayKey = WidgetCalendar.dayKey(for: date)
+        return GlanceSATQuizEntry(
+            date: date,
+            word: .placeholder,
+            slotKey: WidgetSlotClock.slotKey(calendarDayKey: todayKey, slotIndex: 0),
+            displayPhase: .vocab
+        )
+    }
+
+    private static func lockedTimeline(now: Date = Date()) -> Timeline<GlanceSATQuizEntry> {
+        Timeline(entries: [lockedEntry(date: now)], policy: .atEnd)
+    }
+
     private static func entry(for date: Date) -> GlanceSATQuizEntry {
+        if !WidgetPrefsReader.hasPremiumAccess() {
+            return lockedEntry(date: date)
+        }
+
         let payload = WidgetPayloadLoader.load()
         let calendar = Calendar.current
         let todayKey = WidgetCalendar.dayKey(for: date, calendar: calendar)
@@ -151,11 +178,11 @@ struct GlanceSATQuizProvider: TimelineProvider {
         var entries: [GlanceSATQuizEntry] = []
 
         if let plan = WidgetTimelineBuilder.celebrationPlan(now: now, calendar: calendar) {
-            let celebrateSlot = WidgetTimelineBuilder.slotIndex(for: plan.completionDate, calendar: calendar)
+            let celebrateSlot = WidgetTimelineBuilder.slotIndex(for: now, calendar: calendar)
             entries.append(
                 GlanceSATQuizEntry(
-                    date: plan.completionDate,
-                    word: WidgetTimelineBuilder.quizWord(at: plan.completionDate, in: words, calendar: calendar),
+                    date: now,
+                    word: WidgetTimelineBuilder.quizWord(at: now, in: words, calendar: calendar),
                     slotKey: WidgetSlotClock.slotKey(calendarDayKey: todayKey, slotIndex: celebrateSlot),
                     displayPhase: .vocab,
                     isCelebrating: true
@@ -233,41 +260,42 @@ struct GlanceSATQuizProvider: TimelineProvider {
             return nil
         }
 
-        let slotIndex = WidgetTimelineBuilder.slotIndex(for: now, calendar: calendar)
-        let word = WidgetTimelineBuilder.quizWord(at: now, in: words, calendar: calendar)
-        let slotKey = WidgetSlotClock.slotKey(calendarDayKey: todayKey, slotIndex: slotIndex)
-
-        guard let feedback = WidgetQuizSlotStore.activeFeedback(slotKey: slotKey, wordID: word.id, now: now) else {
+        guard let feedback = WidgetQuizSlotStore.anyActiveFeedback(now: now),
+              let word = words.first(where: { $0.id == feedback.wordID }) else {
             return nil
         }
 
-        let resultHoldUntil = now.addingTimeInterval(3.0)
+        let transitionDate = feedback.endsAt
         let feedbackEntry = GlanceSATQuizEntry(
             date: now,
             word: word,
-            slotKey: slotKey,
+            slotKey: feedback.slotKey,
             displayPhase: .feedback,
             selectedOption: feedback.selectedOption,
             wasCorrect: feedback.wasCorrect
         )
         let vocabEntry = makeEntry(
-            date: resultHoldUntil,
+            date: transitionDate,
             word: word,
-            slotKey: slotKey,
-            todayKey: todayKey
+            slotKey: feedback.slotKey,
+            todayKey: todayKey,
+            forceDisplayPhase: .vocab
         )
-        return Timeline(entries: [feedbackEntry, vocabEntry], policy: .atEnd)
+        return Timeline(entries: [feedbackEntry, vocabEntry], policy: .after(transitionDate))
     }
 
     private static func makeEntry(
         date: Date,
         word: WidgetWordSnapshot,
         slotKey: String,
-        todayKey: String
+        todayKey: String,
+        forceDisplayPhase: WidgetQuizDisplayPhase? = nil
     ) -> GlanceSATQuizEntry {
         let evaluationDate = phaseEvaluationDate(forSlotDate: date)
         let phase: WidgetQuizDisplayPhase
-        if !word.hasSentenceQuiz {
+        if let forceDisplayPhase {
+            phase = forceDisplayPhase
+        } else if !word.hasSentenceQuiz {
             phase = .vocab
         } else {
             phase = WidgetQuizSlotStore.resolvedPhase(slotKey: slotKey, wordID: word.id, now: evaluationDate)
@@ -331,8 +359,8 @@ struct GlanceSATQuizWidget: Widget {
             GlanceSATQuizWidgetRootView(entry: entry)
                 .glanceWidgetBackground(themeName: WidgetPrefsReader.themeName())
         }
-        .configurationDisplayName("Glance Quiz")
-        .description("Sentence-completion quizzes on your Home Screen, then the word card.")
+        .configurationDisplayName("Glance SAT Quiz")
+        .description("SAT sentence completion on your Home Screen")
         .contentMarginsDisabled()
         .supportedFamilies([.systemMedium, .systemLarge])
     }

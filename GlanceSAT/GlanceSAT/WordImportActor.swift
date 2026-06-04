@@ -111,6 +111,18 @@ actor WordImportActor {
                 word.quizSentence = bundledQuizSentence
                 changed = true
             }
+
+            let bundledWidgetSentence2 = WordJSONRecord.normalizedOptionalQuizSentence(record.widgetSentence2)
+            if word.widgetSentence2 != bundledWidgetSentence2 {
+                word.widgetSentence2 = bundledWidgetSentence2
+                changed = true
+            }
+
+            let bundledWidgetSentence3 = WordJSONRecord.normalizedOptionalQuizSentence(record.widgetSentence3)
+            if word.widgetSentence3 != bundledWidgetSentence3 {
+                word.widgetSentence3 = bundledWidgetSentence3
+                changed = true
+            }
             if word.synonyms != lexical.synonyms {
                 word.synonyms = lexical.synonyms
                 changed = true
@@ -310,6 +322,8 @@ struct WordJSONRecord: Decodable, Sendable {
     var definition: String?
     var exampleSentence: String?
     var quizSentence: String?
+    var widgetSentence2: String?
+    var widgetSentence3: String?
     var etymology: String?
     var memoryHook: MemoryHookDTO?
     var synonyms: [String]?
@@ -427,6 +441,8 @@ struct WordJSONRecord: Decodable, Sendable {
             definition: lexical.definition,
             exampleSentence: lexical.exampleSentence,
             quizSentence: Self.normalizedOptionalQuizSentence(quizSentence),
+            widgetSentence2: Self.normalizedOptionalQuizSentence(widgetSentence2),
+            widgetSentence3: Self.normalizedOptionalQuizSentence(widgetSentence3),
             etymology: etymology,
             memoryHookKind: hookPair.kind,
             memoryHookText: hookPair.text,

@@ -18,11 +18,15 @@ struct GlanceSATCountdownEntry: TimelineEntry {
 
 struct GlanceSATCountdownProvider: TimelineProvider {
     func placeholder(in context: Context) -> GlanceSATCountdownEntry {
-        GlanceSATCountdownEntry(date: Date(), daysRemaining: 42, hasExamDate: true)
+        WidgetGalleryPreview.countdownEntry()
     }
 
     func getSnapshot(in context: Context, completion: @escaping (GlanceSATCountdownEntry) -> Void) {
-        completion(makeEntry(for: Date()))
+        if context.showsWidgetGalleryPreview {
+            completion(WidgetGalleryPreview.countdownEntry())
+        } else {
+            completion(makeEntry(for: Date()))
+        }
     }
 
     func getTimeline(in context: Context, completion: @escaping (Timeline<GlanceSATCountdownEntry>) -> Void) {
@@ -47,7 +51,7 @@ struct GlanceSATCountdownWidget: Widget {
                 .glanceWidgetBackground(themeName: WidgetPrefsReader.themeName())
         }
         .configurationDisplayName("SAT Countdown")
-        .description("Days until your SAT — set your test date in Glance settings.")
+        .description("Set your test date in Glance settings")
         .contentMarginsDisabled()
         .supportedFamilies([.systemSmall, .systemMedium, .systemLarge])
     }

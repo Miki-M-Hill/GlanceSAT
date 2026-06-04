@@ -22,6 +22,17 @@ enum WidgetTimelineReloader {
         schedule(reloadKinds: nil)
     }
 
+    /// Reload after widget quiz answer feedback hold (keep in sync with `WidgetQuizSlotStore.widgetTimelineFeedbackHold`).
+    static func schedulePostQuizAnswerWidgetReload() {
+        let delay: TimeInterval = 3.5
+        pendingWorkItem?.cancel()
+        let work = DispatchWorkItem {
+            WidgetCenter.shared.reloadAllTimelines()
+        }
+        pendingWorkItem = work
+        DispatchQueue.main.asyncAfter(deadline: .now() + delay, execute: work)
+    }
+
     private static func schedule(reloadKinds: [String]?) {
         pendingWorkItem?.cancel()
         let work = DispatchWorkItem {

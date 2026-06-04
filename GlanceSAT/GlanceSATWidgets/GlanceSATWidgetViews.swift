@@ -12,23 +12,31 @@ struct GlanceSATWidgetRootView: View {
 
     @Environment(\.widgetFamily) private var family
 
-    /// Timeline entries can lag after quiz completion; prefs are the source of truth for the 60s window.
+    /// Wall-clock window only — stale `entry.isCelebrating` must not keep celebration after the 30s prefs expire.
     private var isActivelyCelebrating: Bool {
-        entry.isCelebrating || WidgetPrefsReader.isInQuizCelebrationWindow()
+        !entry.isGalleryPreview && WidgetPrefsReader.isInQuizCelebrationWindow()
+    }
+
+    /// Post-quiz celebration is medium/large only; small keeps the standard word card.
+    private var showsCelebrationOnThisFamily: Bool {
+        isActivelyCelebrating && family.supportsVocabHomeCelebration
     }
 
     private var deepLinkURL: URL? {
         guard !entry.isDailyLimitLocked else { return WidgetDeepLink.paywallURL() }
-        guard !isActivelyCelebrating else { return nil }
+        guard !showsCelebrationOnThisFamily else { return nil }
         return WidgetDeepLink.libraryURL(wordID: entry.word.id)
     }
 
     var body: some View {
         Group {
-            if entry.isStaleSnapshot {
+            if entry.isStaleSnapshot && !showsCelebrationOnThisFamily {
                 GlanceSATWidgetStaleView(family: family, deepLinkURL: deepLinkURL)
-            } else if isActivelyCelebrating {
-                GlanceSATWidgetCelebrationView(family: family, streakDays: entry.streakDays)
+            } else if showsCelebrationOnThisFamily {
+                GlanceSATWidgetCelebrationView(
+                    family: family,
+                    streakDays: WidgetPrefsReader.streakDays()
+                )
             } else if entry.isDailyLimitLocked {
                 GlanceSATWidgetLockedView(family: family, deepLinkURL: WidgetDeepLink.paywallURL())
             } else if entry.isResting {
@@ -46,7 +54,7 @@ struct GlanceSATWidgetRootView: View {
     }
 }
 
-// MARK: - Post-quiz celebration (1 minute after primary quiz)
+// MARK: - Post-quiz celebration (30 seconds after primary quiz)
 
 struct GlanceSATWidgetCelebrationView: View {
     let family: WidgetFamily
@@ -112,15 +120,6 @@ struct GlanceSATWidgetCelebrationView: View {
                 }
             }
             .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .leading)
-
-        case .systemSmall:
-            homeCelebrationBody(
-                plantSide: 55,
-                messageSize: 14,
-                messageLineLimit: 3,
-                insets: EdgeInsets(top: 7, leading: 9, bottom: 7, trailing: 9),
-                spacing: 5
-            )
 
         case .systemMedium:
             homeCelebrationBody(
@@ -449,10 +448,22 @@ struct GlanceSATHomeFamiliesView: View {
     private var sizeTier: WidgetHomeSizeTier { WidgetHomeSizeTier(family: family) }
     private var isSmallFamily: Bool { sizeTier.isSmall }
 
+    private var isPostQuizDisplayDay: Bool {
+        WidgetTimelineBuilder.isPostQuizDisplayDay()
+    }
+
+    /// Medium/large after the daily quiz: static word card with example, no tray buttons.
+    private var isPostQuizInfoLayout: Bool {
+        isPostQuizDisplayDay && !isSmallFamily
+    }
+
     private var hasExample: Bool { !entry.word.exampleSentence.isEmpty }
     private var hookOrOriginText: String? { entry.word.widgetHookOrOriginText }
 
     private var activeDetailText: String? {
+        if isPostQuizInfoLayout, hasExample {
+            return entry.word.exampleSentence
+        }
         if showsHookAndOriginUI, isHookRevealed, let hook = hookOrOriginText {
             return hook
         }
@@ -467,14 +478,14 @@ struct GlanceSATHomeFamiliesView: View {
     }
 
     private var showsExampleDetail: Bool {
-        !isSmallFamily && isExampleRevealed && hasExample && !showsHookDetail
+        isPostQuizInfoLayout || (!isSmallFamily && isExampleRevealed && hasExample && !showsHookDetail)
     }
 
     private var isAnyDetailRevealed: Bool {
-        activeDetailText != nil
+        isPostQuizInfoLayout || activeDetailText != nil
     }
 
-    /// Medium home widget: hook/example tray is open.
+    /// Medium/large home widget: hook/example tray is open, or post-quiz example is always visible.
     private var isShowingSentence: Bool {
         !isSmallFamily && isAnyDetailRevealed
     }
@@ -494,7 +505,73 @@ struct GlanceSATHomeFamiliesView: View {
             Color.clear
                 .widgetURL(deepLinkURL)
 
-            GeometryReader { proxy in
+            if entry.isGalleryPreview, !isSmallFamily {
+                galleryMediumLargePreview
+            } else {
+                standardHomeContent
+            }
+        }
+    }
+
+    /// Widget selector mock: word, definition, and example App Intent button only.
+    private var galleryMediumLargePreview: some View {
+        GeometryReader { proxy in
+            let contentSize = CGSize(
+                width: proxy.size.width - insets.leading - insets.trailing,
+                height: proxy.size.height - insets.top - insets.bottom
+            )
+            let metrics = WidgetHomeCardMetrics.compute(
+                contentSize: contentSize,
+                scale: scale,
+                sizeTier: sizeTier,
+                word: entry.word.word,
+                definitionWithPartOfSpeech: entry.word.definition,
+                detailText: nil,
+                isDetailRevealed: false,
+                includeAction: true,
+                extraHeaderHeight: 0
+            )
+
+            VStack(alignment: .center, spacing: 0) {
+                Spacer(minLength: 0)
+
+                VStack(alignment: .center, spacing: metrics.clusterSpacing) {
+                    Text(entry.word.word)
+                        .font(.system(size: metrics.wordSize, weight: .semibold, design: .default))
+                        .foregroundStyle(palette.primary)
+                        .multilineTextAlignment(.center)
+                        .lineLimit(nil)
+                        .minimumScaleFactor(0.4)
+                        .frame(maxWidth: .infinity)
+                        .widgetAccentable()
+
+                    Text(entry.word.definition)
+                        .font(.system(size: metrics.bodySize, weight: .regular, design: .rounded))
+                        .foregroundStyle(palette.secondary)
+                        .multilineTextAlignment(.center)
+                        .lineLimit(metrics.definitionLineLimit)
+                        .minimumScaleFactor(0.4)
+                        .frame(maxWidth: .infinity)
+                }
+
+                Spacer(minLength: 0)
+
+                if hasExample {
+                    widgetActionButton(
+                        systemName: "quote.opening",
+                        accessibilityLabel: "Show example sentence",
+                        intent: ToggleWidgetExampleIntent(wordID: entry.word.id.uuidString)
+                    )
+                    .padding(.top, metrics.sectionSpacing)
+                }
+            }
+            .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .center)
+            .padding(insets)
+        }
+    }
+
+    private var standardHomeContent: some View {
+        GeometryReader { proxy in
                 let contentSize = CGSize(
                     width: proxy.size.width - insets.leading - insets.trailing,
                     height: proxy.size.height - insets.top - insets.bottom
@@ -504,10 +581,13 @@ struct GlanceSATHomeFamiliesView: View {
                     scale: scale,
                     sizeTier: sizeTier,
                     word: entry.word.word,
-                    definitionWithPartOfSpeech: entry.word.widgetDefinitionWithPartOfSpeech,
+                    definitionWithPartOfSpeech: isPostQuizInfoLayout
+                        ? entry.word.definition
+                        : entry.word.widgetDefinitionWithPartOfSpeech,
                     detailText: activeDetailText,
                     isDetailRevealed: isAnyDetailRevealed,
-                    includeAction: !isSmallFamily && !entry.isPostQuizCompletedDay
+                    includeAction: !isSmallFamily && !isPostQuizDisplayDay,
+                    extraHeaderHeight: isPostQuizInfoLayout ? 18 * scale : 0
                 )
 
                 VStack(alignment: .center, spacing: 0) {
@@ -524,13 +604,30 @@ struct GlanceSATHomeFamiliesView: View {
                             .widgetURL(deepLinkURL)
                             .widgetAccentable()
 
-                        Text(entry.word.widgetDefinitionWithPartOfSpeech)
-                            .font(.system(size: displayedBodySize(metrics), weight: .regular, design: .rounded))
-                            .foregroundStyle(palette.secondary)
-                            .multilineTextAlignment(.center)
-                            .lineLimit(metrics.definitionLineLimit)
-                            .minimumScaleFactor(0.4)
-                            .frame(maxWidth: .infinity)
+                        if isPostQuizInfoLayout {
+                            Text(entry.word.widgetPartOfSpeechLabel)
+                                .font(.system(size: metrics.detailLabelSize, weight: .semibold, design: .rounded))
+                                .foregroundStyle(palette.accent)
+                                .textCase(.lowercase)
+                                .lineLimit(1)
+                                .minimumScaleFactor(0.8)
+
+                            Text(entry.word.definition)
+                                .font(.system(size: displayedBodySize(metrics), weight: .regular, design: .rounded))
+                                .foregroundStyle(palette.secondary)
+                                .multilineTextAlignment(.center)
+                                .lineLimit(metrics.definitionLineLimit)
+                                .minimumScaleFactor(0.4)
+                                .frame(maxWidth: .infinity)
+                        } else {
+                            Text(entry.word.widgetDefinitionWithPartOfSpeech)
+                                .font(.system(size: displayedBodySize(metrics), weight: .regular, design: .rounded))
+                                .foregroundStyle(palette.secondary)
+                                .multilineTextAlignment(.center)
+                                .lineLimit(metrics.definitionLineLimit)
+                                .minimumScaleFactor(0.4)
+                                .frame(maxWidth: .infinity)
+                        }
                     }
 
                     if showsHookDetail, let hook = hookOrOriginText {
@@ -543,14 +640,13 @@ struct GlanceSATHomeFamiliesView: View {
 
                     Spacer(minLength: 0)
 
-                    if !isSmallFamily, !entry.isPostQuizCompletedDay {
+                    if !isSmallFamily, !isPostQuizDisplayDay {
                         homeActionTray
                             .padding(.top, metrics.sectionSpacing)
                     }
                 }
                 .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .center)
                 .padding(insets)
-            }
         }
     }
 
@@ -605,7 +701,7 @@ struct GlanceSATHomeFamiliesView: View {
                 )
             }
 
-            if hasExample, !entry.isPostQuizCompletedDay {
+            if hasExample, !isPostQuizDisplayDay {
                 widgetActionButton(
                     systemName: "quote.opening",
                     accessibilityLabel: isExampleRevealed ? "Hide example sentence" : "Show example sentence",
@@ -725,6 +821,12 @@ private struct GlanceSATLockFamiliesView: View {
         let t = entry.word.word.trimmingCharacters(in: .whitespacesAndNewlines)
         guard let c = t.first else { return "G" }
         return String(c).uppercased()
+    }
+}
+
+private extension WidgetFamily {
+    var supportsVocabHomeCelebration: Bool {
+        self == .systemMedium || self == .systemLarge
     }
 }
 

@@ -16,6 +16,8 @@ struct GlanceSATEntry: TimelineEntry {
     let streakDays: Int
     /// No pre-computed batch for the widget's local today (queue exhausted — open app to refresh).
     let isStaleSnapshot: Bool
+    /// Widget gallery / selector — ignore live subscription and lock prefs.
+    let isGalleryPreview: Bool
 
     init(
         date: Date,
@@ -25,7 +27,8 @@ struct GlanceSATEntry: TimelineEntry {
         isPostQuizCompletedDay: Bool = false,
         isDailyLimitLocked: Bool = false,
         streakDays: Int = 0,
-        isStaleSnapshot: Bool = false
+        isStaleSnapshot: Bool = false,
+        isGalleryPreview: Bool = false
     ) {
         self.date = date
         self.word = word
@@ -35,6 +38,7 @@ struct GlanceSATEntry: TimelineEntry {
         self.isDailyLimitLocked = isDailyLimitLocked
         self.streakDays = streakDays
         self.isStaleSnapshot = isStaleSnapshot
+        self.isGalleryPreview = isGalleryPreview
     }
 }
 
@@ -50,11 +54,15 @@ enum GlanceSATWidgetConstants {
 
 struct GlanceSATProvider: TimelineProvider {
     func placeholder(in context: Context) -> GlanceSATEntry {
-        GlanceSATEntry(date: Date(), word: .placeholder)
+        WidgetGalleryPreview.vocabularyEntry()
     }
 
     func getSnapshot(in context: Context, completion: @escaping (GlanceSATEntry) -> Void) {
-        completion(Self.entry(for: Date()))
+        if context.showsWidgetGalleryPreview {
+            completion(WidgetGalleryPreview.vocabularyEntry())
+        } else {
+            completion(Self.entry(for: Date()))
+        }
     }
 
     func getTimeline(in context: Context, completion: @escaping (Timeline<GlanceSATEntry>) -> Void) {
@@ -66,7 +74,8 @@ struct GlanceSATProvider: TimelineProvider {
             let now = Date()
             let todayKey = WidgetCalendar.dayKey(for: now, calendar: calendar)
 
-            if Self.shouldShowFreemiumLock(at: now, calendar: calendar) {
+            if !WidgetPrefsReader.isInQuizCelebrationWindow(now: now, calendar: calendar),
+               Self.shouldShowFreemiumLock(at: now, calendar: calendar) {
                 let entry = Self.lockedEntry(date: now, payload: payload, todayKey: todayKey)
                 completion(Timeline(entries: [entry], policy: .atEnd))
                 return
@@ -110,10 +119,6 @@ struct GlanceSATProvider: TimelineProvider {
         let calendar = Calendar.current
         let todayKey = WidgetCalendar.dayKey(for: date, calendar: calendar)
 
-        if Self.shouldShowFreemiumLock(at: date, calendar: calendar) {
-            return lockedEntry(date: date, payload: payload, todayKey: todayKey)
-        }
-
         guard let todayWords = WidgetTimelineBuilder.wordsForDay(todayKey, in: payload) else {
             let fallback = payload.dailyBatches.values.first?.first ?? .placeholder
             return GlanceSATEntry(
@@ -136,6 +141,10 @@ struct GlanceSATProvider: TimelineProvider {
                 isCelebrating: true,
                 streakDays: WidgetPrefsReader.streakDays()
             )
+        }
+
+        if Self.shouldShowFreemiumLock(at: date, calendar: calendar) {
+            return lockedEntry(date: date, payload: payload, todayKey: todayKey)
         }
 
         let postQuiz = WidgetTimelineBuilder.isPostQuizDisplayDay(now: date, calendar: calendar)
@@ -166,11 +175,15 @@ struct GlanceSATProvider: TimelineProvider {
         guard WidgetPrefsReader.isInQuizCelebrationWindow(now: now, calendar: calendar) else {
             return entries
         }
-        let active = entries.filter { $0.date <= now }.max(by: { $0.date < $1.date })
-        if active?.isCelebrating == true {
+        if entries.contains(where: { $0.isCelebrating && $0.date <= now }) {
             return entries
         }
         var updated = entries
+        updated.removeAll { entry in
+            !entry.isCelebrating
+                && entry.date <= now
+                && abs(entry.date.timeIntervalSince(now)) < 0.5
+        }
         updated.append(
             GlanceSATEntry(
                 date: now,
@@ -200,8 +213,8 @@ struct GlanceSATVocabularyWidget: Widget {
         StaticConfiguration(kind: GlanceSATWidgetConstants.vocabularyKind, provider: GlanceSATProvider()) { entry in
             GlanceSATWidgetRootView(entry: entry)
         }
-        .configurationDisplayName("Glance")
-        .description("SAT vocabulary on your Home Screen and Lock Screen.")
+        .configurationDisplayName("Glance SAT Vocabulary")
+        .description("See SAT words on your Home Screen")
         .contentMarginsDisabled()
         .supportedFamilies([
             .systemSmall,

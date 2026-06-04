@@ -31,6 +31,10 @@ struct AnswerWidgetQuizIntent: AppIntent {
     }
 
     func perform() async throws -> some IntentResult {
+        guard WidgetPrefsReader.hasPremiumAccess() else {
+            return .result()
+        }
+
         guard let id = UUID(uuidString: wordID.trimmingCharacters(in: .whitespacesAndNewlines)) else {
             return .result()
         }
@@ -57,7 +61,10 @@ struct AnswerWidgetQuizIntent: AppIntent {
             )
         }
 
-        await WidgetIntentReload.reloadQuizTimelines()
+        await MainActor.run {
+            WidgetCenter.shared.reloadAllTimelines()
+        }
+        WidgetIntentReload.schedulePostQuizAnswerWidgetReload()
 
         return .result()
     }

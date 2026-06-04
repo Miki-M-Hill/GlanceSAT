@@ -375,11 +375,10 @@ final class EntitlementManager: ObservableObject {
 
     private func publishAccess() {
         #if DEBUG
-        let debugOverride = DebugSubscriptionControls.resolvedHasPremiumAccess(
+        hasPremiumAccess = DebugSubscriptionControls.resolvedHasPremiumAccess(
             revenueCatActive: revenueCatPremiumActive,
             threeDayPassActive: hasActiveThreeDayPass
         )
-        hasPremiumAccess = debugOverride || hasActiveThreeDayPass
         #else
         hasPremiumAccess = revenueCatPremiumActive || hasActiveThreeDayPass
         #endif

@@ -340,7 +340,7 @@ enum QuizGenerator {
 
     // MARK: - Level 2 — Sentence completion
 
-    /// Sentence-completion payload for the quiz widget (uses `exampleSentence`, not `quizSentence`).
+    /// Sentence-completion payload for the quiz widget (`exampleSentence` + widget alternates; not `quizSentence`).
     struct WidgetSentenceQuiz: Sendable {
         let promptText: String
         let options: [String]

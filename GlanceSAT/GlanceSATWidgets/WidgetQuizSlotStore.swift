@@ -22,7 +22,10 @@ struct WidgetQuizSlotState: Codable, Sendable {
 enum WidgetQuizSlotStore {
     private static let prefix = "widget.quiz.slot."
 
-    /// Matches `DailyQuizView` auto-advance after a correct answer.
+    /// Fixed hold shown in the quiz widget timeline after an in-widget answer (Entry 1 → Entry 2).
+    static let widgetTimelineFeedbackHold: TimeInterval = 3.0
+
+    /// Matches `DailyQuizView` auto-advance after a correct answer (store bookkeeping).
     static let correctFeedbackDuration: TimeInterval = 1.2
     /// Wrong answers stay on feedback until the user taps Next in-app; widgets use a short fixed hold.
     static let incorrectFeedbackDuration: TimeInterval = 3.0
@@ -70,6 +73,73 @@ enum WidgetQuizSlotStore {
             wasCorrect: state.wasCorrect,
             endsAt: feedbackEndsAt(for: state)
         )
+    }
+
+    /// Finds the most recent in-window feedback across all slots (current slot can lag after intent reload).
+    static func anyActiveFeedback(now: Date = Date()) -> (
+        slotKey: String,
+        wordID: UUID,
+        selectedOption: String,
+        wasCorrect: Bool,
+        endsAt: Date
+    )? {
+        guard let defaults else { return nil }
+
+        var best: (
+            slotKey: String,
+            wordID: UUID,
+            selectedOption: String,
+            wasCorrect: Bool,
+            endsAt: Date,
+            answeredAt: Date
+        )?
+
+        for key in defaults.dictionaryRepresentation().keys where key.hasPrefix(prefix) {
+            let slotKey = String(key.dropFirst(prefix.count))
+            guard let state = load(slotKey: slotKey),
+                  state.phase == .feedback,
+                  let wordID = UUID(uuidString: state.wordID) else {
+                continue
+            }
+            let endsAt = feedbackEndsAt(for: state)
+            guard now < endsAt else { continue }
+
+            if best == nil || state.answeredAt > best!.answeredAt {
+                best = (
+                    slotKey: slotKey,
+                    wordID: wordID,
+                    selectedOption: state.selectedOption,
+                    wasCorrect: state.wasCorrect,
+                    endsAt: endsAt,
+                    answeredAt: state.answeredAt
+                )
+            }
+        }
+
+        guard let best else { return nil }
+        return (
+            slotKey: best.slotKey,
+            wordID: best.wordID,
+            selectedOption: best.selectedOption,
+            wasCorrect: best.wasCorrect,
+            endsAt: best.endsAt
+        )
+    }
+
+    /// Promotes expired feedback slots to vocab so rotation entries don't re-query stale feedback.
+    static func finalizeExpiredFeedback(now: Date = Date()) {
+        guard let defaults else { return }
+
+        for key in defaults.dictionaryRepresentation().keys where key.hasPrefix(prefix) {
+            let slotKey = String(key.dropFirst(prefix.count))
+            guard let state = load(slotKey: slotKey),
+                  state.phase == .feedback,
+                  now >= feedbackEndsAt(for: state),
+                  let wordID = UUID(uuidString: state.wordID) else {
+                continue
+            }
+            advanceToVocab(slotKey: slotKey, wordID: wordID)
+        }
     }
 
     static func matchingState(slotKey: String, wordID: UUID) -> WidgetQuizSlotState? {

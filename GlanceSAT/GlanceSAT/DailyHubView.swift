@@ -315,11 +315,13 @@ struct DailyHubView: View {
                 guard !isStreakPresentationFrozen else { return }
                 handlePlantVisualChange(from: oldValue, to: newValue)
             }
+            #if DEBUG
             .modifier(DailyHubDebugLifecycleModifier(
                 onWiltPreview: triggerWiltFall,
                 onResetTodayQuiz: handleDebugResetTodayQuiz,
                 onPreviewMasteryCelebration: { debugShowsMasteryCelebration = true }
             ))
+            #endif
     }
 
     @ViewBuilder

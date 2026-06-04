@@ -8,6 +8,9 @@ import WidgetKit
 
 /// App Group flags for widget "rest until tomorrow" after the primary daily quiz.
 enum WidgetDailyState {
+    /// Keep in sync with `WidgetTimelineBuilder.celebrationDuration` in the widget extension.
+    private static let celebrationDuration: TimeInterval = 30
+
     private static let primaryQuizCompletedDayKey = "widget.primaryQuizCompletedDayKey"
     private static let lastQuizCompletionTimestampKey = "widget.lastQuizCompletionTimestamp"
     private static let streakDaysKey = "widget.streakDays"
@@ -19,6 +22,15 @@ enum WidgetDailyState {
         defaults.set(Date().timeIntervalSince1970, forKey: lastQuizCompletionTimestampKey)
         WidgetCenter.shared.reloadAllTimelines()
         WidgetTimelineReloader.scheduleVocabularyReload()
+        schedulePostCelebrationWidgetReload()
+    }
+
+    /// Nudge widgets off celebration UI when the system does not honor `.after(resumeDate)` on its own.
+    private static func schedulePostCelebrationWidgetReload() {
+        let delay = celebrationDuration + 0.5
+        DispatchQueue.main.asyncAfter(deadline: .now() + delay) {
+            WidgetCenter.shared.reloadAllTimelines()
+        }
     }
 
     /// Clears the primary-quiz-done flag when it matches `todayKey` (widget returns to word rotation).

@@ -1145,28 +1145,6 @@ private extension LearningStatusFilter {
     }
 }
 
-private extension PassageDomain {
-    var filterIcon: String {
-        switch self {
-        case .humanSocial: return "person.2"
-        case .selfCharacter: return "figure.stand"
-        case .thoughtLanguage: return "lightbulb"
-        case .scienceWorld: return "leaf"
-        case .powerCulture: return "building.columns"
-        }
-    }
-
-    var filterSubtitle: String {
-        switch self {
-        case .humanSocial: return "People, groups, and social life"
-        case .selfCharacter: return "Identity, emotion, and inner life"
-        case .thoughtLanguage: return "Ideas, art, and argument"
-        case .scienceWorld: return "Nature, health, and discovery"
-        case .powerCulture: return "History, law, and institutions"
-        }
-    }
-}
-
 private extension WordConnotationPolarity {
     var filterIcon: String {
         switch self {
