@@ -4,6 +4,7 @@
 //
 
 import Foundation
+import SwiftUI
 
 enum WidgetPrefsReader {
     private enum Keys {
@@ -11,11 +12,11 @@ enum WidgetPrefsReader {
         static let theme = "widget.prefs.theme"
         static let typography = "widget.prefs.typography"
         static let primaryQuizCompletedDayKey = "widget.primaryQuizCompletedDayKey"
-        static let lastQuizCompletionTimestamp = "widget.lastQuizCompletionTimestamp"
         static let streakDays = "widget.streakDays"
         static let hasPremiumAccess = "widget.subscription.hasPremium"
         static let freemiumDailyLimitReached = "widget.subscription.freemiumLimitReached"
         static let satExamDateSeconds = "satExamDateSeconds"
+        static let lockScreenTextAlignment = "widget.lockScreenTextAlignment"
     }
 
     private static let appGroup = GlanceSATWidgetConstants.appGroupIdentifier
@@ -46,21 +47,6 @@ enum WidgetPrefsReader {
 
     static func isPrimaryQuizCompleted(for dayKey: String) -> Bool {
         defaults?.string(forKey: Keys.primaryQuizCompletedDayKey) == dayKey
-    }
-
-    static func lastQuizCompletionTimestamp() -> Date? {
-        guard let raw = defaults?.object(forKey: Keys.lastQuizCompletionTimestamp) as? Double, raw > 0 else {
-            return nil
-        }
-        return Date(timeIntervalSince1970: raw)
-    }
-
-    static func isInQuizCelebrationWindow(now: Date = Date(), calendar: Calendar = .current) -> Bool {
-        guard let completion = lastQuizCompletionTimestamp(),
-              calendar.isDateInToday(completion) else {
-            return false
-        }
-        return now.timeIntervalSince(completion) < WidgetTimelineBuilder.celebrationDuration
     }
 
     static func streakDays() -> Int {
@@ -94,5 +80,10 @@ enum WidgetPrefsReader {
         let start = calendar.startOfDay(for: referenceDate)
         let examDay = calendar.startOfDay(for: examDate)
         return calendar.dateComponents([.day], from: start, to: examDay).day
+    }
+
+    static func lockScreenTextAlignment() -> HorizontalAlignment {
+        let raw = defaults?.string(forKey: Keys.lockScreenTextAlignment) ?? "leading"
+        return raw == "center" ? .center : .leading
     }
 }

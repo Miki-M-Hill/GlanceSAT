@@ -45,7 +45,8 @@ actor WidgetReconcileActor {
             case .know:
                 quality = 5
             case .quizAnswer:
-                quality = event.wasCorrect == true ? 5 : 1
+                // Passive widget tap — lighter than in-app recall (quality 5).
+                quality = event.wasCorrect == true ? 3 : 1
             default:
                 continue
             }

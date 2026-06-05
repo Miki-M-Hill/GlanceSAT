@@ -323,9 +323,10 @@ enum DailyWordBatchService {
         newWordIDsByDay = newWordIDsByDay.filter { $0.key >= todayKey }
 
         let cap = selectionCap
-        let hadTodayBatch = !(queue[todayKey]?.isEmpty ?? true)
+        /// True when today's IDs were already persisted — batch must not be rebuilt after widget/app SRS reconcile.
+        let hadCommittedTodayBatch = !(queue[todayKey]?.isEmpty ?? true)
 
-        if !hadTodayBatch {
+        if !hadCommittedTodayBatch {
             var reservedIDs = Set<UUID>()
             for key in requiredKeys {
                 let dayDate = dateFromCalendarDayKey(key, calendar: calendar) ?? referenceDate
@@ -366,7 +367,10 @@ enum DailyWordBatchService {
         newWordIDsByDay = newWordIDsByDay.filter { requiredKeys.contains($0.key) }
 
         var todayWords: [Word]
-        if let todayIDs = queue[todayKey], !todayIDs.isEmpty {
+        if hadCommittedTodayBatch, let committedTodayIDs = queue[todayKey], !committedTodayIDs.isEmpty {
+            // Calendar-day lock: today's ten are fixed once committed; SRS reconcile only affects future slots.
+            todayWords = resolveWords(wordIDs: committedTodayIDs, modelContext: modelContext)
+        } else if let todayIDs = queue[todayKey], !todayIDs.isEmpty {
             let resolved = resolveWords(wordIDs: todayIDs, modelContext: modelContext)
             if resolved.isEmpty {
                 var reservedIDs = Set<UUID>()
@@ -415,18 +419,20 @@ enum DailyWordBatchService {
         }
 
         let cappedToday = applySubscriptionCap(todayWords)
-        queue[todayKey] = cappedToday.map(\.id)
-        let cappedIDs = Set(cappedToday.map(\.id))
-        if let todayNew = newWordIDsByDay[todayKey] {
-            newWordIDsByDay[todayKey] = todayNew.filter { cappedIDs.contains($0) }
+        if !hadCommittedTodayBatch {
+            queue[todayKey] = cappedToday.map(\.id)
+            let cappedIDs = Set(cappedToday.map(\.id))
+            if let todayNew = newWordIDsByDay[todayKey] {
+                newWordIDsByDay[todayKey] = todayNew.filter { cappedIDs.contains($0) }
+            }
+            backfillNewWordMetadataIfNeeded(
+                todayWords: cappedToday,
+                todayKey: todayKey,
+                modelContext: modelContext,
+                referenceDate: referenceDate,
+                newWordIDsByDay: &newWordIDsByDay
+            )
         }
-        backfillNewWordMetadataIfNeeded(
-            todayWords: cappedToday,
-            todayKey: todayKey,
-            modelContext: modelContext,
-            referenceDate: referenceDate,
-            newWordIDsByDay: &newWordIDsByDay
-        )
         persistQueue(queue, newWordIDsByDay: newWordIDsByDay)
 
         var snapshotBatches: [String: [Word]] = [:]
@@ -440,7 +446,7 @@ enum DailyWordBatchService {
         EntitlementManager.shared.syncWidgetSubscriptionState()
         WidgetTimelineReloader.scheduleVocabularyReload()
 
-        if hadPastDays || !hadTodayBatch {
+        if hadPastDays || !hadCommittedTodayBatch {
             WidgetTimelineReloader.scheduleAllWidgetReload()
         }
 

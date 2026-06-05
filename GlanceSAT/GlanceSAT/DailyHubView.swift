@@ -3,6 +3,7 @@
 //  GlanceSAT
 //
 
+import StoreKit
 import SwiftData
 import SwiftUI
 import UIKit
@@ -49,6 +50,7 @@ struct DailyHubView: View {
     @Environment(\.modelContext) private var modelContext
     @Environment(\.colorScheme) private var colorScheme
     @Environment(\.scenePhase) private var scenePhase
+    @Environment(\.requestReview) private var requestReview
     @Environment(QuizPreparationManager.self) private var quizPreparation
     @Environment(InsightsRefreshCoordinator.self) private var insightsCoordinator
     @EnvironmentObject private var entitlementManager: EntitlementManager
@@ -90,6 +92,9 @@ struct DailyHubView: View {
     @State private var frozenStreakDays: Int?
     @State private var frozenEvolutionTier: Int?
     @State private var frozenPlantShowsWilted: Bool?
+    @State private var pendingMilestoneCelebration: Int?
+    @State private var showMilestoneCelebration = false
+    @State private var activeMilestoneCelebration = 0
     @State private var pendingStreakUpgradeReveal = false
     @State private var streakUpgradeRevealTask: Task<Void, Never>?
     @State private var showPlantCelebration = false
@@ -319,7 +324,8 @@ struct DailyHubView: View {
             .modifier(DailyHubDebugLifecycleModifier(
                 onWiltPreview: triggerWiltFall,
                 onResetTodayQuiz: handleDebugResetTodayQuiz,
-                onPreviewMasteryCelebration: { debugShowsMasteryCelebration = true }
+                onPreviewMasteryCelebration: { debugShowsMasteryCelebration = true },
+                onPreviewMilestoneCelebration: presentMilestoneCelebrationPreview
             ))
             #endif
     }
@@ -329,6 +335,11 @@ struct DailyHubView: View {
         hubWithLifecycleObservers
             .fullScreenCover(isPresented: $showDailyQuiz, onDismiss: handleDailyQuizCoverDismissed) {
                 dailyQuizCover
+            }
+            .fullScreenCover(isPresented: $showMilestoneCelebration) {
+                MilestoneCelebrationView(milestone: activeMilestoneCelebration) {
+                    showMilestoneCelebration = false
+                }
             }
             #if DEBUG
             .fullScreenCover(isPresented: $debugShowsMasteryCelebration) {
@@ -352,7 +363,23 @@ struct DailyHubView: View {
         clearAllOptimisticQuizCTAState()
         refreshPersistedQuizFlagsDeferred()
         handleDailyQuizDismissed()
+        presentPendingMilestoneCelebrationIfNeeded()
     }
+
+    private func presentPendingMilestoneCelebrationIfNeeded() {
+        guard let milestone = pendingMilestoneCelebration else { return }
+        pendingMilestoneCelebration = nil
+        MilestoneManager.markCelebrated(milestone)
+        activeMilestoneCelebration = milestone
+        showMilestoneCelebration = true
+    }
+
+    #if DEBUG
+    private func presentMilestoneCelebrationPreview(_ milestone: Int) {
+        activeMilestoneCelebration = milestone
+        showMilestoneCelebration = true
+    }
+    #endif
 
     #if DEBUG
     private func handleDebugResetTodayQuiz() {
@@ -553,6 +580,13 @@ struct DailyHubView: View {
                     sessions: quizSessions,
                     force: true
                 )
+                Task {
+                    if let milestone = await MilestoneManager.evaluateAfterQuiz(container: modelContext.container) {
+                        await MainActor.run {
+                            pendingMilestoneCelebration = milestone
+                        }
+                    }
+                }
             }
             .navigationTitle("")
             .navigationBarTitleDisplayMode(.inline)
@@ -1650,6 +1684,7 @@ struct DailyHubView: View {
             scheduleStreakUpgradeReveal()
         } else {
             clearFrozenStreakPresentation()
+            scheduleStagedReviewPrompt(afterPlantAnimation: false)
         }
     }
 
@@ -1680,6 +1715,18 @@ struct DailyHubView: View {
                 handlePlantVisualChange(from: priorToken, to: newToken)
             }
         }
+
+        scheduleStagedReviewPrompt(afterPlantAnimation: true)
+    }
+
+    private func scheduleStagedReviewPrompt(afterPlantAnimation: Bool) {
+        let delay = afterPlantAnimation
+            ? ReviewPromptManager.Timing.delayAfterHubPlantReveal
+            : ReviewPromptManager.Timing.postAnimationBuffer
+        ReviewPromptManager.scheduleStagedReviewPresentation(
+            after: delay,
+            requestReview: requestReview
+        )
     }
 }
 
@@ -2379,6 +2426,7 @@ private struct DailyHubDebugLifecycleModifier: ViewModifier {
     let onWiltPreview: () -> Void
     let onResetTodayQuiz: () -> Void
     let onPreviewMasteryCelebration: () -> Void
+    let onPreviewMilestoneCelebration: (Int) -> Void
 
     func body(content: Content) -> some View {
         #if DEBUG
@@ -2392,6 +2440,10 @@ private struct DailyHubDebugLifecycleModifier: ViewModifier {
             }
             .onReceive(NotificationCenter.default.publisher(for: .debugPreviewMasteryCelebration)) { _ in
                 onPreviewMasteryCelebration()
+            }
+            .onReceive(NotificationCenter.default.publisher(for: DebugMilestoneControls.previewMilestoneCelebration)) { notification in
+                guard let milestone = notification.userInfo?["milestone"] as? Int else { return }
+                onPreviewMilestoneCelebration(milestone)
             }
         #else
         content

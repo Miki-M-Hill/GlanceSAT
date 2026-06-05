@@ -8,7 +8,6 @@ import WidgetKit
 
 /// Deterministic half-hour widget timeline (10 daily words ↔ 48 slots).
 enum WidgetTimelineBuilder {
-    static let celebrationDuration: TimeInterval = 30
     static let slotsPerDay = GlanceSATWidgetConstants.timelineSlotsPerDay
     static let slotMinutes = GlanceSATWidgetConstants.rotationIntervalMinutes
 
@@ -77,53 +76,6 @@ enum WidgetTimelineBuilder {
         return calendar.date(byAdding: .day, value: 1, to: dayStart) ?? date.addingTimeInterval(86_400)
     }
 
-    // MARK: - Celebration injection
-
-    struct CelebrationPlan {
-        let completionDate: Date
-        let resumeDate: Date
-        var isActive: Bool { resumeDate > Date() }
-    }
-
-    static func celebrationPlan(now: Date = Date(), calendar: Calendar = .current) -> CelebrationPlan? {
-        guard
-            let completion = WidgetPrefsReader.lastQuizCompletionTimestamp(),
-            calendar.isDateInToday(completion)
-        else {
-            return nil
-        }
-        let resume = completion.addingTimeInterval(celebrationDuration)
-        guard now < resume else { return nil }
-        return CelebrationPlan(completionDate: completion, resumeDate: resume)
-    }
-
-    static func isPostQuizDisplayDay(now: Date = Date(), calendar: Calendar = .current) -> Bool {
-        if WidgetPrefsReader.isInQuizCelebrationWindow(now: now, calendar: calendar) {
-            return false
-        }
-        if let completion = WidgetPrefsReader.lastQuizCompletionTimestamp(),
-           calendar.isDateInToday(completion) {
-            return now.timeIntervalSince(completion) >= celebrationDuration
-        }
-        let todayKey = WidgetCalendar.dayKey(for: now, calendar: calendar)
-        return WidgetPrefsReader.isPrimaryQuizCompleted(for: todayKey)
-    }
-
-    /// Active celebration window from App Group prefs (used when timeline entries are stale).
-    static func activeCelebrationPlan(now: Date = Date(), calendar: Calendar = .current) -> CelebrationPlan? {
-        if let plan = celebrationPlan(now: now, calendar: calendar) {
-            return plan
-        }
-        guard WidgetPrefsReader.isInQuizCelebrationWindow(now: now, calendar: calendar),
-              let completion = WidgetPrefsReader.lastQuizCompletionTimestamp() else {
-            return nil
-        }
-        return CelebrationPlan(
-            completionDate: completion,
-            resumeDate: completion.addingTimeInterval(celebrationDuration)
-        )
-    }
-
     // MARK: - Vocabulary entries
 
     static func buildVocabularyEntries(
@@ -137,59 +89,14 @@ enum WidgetTimelineBuilder {
 
         let streakDays = WidgetPrefsReader.streakDays()
         var entries: [GlanceSATEntry] = []
-
-        if let plan = activeCelebrationPlan(now: now, calendar: calendar) {
-            // Anchor at rebuild time so this entry stays current until `resumeDate` (completion-only dates lose to slot entries).
-            let celebrateDisplayDate = now
-            entries.append(
-                GlanceSATEntry(
-                    date: celebrateDisplayDate,
-                    word: words[wordIndex(for: celebrateDisplayDate, wordCount: words.count, calendar: calendar)],
-                    isCelebrating: true,
-                    streakDays: streakDays
-                )
-            )
-
-            entries.append(
-                GlanceSATEntry(
-                    date: plan.resumeDate,
-                    word: word(at: plan.resumeDate, in: words, calendar: calendar),
-                    isPostQuizCompletedDay: true,
-                    streakDays: streakDays
-                )
-            )
-
-            appendRotationEntries(
-                to: &entries,
-                from: plan.resumeDate,
-                words: words,
-                calendar: calendar,
-                streakDays: streakDays,
-                isPostQuizCompletedDay: true,
-                skipFirstIfMatches: plan.resumeDate
-            )
-        } else if isPostQuizDisplayDay(now: now, calendar: calendar) {
-            appendRotationEntries(
-                to: &entries,
-                from: now,
-                words: words,
-                calendar: calendar,
-                streakDays: streakDays,
-                isPostQuizCompletedDay: true,
-                skipFirstIfMatches: nil
-            )
-        } else {
-            appendRotationEntries(
-                to: &entries,
-                from: now,
-                words: words,
-                calendar: calendar,
-                streakDays: streakDays,
-                isPostQuizCompletedDay: false,
-                skipFirstIfMatches: nil
-            )
-        }
-
+        appendRotationEntries(
+            to: &entries,
+            from: now,
+            words: words,
+            calendar: calendar,
+            streakDays: streakDays,
+            skipFirstIfMatches: nil
+        )
         return finalizeVocabularyEntries(entries)
     }
 
@@ -203,7 +110,6 @@ enum WidgetTimelineBuilder {
         words: [WidgetWordSnapshot],
         calendar: Calendar,
         streakDays: Int,
-        isPostQuizCompletedDay: Bool,
         skipFirstIfMatches: Date?
     ) {
         let slotDates = remainingHalfHourSlotDates(from: referenceDate, calendar: calendar)
@@ -216,7 +122,6 @@ enum WidgetTimelineBuilder {
                 GlanceSATEntry(
                     date: slotDate,
                     word: word(at: slotDate, in: words, calendar: calendar),
-                    isPostQuizCompletedDay: isPostQuizCompletedDay,
                     streakDays: streakDays
                 )
             )
@@ -243,29 +148,12 @@ enum WidgetTimelineBuilder {
         result.reserveCapacity(entries.count)
         for entry in entries {
             if let lastIndex = result.indices.last,
-               abs(result[lastIndex].date.timeIntervalSince(entry.date)) < 0.5 {
-                let last = result[lastIndex]
-                if last.isCelebrating != entry.isCelebrating {
-                    if entry.isCelebrating {
-                        result[lastIndex] = entry
-                    }
-                    continue
-                }
-                if last.isPostQuizCompletedDay == entry.isPostQuizCompletedDay,
-                   last.word.id == entry.word.id {
-                    continue
-                }
+               abs(result[lastIndex].date.timeIntervalSince(entry.date)) < 0.5,
+               result[lastIndex].word.id == entry.word.id {
+                continue
             }
             result.append(entry)
         }
         return result
-    }
-
-    /// Reload policy so the vocabulary widget picks up post-celebration rotation without waiting for end-of-day.
-    static func vocabularyTimelinePolicy(for entries: [GlanceSATEntry], now: Date = Date(), calendar: Calendar = .current) -> TimelineReloadPolicy {
-        if let plan = activeCelebrationPlan(now: now, calendar: calendar) {
-            return .after(plan.resumeDate)
-        }
-        return .atEnd
     }
 }

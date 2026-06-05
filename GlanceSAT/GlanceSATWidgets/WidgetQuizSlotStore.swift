@@ -25,9 +25,8 @@ enum WidgetQuizSlotStore {
     /// Fixed hold shown in the quiz widget timeline after an in-widget answer (Entry 1 → Entry 2).
     static let widgetTimelineFeedbackHold: TimeInterval = 3.0
 
-    /// Matches `DailyQuizView` auto-advance after a correct answer (store bookkeeping).
+    /// In-app quiz auto-advance timing (widget uses `widgetTimelineFeedbackHold` for all answers).
     static let correctFeedbackDuration: TimeInterval = 1.2
-    /// Wrong answers stay on feedback until the user taps Next in-app; widgets use a short fixed hold.
     static let incorrectFeedbackDuration: TimeInterval = 3.0
 
     struct ActiveFeedback: Sendable {
@@ -40,30 +39,31 @@ enum WidgetQuizSlotStore {
         UserDefaults(suiteName: GlanceSATWidgetConstants.appGroupIdentifier)
     }
 
-    static func feedbackHoldDuration(wasCorrect: Bool) -> TimeInterval {
-        wasCorrect ? correctFeedbackDuration : incorrectFeedbackDuration
-    }
-
     static func resolvedPhase(slotKey: String, wordID: UUID, now: Date = Date()) -> WidgetQuizDisplayPhase {
-        guard let state = matchingState(slotKey: slotKey, wordID: wordID) else {
-            return .quiz
-        }
-        switch state.phase {
-        case .quiz:
-            return .quiz
-        case .feedback:
-            if now >= feedbackEndsAt(for: state) {
+        if let state = matchingState(slotKey: slotKey, wordID: wordID) {
+            switch state.phase {
+            case .quiz:
+                return .quiz
+            case .feedback:
+                if now >= feedbackEndsAt(for: state) {
+                    return .vocab
+                }
+                return .feedback
+            case .vocab:
                 return .vocab
             }
-            return .feedback
-        case .vocab:
+        }
+
+        if let state = load(slotKey: slotKey), state.phase == .feedback || state.phase == .vocab {
             return .vocab
         }
+
+        return .quiz
     }
 
     /// Fast timeline path right after the user taps an answer (skips rebuilding 48 slots).
     static func activeFeedback(slotKey: String, wordID: UUID, now: Date = Date()) -> ActiveFeedback? {
-        guard let state = matchingState(slotKey: slotKey, wordID: wordID),
+        guard let state = slotState(slotKey: slotKey, wordID: wordID),
               state.phase == .feedback,
               now < feedbackEndsAt(for: state) else {
             return nil
@@ -96,7 +96,7 @@ enum WidgetQuizSlotStore {
 
         for key in defaults.dictionaryRepresentation().keys where key.hasPrefix(prefix) {
             let slotKey = String(key.dropFirst(prefix.count))
-            guard let state = load(slotKey: slotKey),
+            guard let state = slotState(slotKey: slotKey, wordID: nil),
                   state.phase == .feedback,
                   let wordID = UUID(uuidString: state.wordID) else {
                 continue
@@ -149,6 +149,31 @@ enum WidgetQuizSlotStore {
         return state
     }
 
+    /// Feedback styling for timeline entries — exact word match first, then any answered state on the slot key.
+    static func feedbackDisplayState(slotKey: String, wordID: UUID) -> WidgetQuizSlotState? {
+        if let exact = matchingState(slotKey: slotKey, wordID: wordID), exact.phase == .feedback {
+            return exact
+        }
+        if let state = load(slotKey: slotKey), state.phase == .feedback {
+            return state
+        }
+        return nil
+    }
+
+    /// Exact word match first; otherwise any feedback/vocab state recorded for this slot key.
+    private static func slotState(slotKey: String, wordID: UUID?) -> WidgetQuizSlotState? {
+        if let wordID, let exact = matchingState(slotKey: slotKey, wordID: wordID) {
+            return exact
+        }
+        guard let state = load(slotKey: slotKey) else { return nil }
+        switch state.phase {
+        case .feedback, .vocab:
+            return state
+        case .quiz:
+            return nil
+        }
+    }
+
     static func recordAnswer(
         slotKey: String,
         wordID: UUID,
@@ -181,7 +206,7 @@ enum WidgetQuizSlotStore {
     }
 
     private static func feedbackEndsAt(for state: WidgetQuizSlotState) -> Date {
-        state.answeredAt.addingTimeInterval(feedbackHoldDuration(wasCorrect: state.wasCorrect))
+        state.answeredAt.addingTimeInterval(widgetTimelineFeedbackHold)
     }
 
     static func normalize(_ value: String) -> String {

@@ -10,6 +10,7 @@ enum WidgetAppGroup {
     static let identifier = "group.com.glance.GlanceSAT"
 
     static let vocabularyWidgetKind = "com.mikihill.GlanceSAT.vocabulary"
+    static let lockScreenVocabularyWidgetKind = "com.mikihill.GlanceSAT.vocabulary.lockScreen"
     static let quizWidgetKind = "com.mikihill.GlanceSAT.quiz"
     static let snapshotFilename = "widget_words_snapshot.json"
 

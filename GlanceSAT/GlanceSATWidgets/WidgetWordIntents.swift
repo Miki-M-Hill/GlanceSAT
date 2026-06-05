@@ -51,15 +51,11 @@ struct AnswerWidgetQuizIntent: AppIntent {
             answeredAt: answeredAt
         )
 
-        // Heavy work off the hot path: pending SRS log only.
-        // Timeline handoff to vocab is scheduled by the provider, not this intent.
-        Task.detached(priority: .userInitiated) {
-            WidgetPendingEventsStore.appendQuizAnswer(
-                wordID: id,
-                wasCorrect: wasCorrect,
-                date: answeredAt
-            )
-        }
+        WidgetPendingEventsStore.appendQuizAnswer(
+            wordID: id,
+            wasCorrect: wasCorrect,
+            date: answeredAt
+        )
 
         await MainActor.run {
             WidgetCenter.shared.reloadAllTimelines()

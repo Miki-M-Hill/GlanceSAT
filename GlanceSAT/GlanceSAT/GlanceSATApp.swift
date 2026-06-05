@@ -1,3 +1,4 @@
+import StoreKit
 import SwiftData
 import SwiftUI
 import WidgetKit
@@ -86,6 +87,7 @@ private struct AppLaunchGate: View {
 private struct AppRootView: View {
     @Environment(\.modelContext) private var modelContext
     @Environment(\.scenePhase) private var scenePhase
+    @Environment(\.requestReview) private var requestReview
     @StateObject private var entitlementManager = EntitlementManager.shared
     @StateObject private var paywallPresenter = PaywallPresenter()
     @StateObject private var libraryFreemiumSession = LibraryFreemiumSession.shared
@@ -441,6 +443,10 @@ private struct AppRootView: View {
                 debugPlantWiltPreview = -1
             }
         }
+
+        if let days, DebugReviewPromptControls.qualifiesForStreakReviewPrompt(days: days) {
+            DebugReviewPromptControls.previewStreakMilestone(days: days, requestReview: requestReview)
+        }
     }
     #endif
 
@@ -547,6 +553,30 @@ private struct AppRootView: View {
                     DebugTodayQuizControls.previewMasteryCelebration()
                 } label: {
                     Label("Preview mastery celebration", systemImage: "checkmark.seal.fill")
+                }
+
+                Menu {
+                    ForEach(MilestoneManager.milestones, id: \.self) { milestone in
+                        Button {
+                            DebugMilestoneControls.preview(milestone: milestone)
+                        } label: {
+                            Text("Preview \(milestone) mastered")
+                        }
+                    }
+                } label: {
+                    Label("Preview word milestone", systemImage: "star.circle.fill")
+                }
+
+                Button {
+                    DebugMilestoneControls.resetCelebratedMilestones()
+                } label: {
+                    Label("Reset milestone celebrations", systemImage: "arrow.counterclockwise.circle")
+                }
+
+                Button {
+                    DebugReviewPromptControls.resetReviewPromptState()
+                } label: {
+                    Label("Reset review prompt state", systemImage: "star.bubble")
                 }
 
                 Button {

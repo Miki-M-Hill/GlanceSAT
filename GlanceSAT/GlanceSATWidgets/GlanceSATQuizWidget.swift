@@ -15,8 +15,6 @@ struct GlanceSATQuizEntry: TimelineEntry {
     let wasCorrect: Bool?
     let isStaleSnapshot: Bool
     let isResting: Bool
-    let isCelebrating: Bool
-    let isPostQuizCompletedDay: Bool
     let isGalleryPreview: Bool
 
     init(
@@ -28,8 +26,6 @@ struct GlanceSATQuizEntry: TimelineEntry {
         wasCorrect: Bool? = nil,
         isStaleSnapshot: Bool = false,
         isResting: Bool = false,
-        isCelebrating: Bool = false,
-        isPostQuizCompletedDay: Bool = false,
         isGalleryPreview: Bool = false
     ) {
         self.date = date
@@ -40,8 +36,6 @@ struct GlanceSATQuizEntry: TimelineEntry {
         self.wasCorrect = wasCorrect
         self.isStaleSnapshot = isStaleSnapshot
         self.isResting = isResting
-        self.isCelebrating = isCelebrating
-        self.isPostQuizCompletedDay = isPostQuizCompletedDay
         self.isGalleryPreview = isGalleryPreview
     }
 }
@@ -116,8 +110,7 @@ struct GlanceSATQuizProvider: TimelineProvider {
                 words: words,
                 calendar: calendar
             )
-            let policy = WidgetTimelineBuilder.vocabularyTimelinePolicy(for: [], now: now, calendar: calendar)
-            completion(Timeline(entries: entries, policy: policy))
+            completion(Timeline(entries: entries, policy: .atEnd))
         }
     }
 
@@ -146,15 +139,16 @@ struct GlanceSATQuizProvider: TimelineProvider {
         let todayWords = WidgetTimelineBuilder.wordsForDay(todayKey, in: payload) ?? []
         let words = WidgetInteractionStore.visibleWords(from: todayWords)
 
-        if WidgetPrefsReader.isInQuizCelebrationWindow(now: date, calendar: calendar),
-           let completion = WidgetPrefsReader.lastQuizCompletionTimestamp() {
-            let slotIndex = WidgetTimelineBuilder.slotIndex(for: completion, calendar: calendar)
+        WidgetQuizSlotStore.finalizeExpiredFeedback(now: date)
+        if let feedback = WidgetQuizSlotStore.anyActiveFeedback(now: date),
+           let word = quizWord(forSlotKey: feedback.slotKey, in: words) {
             return GlanceSATQuizEntry(
-                date: completion,
-                word: WidgetTimelineBuilder.quizWord(at: completion, in: words, calendar: calendar),
-                slotKey: WidgetSlotClock.slotKey(calendarDayKey: todayKey, slotIndex: slotIndex),
-                displayPhase: .vocab,
-                isCelebrating: true
+                date: date,
+                word: word,
+                slotKey: feedback.slotKey,
+                displayPhase: .feedback,
+                selectedOption: feedback.selectedOption,
+                wasCorrect: feedback.wasCorrect
             )
         }
 
@@ -177,46 +171,14 @@ struct GlanceSATQuizProvider: TimelineProvider {
     ) -> [GlanceSATQuizEntry] {
         var entries: [GlanceSATQuizEntry] = []
 
-        if let plan = WidgetTimelineBuilder.celebrationPlan(now: now, calendar: calendar) {
-            let celebrateSlot = WidgetTimelineBuilder.slotIndex(for: now, calendar: calendar)
-            entries.append(
-                GlanceSATQuizEntry(
-                    date: now,
-                    word: WidgetTimelineBuilder.quizWord(at: now, in: words, calendar: calendar),
-                    slotKey: WidgetSlotClock.slotKey(calendarDayKey: todayKey, slotIndex: celebrateSlot),
-                    displayPhase: .vocab,
-                    isCelebrating: true
-                )
-            )
-
-            let resumeSlot = WidgetTimelineBuilder.slotIndex(for: plan.resumeDate, calendar: calendar)
-            entries.append(
-                makeEntry(
-                    date: plan.resumeDate,
-                    word: WidgetTimelineBuilder.quizWord(at: plan.resumeDate, in: words, calendar: calendar),
-                    slotKey: WidgetSlotClock.slotKey(calendarDayKey: todayKey, slotIndex: resumeSlot),
-                    todayKey: todayKey
-                )
-            )
-
-            appendRotationEntries(
-                to: &entries,
-                from: plan.resumeDate,
-                todayKey: todayKey,
-                words: words,
-                calendar: calendar,
-                skipFirstIfMatches: plan.resumeDate
-            )
-        } else {
-            appendRotationEntries(
-                to: &entries,
-                from: now,
-                todayKey: todayKey,
-                words: words,
-                calendar: calendar,
-                skipFirstIfMatches: nil
-            )
-        }
+        appendRotationEntries(
+            to: &entries,
+            from: now,
+            todayKey: todayKey,
+            words: words,
+            calendar: calendar,
+            skipFirstIfMatches: nil
+        )
 
         entries.sort { $0.date < $1.date }
         return dedupeSortedEntries(entries)
@@ -230,7 +192,12 @@ struct GlanceSATQuizProvider: TimelineProvider {
         calendar: Calendar,
         skipFirstIfMatches: Date?
     ) {
-        let slotDates = WidgetTimelineBuilder.remainingHalfHourSlotDates(from: referenceDate, calendar: calendar)
+        let slotDates = rotationSlotDates(
+            from: referenceDate,
+            todayKey: todayKey,
+            words: words,
+            calendar: calendar
+        )
         for slotDate in slotDates {
             if let skip = skipFirstIfMatches,
                calendar.isDate(slotDate, equalTo: skip, toGranularity: .second) {
@@ -238,15 +205,44 @@ struct GlanceSATQuizProvider: TimelineProvider {
             }
             let slotIndex = WidgetTimelineBuilder.slotIndex(for: slotDate, calendar: calendar)
             let slotKey = WidgetSlotClock.slotKey(calendarDayKey: todayKey, slotIndex: slotIndex)
+            guard let word = quizWord(forSlotKey: slotKey, in: words) else { continue }
             entries.append(
                 makeEntry(
                     date: slotDate,
-                    word: WidgetTimelineBuilder.quizWord(at: slotDate, in: words, calendar: calendar),
+                    word: word,
                     slotKey: slotKey,
                     todayKey: todayKey
                 )
             )
         }
+    }
+
+    /// Half-hour grid for quiz rotation. Answered slots get exactly one anchor at :00/:30 — never a mid-slot `now` duplicate.
+    private static func rotationSlotDates(
+        from referenceDate: Date,
+        todayKey: String,
+        words: [WidgetWordSnapshot],
+        calendar: Calendar
+    ) -> [Date] {
+        let dates = WidgetTimelineBuilder.remainingHalfHourSlotDates(from: referenceDate, calendar: calendar)
+        let currentSlotIndex = WidgetTimelineBuilder.slotIndex(for: referenceDate, calendar: calendar)
+        let currentSlotKey = WidgetSlotClock.slotKey(calendarDayKey: todayKey, slotIndex: currentSlotIndex)
+        let slotBoundary = WidgetSlotClock.thirtyMinuteFloor(calendar: calendar, date: referenceDate) ?? referenceDate
+
+        guard let currentWord = quizWord(forSlotKey: currentSlotKey, in: words),
+              WidgetQuizSlotStore.resolvedPhase(
+                  slotKey: currentSlotKey,
+                  wordID: currentWord.id,
+                  now: referenceDate
+              ) == .vocab else {
+            return dates
+        }
+
+        var result = [slotBoundary]
+        result.append(contentsOf: dates.filter {
+            WidgetTimelineBuilder.slotIndex(for: $0, calendar: calendar) > currentSlotIndex
+        })
+        return result.sorted()
     }
 
     private static func activeFeedbackTimeline(
@@ -255,13 +251,8 @@ struct GlanceSATQuizProvider: TimelineProvider {
         words: [WidgetWordSnapshot],
         calendar: Calendar
     ) -> Timeline<GlanceSATQuizEntry>? {
-        guard !WidgetTimelineBuilder.isPostQuizDisplayDay(now: now, calendar: calendar),
-              WidgetTimelineBuilder.celebrationPlan(now: now, calendar: calendar) == nil else {
-            return nil
-        }
-
         guard let feedback = WidgetQuizSlotStore.anyActiveFeedback(now: now),
-              let word = words.first(where: { $0.id == feedback.wordID }) else {
+              let word = quizWord(forSlotKey: feedback.slotKey, in: words) else {
             return nil
         }
 
@@ -284,6 +275,17 @@ struct GlanceSATQuizProvider: TimelineProvider {
         return Timeline(entries: [feedbackEntry, vocabEntry], policy: .after(transitionDate))
     }
 
+    /// Quiz word for a slot — always `words[quizIndex]` from the live snapshot, never stored slot `wordID`.
+    private static func quizWord(
+        forSlotKey slotKey: String,
+        in words: [WidgetWordSnapshot]
+    ) -> WidgetWordSnapshot? {
+        guard let slotIndex = WidgetSlotClock.slotIndex(fromSlotKey: slotKey), !words.isEmpty else {
+            return nil
+        }
+        return WidgetSlotClock.word(atQuizSlot: slotIndex, in: words)
+    }
+
     private static func makeEntry(
         date: Date,
         word: WidgetWordSnapshot,
@@ -301,18 +303,14 @@ struct GlanceSATQuizProvider: TimelineProvider {
             phase = WidgetQuizSlotStore.resolvedPhase(slotKey: slotKey, wordID: word.id, now: evaluationDate)
         }
 
-        let state = WidgetQuizSlotStore.matchingState(slotKey: slotKey, wordID: word.id)
-        let postQuiz = WidgetTimelineBuilder.isPostQuizDisplayDay(now: evaluationDate, calendar: .current)
+        let feedbackState = WidgetQuizSlotStore.feedbackDisplayState(slotKey: slotKey, wordID: word.id)
         return GlanceSATQuizEntry(
             date: date,
             word: word,
             slotKey: slotKey,
             displayPhase: phase,
-            selectedOption: phase == .feedback ? state?.selectedOption : nil,
-            wasCorrect: phase == .feedback ? state?.wasCorrect : nil,
-            isStaleSnapshot: false,
-            isResting: false,
-            isPostQuizCompletedDay: postQuiz
+            selectedOption: phase == .feedback ? feedbackState?.selectedOption : nil,
+            wasCorrect: phase == .feedback ? feedbackState?.wasCorrect : nil
         )
     }
 
@@ -332,17 +330,16 @@ struct GlanceSATQuizProvider: TimelineProvider {
         var result: [GlanceSATQuizEntry] = []
         result.reserveCapacity(entries.count)
         for entry in entries {
+            if let slotIndex = result.firstIndex(where: { $0.slotKey == entry.slotKey }) {
+                let existing = result[slotIndex]
+                result[slotIndex] = entry.date < existing.date ? entry : existing
+                continue
+            }
+
             if let lastIndex = result.indices.last,
                abs(result[lastIndex].date.timeIntervalSince(entry.date)) < 0.5 {
                 let last = result[lastIndex]
-                if last.isCelebrating != entry.isCelebrating {
-                    if entry.isCelebrating {
-                        result[lastIndex] = entry
-                    }
-                    continue
-                }
-                if last.isPostQuizCompletedDay == entry.isPostQuizCompletedDay,
-                   last.displayPhase == entry.displayPhase,
+                if last.displayPhase == entry.displayPhase,
                    last.word.id == entry.word.id {
                     continue
                 }

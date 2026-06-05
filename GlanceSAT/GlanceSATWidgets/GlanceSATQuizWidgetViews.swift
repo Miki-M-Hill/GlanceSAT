@@ -16,10 +16,6 @@ struct GlanceSATQuizWidgetRootView: View {
         !entry.isGalleryPreview && !WidgetPrefsReader.hasPremiumAccess()
     }
 
-    private var isActivelyCelebrating: Bool {
-        !entry.isGalleryPreview && WidgetPrefsReader.isInQuizCelebrationWindow()
-    }
-
     private var deepLinkURL: URL {
         WidgetDeepLink.libraryURL(wordID: entry.word.id)
     }
@@ -30,11 +26,6 @@ struct GlanceSATQuizWidgetRootView: View {
                 GlanceSATQuizWidgetLockedView(family: family)
             } else if entry.isStaleSnapshot {
                 GlanceSATWidgetStaleView(family: family, deepLinkURL: deepLinkURL)
-            } else if isActivelyCelebrating {
-                GlanceSATWidgetCelebrationView(
-                    family: family,
-                    streakDays: WidgetPrefsReader.streakDays()
-                )
             } else if entry.isResting {
                 GlanceSATWidgetRestView(
                     entry: GlanceSATEntry(
@@ -52,25 +43,19 @@ struct GlanceSATQuizWidgetRootView: View {
                     GlanceSATQuizPromptView(entry: entry, family: family, deepLinkURL: deepLinkURL)
                 case .vocab:
                     GlanceSATHomeFamiliesView(
-                        entry: GlanceSATEntry(
-                            date: entry.date,
-                            word: entry.word,
-                            isPostQuizCompletedDay: isPostQuizDisplayDay
-                        ),
+                        entry: GlanceSATEntry(date: entry.date, word: entry.word),
                         family: family,
                         deepLinkURL: deepLinkURL
                     )
                 }
             }
         }
+        .widgetURL(WidgetDeepLink.libraryURL(wordID: entry.word.id))
     }
 
-    private var isPostQuizDisplayDay: Bool {
-        WidgetTimelineBuilder.isPostQuizDisplayDay()
-    }
-
+    /// Timeline entries drive phase transitions; live store updates on the scheduled reload.
     private var effectiveDisplayPhase: WidgetQuizDisplayPhase {
-        WidgetQuizSlotStore.resolvedPhase(slotKey: entry.slotKey, wordID: entry.word.id)
+        entry.displayPhase
     }
 }
 
@@ -132,7 +117,7 @@ private struct GlanceSATQuizPromptView: View {
     }
 
     private var isFeedback: Bool {
-        WidgetQuizSlotStore.resolvedPhase(slotKey: entry.slotKey, wordID: entry.word.id) == .feedback
+        entry.displayPhase == .feedback
     }
 
     var body: some View {

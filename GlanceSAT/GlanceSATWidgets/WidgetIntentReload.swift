@@ -32,6 +32,7 @@ enum WidgetIntentReload {
     @MainActor
     static func reloadVocabularyTimelines() {
         WidgetCenter.shared.reloadTimelines(ofKind: GlanceSATWidgetConstants.vocabularyKind)
+        WidgetCenter.shared.reloadTimelines(ofKind: GlanceSATWidgetConstants.lockScreenVocabularyKind)
     }
 
     /// Follow-up reload when WidgetKit does not advance the feedback → vocab timeline entry on its own.
@@ -40,7 +41,8 @@ enum WidgetIntentReload {
         Task.detached(priority: .utility) {
             try? await Task.sleep(nanoseconds: UInt64(delay * 1_000_000_000))
             await MainActor.run {
-                WidgetCenter.shared.reloadAllTimelines()
+                WidgetQuizSlotStore.finalizeExpiredFeedback()
+                WidgetCenter.shared.reloadTimelines(ofKind: GlanceSATWidgetConstants.quizKind)
             }
         }
     }

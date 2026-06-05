@@ -13,6 +13,14 @@ enum WidgetSlotClock {
         "\(calendarDayKey)_\(slotIndex)"
     }
 
+    /// Parses the trailing slot index from a `calendarDayKey_slotIndex` key.
+    static func slotIndex(fromSlotKey slotKey: String) -> Int? {
+        guard let raw = slotKey.split(separator: "_").last, let index = Int(raw) else {
+            return nil
+        }
+        return index
+    }
+
     static func slotIndex(for date: Date, calendar: Calendar = .current) -> Int {
         let start = calendar.startOfDay(for: date)
         let minutes = calendar.dateComponents([.minute], from: start, to: date).minute ?? 0

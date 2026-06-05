@@ -48,6 +48,8 @@ struct DailyQuizView: View {
     @State private var didApplyResume = false
     /// Slide transitions only when advancing; enter/resume stays centered with no motion.
     @State private var shouldAnimateBetweenQuestions = false
+    /// Session day keys before this quiz was saved — used for streak-transition review prompts.
+    @State private var preQuizSessionDayKeys: Set<String>?
 
     /// Matches `answerOptions` row spacing so the footer sits the same distance below the last answer.
     private static let answerOptionVerticalSpacing: CGFloat = 12
@@ -108,6 +110,7 @@ struct DailyQuizView: View {
                 )
             }
             resetQuestionTimer()
+            capturePreQuizStreakSnapshotIfNeeded()
         }
         .onChange(of: activeQuestionID, initial: true) { _, _ in
             resetQuestionTimer()
@@ -519,6 +522,24 @@ struct DailyQuizView: View {
         !isSupplementalPersistence && !newlyMasteredWords.isEmpty
     }
 
+    private func capturePreQuizStreakSnapshotIfNeeded() {
+        guard preQuizSessionDayKeys == nil, !isSupplementalPersistence else { return }
+        preQuizSessionDayKeys = ReviewPromptManager.fetchSessionDayKeys(modelContext: modelContext)
+    }
+
+    private func stageReviewPromptIfEligible() {
+        guard !isSupplementalPersistence else { return }
+        let priorSessionDayKeys = preQuizSessionDayKeys
+            ?? ReviewPromptManager.fetchSessionDayKeys(modelContext: modelContext)
+        ReviewPromptManager.stageReviewPromptIfEligible(
+            isSupplementalRound: isSupplementalPersistence,
+            correctCount: correctCount,
+            totalQuestions: questions.count,
+            preQuizSessionDayKeys: priorSessionDayKeys,
+            modelContext: modelContext
+        )
+    }
+
     private func handleOptionTap(option: String, question: QuizQuestion) {
         guard !isAnswerRevealed else { return }
 
@@ -559,6 +580,7 @@ struct DailyQuizView: View {
         let nextIndex = currentQuestionIndex + 1
         if nextIndex >= questions.count {
             persistQuizSessionAndNotifyCompletion()
+            stageReviewPromptIfEligible()
             withAnimation(.spring(response: 0.5, dampingFraction: 0.85)) {
                 quizComplete = true
             }

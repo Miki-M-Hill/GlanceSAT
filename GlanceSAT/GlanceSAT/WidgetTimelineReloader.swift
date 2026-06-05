@@ -14,6 +14,7 @@ enum WidgetTimelineReloader {
     static func scheduleVocabularyReload() {
         schedule(reloadKinds: [
             WidgetAppGroup.vocabularyWidgetKind,
+            WidgetAppGroup.lockScreenVocabularyWidgetKind,
             WidgetAppGroup.quizWidgetKind,
         ])
     }
@@ -22,12 +23,12 @@ enum WidgetTimelineReloader {
         schedule(reloadKinds: nil)
     }
 
-    /// Reload after widget quiz answer feedback hold (keep in sync with `WidgetQuizSlotStore.widgetTimelineFeedbackHold`).
+    /// Reload after widget quiz answer feedback hold (keep in sync with `WidgetQuizSlotStore.widgetTimelineFeedbackHold` = 3s).
     static func schedulePostQuizAnswerWidgetReload() {
         let delay: TimeInterval = 3.5
         pendingWorkItem?.cancel()
         let work = DispatchWorkItem {
-            WidgetCenter.shared.reloadAllTimelines()
+            WidgetCenter.shared.reloadTimelines(ofKind: WidgetAppGroup.quizWidgetKind)
         }
         pendingWorkItem = work
         DispatchQueue.main.asyncAfter(deadline: .now() + delay, execute: work)

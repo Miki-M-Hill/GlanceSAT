@@ -32,15 +32,17 @@ struct SettingsView: View {
         return f.string(from: resolvedSATDate)
     }
 
+    private var lockScreenWidgetAlignmentSubtitle: String {
+        let raw = WidgetAppGroup.defaults?.string(forKey: "widget.lockScreenTextAlignment") ?? "leading"
+        return raw == "center" ? "Center aligned" : "Left aligned"
+    }
+
     private var appVersion: String {
         (Bundle.main.infoDictionary?["CFBundleShortVersionString"] as? String) ?? "1.0"
     }
 
     private var shareMessage: String {
-        if AppExternalLinks.appStoreProductURL != nil {
-            return "I'm prepping for the SAT with Glance — sharp vocabulary, daily rhythm."
-        }
-        return "Check out Glance — SAT vocabulary with a daily rhythm."
+        "I'm using Glance to passively study for the SAT. Check it out!"
     }
 
     var body: some View {
@@ -57,6 +59,18 @@ struct SettingsView: View {
                             satDraftDate = resolvedSATDate
                             showSATDateSheet = true
                         }
+                        rowDivider
+                        NavigationLink {
+                            LockScreenWidgetSettingsView()
+                        } label: {
+                            settingsRowLabel(
+                                icon: "lock.iphone",
+                                title: "Lock Screen Widget",
+                                subtitle: lockScreenWidgetAlignmentSubtitle,
+                                showChevron: true
+                            )
+                        }
+                        .buttonStyle(.plain)
                     }
 
                     settingsSectionHeader("Spread the word")
@@ -72,8 +86,10 @@ struct SettingsView: View {
 
                         rowDivider
 
-                        settingsButton(icon: "star", title: "Leave us a review") {
-                            AppExternalLinks.requestReviewOrOpenStore(using: openURL)
+                        settingsButton(icon: "star", title: "Leave a Review") {
+                            if let reviewURL = AppExternalLinks.appStoreReviewURL {
+                                openURL(reviewURL)
+                            }
                         }
                     }
 

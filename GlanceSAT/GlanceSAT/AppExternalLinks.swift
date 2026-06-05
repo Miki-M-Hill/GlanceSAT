@@ -54,10 +54,9 @@ enum AppExternalLinks {
   static let instagramWeb = URL(
     string: "https://www.instagram.com/glance_sat?igsh=MWNiN2ZuZXh2MDF0cA%3D%3D&utm_source=qr"
   )!
-  static let tiktokWeb = URL(string: "https://www.tiktok.com/@glance_sat?_r=1&_t=ZT-96IwRGOLCgP")!
+  static let tiktokWeb = URL(string: "https://www.tiktok.com/@glance_sat")!
 
   private static let instagramApp = URL(string: "instagram://user?username=glance_sat")
-  private static let tiktokApp = URL(string: "tiktok://user?username=glance_sat")
 
   // MARK: - Actions
 
@@ -77,23 +76,14 @@ enum AppExternalLinks {
   }
 
   @MainActor
-  static func requestReviewOrOpenStore(using openURL: OpenURLAction) {
-    if let reviewURL = appStoreReviewURL {
-      openURL(reviewURL)
-      return
-    }
-    guard let scene = UIApplication.shared.connectedScenes.first as? UIWindowScene else { return }
-    AppStore.requestReview(in: scene)
-  }
-
-  @MainActor
   static func openInstagram(using openURL: OpenURLAction) {
     openSocial(appURL: instagramApp, webURL: instagramWeb, using: openURL)
   }
 
   @MainActor
   static func openTikTok(using openURL: OpenURLAction) {
-    openSocial(appURL: tiktokApp, webURL: tiktokWeb, using: openURL)
+    // Universal link — iOS hands off to TikTok at @glance_sat when installed (tiktok:// only opens the app home).
+    openURL(tiktokWeb)
   }
 
   @MainActor
