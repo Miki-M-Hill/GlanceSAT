@@ -42,7 +42,7 @@
     "difficultyLevel": 2,
     "frequencyTier": 4,
     "category": "academic",
-    "definition": "To become drastically less intense",
+    "definition": "To become less intense",
     "synonyms": [
       "diminish",
       "subside",
@@ -193,7 +193,7 @@
       "abominate"
     ],
     "etymology": "Latin abhorrere, from ab- ('away from') + horrere ('to shudder')",
-    "exampleSentence": "Most peaceful citizens absolutely abhor the senseless violence of the ongoing war.",
+    "exampleSentence": "Most peaceful citizens abhor the senseless violence of the ongoing war.",
     "learningData": {
       "status": "new",
       "nextReviewDate": "2026-03-30T00:00:00Z",
@@ -525,7 +525,7 @@
       "acquittal"
     ],
     "etymology": "Latin absolutio, from absolvere ('to set free'), from ab- + solvere ('to loosen')",
-    "exampleSentence": "The criminal sought absolute absolution from the priest before his scheduled execution date.",
+    "exampleSentence": "The criminal sought absolution from the priest before his scheduled execution date.",
     "learningData": {
       "status": "new",
       "nextReviewDate": "2026-03-30T00:00:00Z",
@@ -1180,7 +1180,7 @@
       "dexterous"
     ],
     "etymology": "Latin adeptus, past participle of adipisci ('to attain'), from ad- + apisci ('to reach')",
-    "exampleSentence": "The veteran mechanic is highly adept at repairing classic cars from the 1960s.",
+    "exampleSentence": "The veteran mechanic is adept at repairing classic cars from the 1960s.",
     "learningData": {
       "status": "new",
       "nextReviewDate": "2026-03-30T00:00:00Z",
@@ -1468,8 +1468,8 @@
       "text": "\"ad-\" (against) + \"vers\" (turn) = turned against you; hostile."
     },
     "semanticChargeIntensity": 2,
-    "quizSentence": "The marathon was canceled due to extremely adverse weather conditions.",
-    "alternateExampleSentence": "The hikers canceled their dangerous mountain trip due to highly adverse weather conditions."
+    "quizSentence": "The marathon was canceled due to adverse weather conditions.",
+    "alternateExampleSentence": "The hikers canceled their dangerous mountain trip due to adverse weather conditions."
   },
   {
     "id": "b8ebbaf8-b513-4251-aa13-827150fba06c",
@@ -1881,7 +1881,7 @@
       "dexterous"
     ],
     "etymology": "Latin agilis, from agere ('to do, drive')",
-    "exampleSentence": "The highly agile gymnast perfectly executed a flawless backflip during the Olympic finals.",
+    "exampleSentence": "The agile gymnast executed a flawless backflip during the Olympic finals.",
     "learningData": {
       "status": "new",
       "nextReviewDate": "2026-03-30T00:00:00Z",
@@ -2710,7 +2710,7 @@
       "corresponding"
     ],
     "etymology": "Greek analogos ('proportionate'), from ana- ('according to') + logos ('ratio, proportion')",
-    "exampleSentence": "The brain of a computer is highly analogous to the human central nervous system.",
+    "exampleSentence": "The brain of a computer is analogous to the human central nervous system.",
     "learningData": {
       "status": "new",
       "nextReviewDate": "2026-03-30T00:00:00Z",
@@ -2725,7 +2725,7 @@
     "semanticCharge": "neutral",
     "memoryHook": null,
     "quizSentence": "The human brain is often considered analogous to a complex computer.",
-    "alternateExampleSentence": "His sudden political rise is perfectly analogous to the success of his legendary predecessor."
+    "alternateExampleSentence": "His sudden political rise is analogous to the success of his legendary predecessor."
   },
   {
     "id": "dc89f1eb-380c-4460-a7f9-d45caf12867d",
@@ -2796,7 +2796,7 @@
       "text": "A nasty asthma - something you vehemently despise and avoid."
     },
     "semanticChargeIntensity": 3,
-    "quizSentence": "Eating meat is absolute anathema to a strict vegan.",
+    "quizSentence": "Eating meat is anathema to a strict vegan.",
     "alternateExampleSentence": "Eating meat is complete anathema to someone who strictly follows a vegetarian diet."
   },
   {
@@ -2829,7 +2829,7 @@
     "semanticCharge": "neutral",
     "memoryHook": null,
     "quizSentence": "The professor opened the lecture with a pointed anecdote about wartime medical triage.",
-    "alternateExampleSentence": "She shared a brief, touching anecdote to perfectly illustrate the value of hard work."
+    "alternateExampleSentence": "She shared a brief, touching anecdote to illustrate the value of hard work."
   },
   {
     "id": "144c1454-d060-4766-9545-3b5050cf1818",
@@ -2897,7 +2897,7 @@
       "text": "\"anima\" (soul/life) = full of life."
     },
     "semanticChargeIntensity": 2,
-    "quizSentence": "The kids became highly animated when discussing their favorite video game.",
+    "quizSentence": "The kids became animated when discussing their favorite video game.",
     "alternateExampleSentence": "The spirited debate grew increasingly animated as both candidates passionately defended their policies."
   },
   {
@@ -3127,7 +3127,7 @@
       "text": "\"ante-\" (before) + \"ced\" (go) = the thing that goes before."
     },
     "quizSentence": "The telegraph is a historical antecedent to the modern telephone.",
-    "alternateExampleSentence": "You must perfectly identify the grammatical antecedent of the pronoun in this complex sentence."
+    "alternateExampleSentence": "You must identify the grammatical antecedent of the pronoun in this complex sentence."
   },
   {
     "id": "196a9a8d-7af2-47dc-812d-61b41d2e802d",
@@ -3162,7 +3162,7 @@
       "text": "\"ante-\" (before) + \"diluvium\" (flood) = literally \"before the biblical flood,\" meaning ancient."
     },
     "quizSentence": "His antediluvian views on gender roles belong in the nineteenth century.",
-    "alternateExampleSentence": "His highly antediluvian views on modern technology frustrated his younger, more innovative colleagues."
+    "alternateExampleSentence": "His antediluvian views on modern technology frustrated his younger, more innovative colleagues."
   },
   {
     "id": "89f49772-3204-4c42-be98-6d16c1ed8ab6",
@@ -3335,7 +3335,7 @@
       "text": "\"anti-\" (opposite) + \"thesis\" (idea) = the exact opposite."
     },
     "quizSentence": "Slavery is the exact antithesis of freedom and human rights.",
-    "alternateExampleSentence": "The brutal dictator is the absolute antithesis of a modern, democratic political leader."
+    "alternateExampleSentence": "The brutal dictator is the antithesis of a modern, democratic political leader."
   },
   {
     "id": "f3b684c2-84bd-4666-b4a4-b7c2ccc37ffd",
@@ -3385,7 +3385,7 @@
       "unconcerned"
     ],
     "etymology": "Greek apathes ('without feeling'), from a- ('without') + pathos ('feeling')",
-    "exampleSentence": "The extremely apathetic voters chose to stay home instead of participating in the election.",
+    "exampleSentence": "The apathetic voters chose to stay home instead of participating in the election.",
     "learningData": {
       "status": "new",
       "nextReviewDate": "2026-03-30T00:00:00Z",
@@ -3457,7 +3457,7 @@
       "outrageous"
     ],
     "etymology": "Old French apallir ('to grow pale'), from a- + pallir ('to be pale'), from Latin pallere",
-    "exampleSentence": "The human rights inspectors discovered absolutely appalling living conditions inside the neglected prison facility.",
+    "exampleSentence": "The human rights inspectors discovered appalling living conditions inside the neglected prison facility.",
     "learningData": {
       "status": "new",
       "nextReviewDate": "2026-03-30T00:00:00Z",
@@ -3862,7 +3862,7 @@
       "abstruse"
     ],
     "etymology": "Latin arcanus ('secret, hidden'), from arca ('chest, box')",
-    "exampleSentence": "The ancient manuscript contained highly arcane knowledge understood by only three living scholars.",
+    "exampleSentence": "The ancient manuscript contained arcane knowledge understood by only three living scholars.",
     "learningData": {
       "status": "new",
       "nextReviewDate": "2026-03-30T00:00:00Z",
@@ -4021,8 +4021,8 @@
       "kind": "sound_spelling",
       "text": "A rid - you rid the desert of all its water."
     },
-    "quizSentence": "Cacti thrive perfectly in a hot, arid desert environment.",
-    "alternateExampleSentence": "Only the toughest plants can survive the extremely arid conditions of the wasteland."
+    "quizSentence": "Cacti thrive in a hot, arid desert environment.",
+    "alternateExampleSentence": "Only the toughest plants can survive the arid conditions of the wasteland."
   },
   {
     "id": "f5034f88-e7bf-4a85-8281-5ffe01f80db7",
@@ -4142,7 +4142,7 @@
       "self-denying"
     ],
     "etymology": "Greek asketes ('one who exercises'), from askein ('to exercise, train')",
-    "exampleSentence": "The silent monk lived a highly ascetic lifestyle in the isolated mountain temple.",
+    "exampleSentence": "The silent monk lived an ascetic lifestyle in the isolated mountain temple.",
     "learningData": {
       "status": "new",
       "nextReviewDate": "2026-03-30T00:00:00Z",
@@ -4328,7 +4328,7 @@
       "claim",
       "affirm"
     ],
-    "exampleSentence": "The brilliant lawyer continued to loudly assert the absolute innocence of his client.",
+    "exampleSentence": "The brilliant lawyer continued to loudly assert the innocence of his client.",
     "memoryHook": {
       "kind": "morphology",
       "text": "\"Assert\" = to join your voice to a claim and stand by it."
@@ -5125,7 +5125,7 @@
       "affliction"
     ],
     "etymology": "Old English bana ('killer, murderer, slayer'); evolved to mean that which causes ruin or misery",
-    "exampleSentence": "The complex mathematical formula remained the absolute bane of the struggling high school student.",
+    "exampleSentence": "The complex mathematical formula remained the bane of the struggling high school student.",
     "learningData": {
       "status": "new",
       "nextReviewDate": "2026-03-30T00:00:00Z",
@@ -5161,7 +5161,7 @@
       "diffident"
     ],
     "etymology": "Middle English baischen ('to be abashed'), from Old French esbahir, from es- + bahir ('to astonish'); -ful suffix added in 16th century",
-    "exampleSentence": "The highly bashful child immediately hid entirely behind his mother when the strangers arrived.",
+    "exampleSentence": "The bashful child immediately hid entirely behind his mother when the strangers arrived.",
     "learningData": {
       "status": "new",
       "nextReviewDate": "2026-03-30T00:00:00Z",
@@ -5353,7 +5353,7 @@
     },
     "semanticChargeIntensity": 1,
     "quizSentence": "The doctor smiled and announced that the tumor was benign.",
-    "alternateExampleSentence": "The old golden retriever has a highly benign personality and loves every single stranger."
+    "alternateExampleSentence": "The old golden retriever has a benign personality and loves every single stranger."
   },
   {
     "id": "67ca5dc1-3907-4168-abb9-138235ea15cb",
@@ -5495,7 +5495,7 @@
       "text": "Bee speech - begging the bees not to sting you."
     },
     "quizSentence": "The stranded climbers beseeched the rescue team to prioritize the most severely injured first.",
-    "alternateExampleSentence": "The captured prisoners began to loudly beseech the cruel king for absolute mercy."
+    "alternateExampleSentence": "The captured prisoners began to loudly beseech the cruel king for mercy."
   },
   {
     "id": "991186b0-e759-4cae-9a48-5cc8e4bbfefc",
@@ -5709,7 +5709,7 @@
       "noisy"
     ],
     "etymology": "Middle English boistuous ('crude, rough'), possibly from Old French boisteus ('lame, clumsy')",
-    "exampleSentence": "The extremely boisterous crowd cheered wildly when the home team scored the winning goal.",
+    "exampleSentence": "The boisterous crowd cheered wildly when the home team scored the winning goal.",
     "learningData": {
       "status": "new",
       "nextReviewDate": "2026-03-30T00:00:00Z",
@@ -5919,7 +5919,7 @@
       "terse"
     ],
     "etymology": "French brusque, from Italian brusco ('sour, rough'), possibly from Medieval Latin bruscus ('butcher's broom')",
-    "exampleSentence": "The busy manager gave a highly brusque reply to the junior employee's simple question.",
+    "exampleSentence": "The busy manager gave a brusque reply to the junior employee's simple question.",
     "learningData": {
       "status": "new",
       "nextReviewDate": "2026-03-30T00:00:00Z",
@@ -6147,7 +6147,7 @@
       "meter"
     ],
     "etymology": "Italian cadenza, from cadere ('to fall'), from Latin cadere — the falling of pitch at the end of a musical phrase",
-    "exampleSentence": "The elite marathon runner maintained a perfectly steady cadence throughout the grueling 20k race.",
+    "exampleSentence": "The elite marathon runner maintained a steady cadence throughout the grueling 20k race.",
     "learningData": {
       "status": "new",
       "nextReviewDate": "2026-03-30T00:00:00Z",
@@ -6233,7 +6233,7 @@
     },
     "semanticChargeIntensity": 3,
     "quizSentence": "The devastating earthquake was the worst calamity the nation had ever faced.",
-    "alternateExampleSentence": "The sudden stock market crash proved to be an absolute financial calamity for investors."
+    "alternateExampleSentence": "The sudden stock market crash proved to be a financial calamity for investors."
   },
   {
     "id": "42b8a8d7-e229-4947-82ee-2601ab9cb214",
@@ -6472,7 +6472,7 @@
     "senses": [
       {
         "partOfSpeech": "verb",
-        "definition": "To solicit votes, opinions, or support; to survey systematically",
+        "definition": "To seek opinions or support systematically",
         "synonyms": [
           "survey",
           "poll",
@@ -6628,7 +6628,7 @@
     "semanticCharge": "neutral",
     "memoryHook": null,
     "quizSentence": "The magician's incredible illusions managed to captivate the entire audience.",
-    "alternateExampleSentence": "The beautiful classical symphony will absolutely captivate anyone who appreciates deeply emotional orchestral music."
+    "alternateExampleSentence": "The beautiful classical symphony will captivate anyone who appreciates deeply emotional orchestral music."
   },
   {
     "id": "1bff02bf-ac9a-4977-bea5-0ccce1435644",
@@ -6857,7 +6857,7 @@
       "text": "Cause sick - drinking a harsh chemical will cause you to be sick."
     },
     "semanticChargeIntensity": 2,
-    "quizSentence": "Bleach is a highly caustic chemical that requires careful handling.",
+    "quizSentence": "Bleach is a caustic chemical that requires careful handling.",
     "alternateExampleSentence": "Her caustic wit often alienated peers who misunderstood her harsh and biting sarcasm."
   },
   {
@@ -6970,7 +6970,7 @@
       "logical"
     ],
     "etymology": "Early 19th century: from Latin cerebrum 'brain' + -al.",
-    "exampleSentence": "The highly cerebral movie required the audience to pay close attention to understand it.",
+    "exampleSentence": "The cerebral movie required the audience to pay close attention to understand it.",
     "learningData": {
       "status": "new",
       "nextReviewDate": "2026-03-30T00:00:00Z",
@@ -7370,7 +7370,7 @@
       "careful"
     ],
     "etymology": "Late Middle English: from Latin circumspectus, from circumspicere 'look around'.",
-    "exampleSentence": "The wise general was highly circumspect before committing troops to the dangerous battle.",
+    "exampleSentence": "The wise general was circumspect before committing troops to the dangerous battle.",
     "learningData": {
       "status": "new",
       "nextReviewDate": "2026-03-30T00:00:00Z",
@@ -7388,7 +7388,7 @@
       "text": "\"circum\" (around) + \"spect\" (look) = looking around carefully before acting; cautious."
     },
     "quizSentence": "A circumspect investor always reads the fine print before signing a contract.",
-    "alternateExampleSentence": "She remained perfectly circumspect about her future career plans during the public interview."
+    "alternateExampleSentence": "She remained circumspect about her future career plans during the public interview."
   },
   {
     "id": "87524159-cdf7-4e72-a267-4cf48e9c9fad",
@@ -7647,7 +7647,7 @@
     },
     "semanticChargeIntensity": 2,
     "quizSentence": "The condemned man begged the governor for clemency at the last minute.",
-    "alternateExampleSentence": "The defense lawyer begged the stern judge for absolute clemency during the trial."
+    "alternateExampleSentence": "The defense lawyer begged the stern judge for clemency during the trial."
   },
   {
     "id": "b5ebbca3-f5b4-45f0-9cbc-0d6316eb64d1",
@@ -7870,7 +7870,7 @@
     "difficultyLevel": 2,
     "frequencyTier": 2,
     "category": "logic-reasoning",
-    "definition": "Logical, clear, and perfectly consistent",
+    "definition": "Logical, clear, and consistent",
     "synonyms": [
       "logical",
       "consistent",
@@ -8087,7 +8087,7 @@
     "semanticCharge": "neutral",
     "memoryHook": null,
     "quizSentence": "The internal combustion engine revolutionized the transportation industry.",
-    "alternateExampleSentence": "The highly volatile chemicals caused a sudden, violent combustion inside the small laboratory."
+    "alternateExampleSentence": "The volatile chemicals caused a sudden, violent combustion inside the small laboratory."
   },
   {
     "id": "e7e06c44-1e28-4537-b449-e5d2b9286d3c",
@@ -8225,7 +8225,7 @@
     "semanticCharge": "neutral",
     "memoryHook": null,
     "quizSentence": "The documentary offered a compelling look at the harsh realities of climate change.",
-    "alternateExampleSentence": "He made a highly compelling argument for investing in the new tech startup."
+    "alternateExampleSentence": "He made a compelling argument for investing in the new tech startup."
   },
   {
     "id": "9daad098-37a5-4220-bc49-df78680cca35",
@@ -8302,7 +8302,7 @@
     "difficultyLevel": 2,
     "frequencyTier": 2,
     "category": "academic",
-    "definition": "To perfectly enhance or complete",
+    "definition": "To enhance or complete",
     "synonyms": [
       "complete",
       "enhance",
@@ -8310,7 +8310,7 @@
       "finish"
     ],
     "etymology": "Late Middle English: from Latin complementum, from complere 'fill up'.",
-    "exampleSentence": "The crisp white wine served to perfectly complement the spicy vegetarian pasta dish.",
+    "exampleSentence": "The crisp white wine served to complement the spicy vegetarian pasta dish.",
     "learningData": {
       "status": "new",
       "nextReviewDate": "2026-03-30T00:00:00Z",
@@ -8328,7 +8328,7 @@
       "text": "\"com-\" (together) + \"plere\" (fill) = to fill up together, completing the whole."
     },
     "quizSentence": "That dark green tie perfectly complements the color of your eyes.",
-    "alternateExampleSentence": "Her exceptional data analysis skills perfectly complement his brilliant, creative marketing strategy ideas."
+    "alternateExampleSentence": "Her exceptional data analysis skills complement his brilliant, creative marketing strategy ideas."
   },
   {
     "id": "f746565d-9196-4716-a6eb-874e48531221",
@@ -8516,7 +8516,7 @@
       "exhaustive"
     ],
     "etymology": "Early 17th century: from French compréhensif, -ive, or late Latin comprehensivus.",
-    "exampleSentence": "The committee released a highly comprehensive report regarding the failing city transit infrastructure.",
+    "exampleSentence": "The committee released a comprehensive report regarding the failing city transit infrastructure.",
     "learningData": {
       "status": "new",
       "nextReviewDate": "2026-03-30T00:00:00Z",
@@ -8580,7 +8580,7 @@
       "remorse"
     ],
     "etymology": "Middle English: from Old French componction, from ecclesiastical Latin compunctio(n-).",
-    "exampleSentence": "The ruthless thief showed absolutely no compunction when stealing the expensive diamond ring.",
+    "exampleSentence": "The ruthless thief showed no compunction when stealing the expensive diamond ring.",
     "learningData": {
       "status": "new",
       "nextReviewDate": "2026-03-30T00:00:00Z",
@@ -8650,7 +8650,7 @@
       "peace-making"
     ],
     "etymology": "Mid 16th century: from late Latin conciliatorius, from conciliare 'combine, gain'.",
-    "exampleSentence": "The company president issued a highly conciliatory statement to appease the striking union.",
+    "exampleSentence": "The company president issued a conciliatory statement to appease the striking union.",
     "learningData": {
       "status": "new",
       "nextReviewDate": "2026-03-30T00:00:00Z",
@@ -8981,7 +8981,7 @@
     "semanticCharge": "neutral",
     "memoryHook": null,
     "quizSentence": "The bakery displayed a beautiful chocolate confection in the front window.",
-    "alternateExampleSentence": "The delicate sugar confection was the absolute centerpiece of the beautiful dinner party."
+    "alternateExampleSentence": "The delicate sugar confection was the centerpiece of the beautiful dinner party."
   },
   {
     "id": "06da32bb-2706-4f95-b157-040e037fded8",
@@ -9798,7 +9798,7 @@
       "text": "Contender - a boxer who loves to fight and argue."
     },
     "semanticChargeIntensity": 2,
-    "quizSentence": "Gun control remains a highly contentious issue in modern political debates.",
+    "quizSentence": "Gun control remains a contentious issue in modern political debates.",
     "alternateExampleSentence": "The city council meeting erupted into a contentious debate over tax increases."
   },
   {
@@ -10385,7 +10385,7 @@
     },
     "semanticChargeIntensity": 2,
     "quizSentence": "New York is a truly cosmopolitan city featuring cultures from around the world.",
-    "alternateExampleSentence": "The city's diverse culinary scene perfectly reflects its growing cosmopolitan population base."
+    "alternateExampleSentence": "The city's diverse culinary scene reflects its growing cosmopolitan population base."
   },
   {
     "id": "f0ecd1e2-e648-4e95-b7a4-c70adb97d5e7",
@@ -11064,7 +11064,7 @@
       "text": "Da buckle - the buckle on the CEO's belt breaks during a keynote speech, causing a complete public disaster."
     },
     "semanticChargeIntensity": 2,
-    "quizSentence": "The badly planned music festival turned into an absolute logistical debacle.",
+    "quizSentence": "The badly planned music festival turned into a logistical debacle.",
     "alternateExampleSentence": "The military offensive was a debacle that resulted in zero strategic gain."
   },
   {
@@ -11880,7 +11880,7 @@
     "difficultyLevel": 4,
     "frequencyTier": 3,
     "category": "social-behavior",
-    "definition": "Absolute moral corruption",
+    "definition": "Moral corruption",
     "synonyms": [
       "corruption",
       "vice",
@@ -12047,7 +12047,7 @@
     "semanticCharge": "negative",
     "memoryHook": null,
     "semanticChargeIntensity": 2,
-    "quizSentence": "The new fantasy novel feels highly derivative of The Lord of the Rings.",
+    "quizSentence": "The new fantasy novel feels derivative of The Lord of the Rings.",
     "alternateExampleSentence": "The artist's new collection was uninspired and derivative of his earlier, better work."
   },
   {
@@ -12955,7 +12955,7 @@
       "circumspection"
     ],
     "etymology": "Latin discretio ‘separation, discernment,’ from discernere.",
-    "exampleSentence": "The therapist assured the nervous patient that their conversations required absolute discretion.",
+    "exampleSentence": "The therapist assured the nervous patient that their conversations required discretion.",
     "learningData": {
       "status": "new",
       "nextReviewDate": "2026-03-30T00:00:00Z",
@@ -12969,7 +12969,7 @@
     "passageDomain": "thought_language",
     "semanticCharge": "neutral",
     "memoryHook": null,
-    "quizSentence": "A therapist must maintain absolute discretion regarding her patients' private lives.",
+    "quizSentence": "A therapist must maintain discretion regarding her patients' private lives.",
     "alternateExampleSentence": "The judge has the legal discretion to lower the harsh criminal sentence."
   },
   {
@@ -13056,7 +13056,7 @@
       "text": "This stain - looking with absolute snobby disgust at \"this stain\" on your brand new shirt."
     },
     "definition": "To consider unworthy of respect",
-    "exampleSentence": "The aristocratic lady looked at the poorly dressed peasant with absolute disdain.",
+    "exampleSentence": "The aristocratic lady looked at the poorly dressed peasant with disdain.",
     "partOfSpeech": "verb",
     "synonyms": [
       "scorn",
@@ -13065,7 +13065,7 @@
       "look down on"
     ],
     "semanticChargeIntensity": 2,
-    "quizSentence": "The wealthy aristocrat looked with absolute disdain at the filthy beggar.",
+    "quizSentence": "The wealthy aristocrat looked with disdain at the filthy beggar.",
     "alternateExampleSentence": "The veteran programmer viewed the sloppy, untested code with obvious professional disdain."
   },
   {
@@ -13744,7 +13744,7 @@
     "semanticCharge": "negative",
     "memoryHook": null,
     "semanticChargeIntensity": 3,
-    "quizSentence": "The proposal to raise property taxes proved to be a highly divisive issue.",
+    "quizSentence": "The proposal to raise property taxes proved to be a divisive issue.",
     "alternateExampleSentence": "The manager's aggressive leadership style was divisive among the frustrated office staff."
   },
   {
@@ -13939,7 +13939,7 @@
       "iffy"
     ],
     "etymology": "Latin dubius ‘wavering,’ from duo ‘two’ minds.",
-    "exampleSentence": "The detective was highly dubious of the suspect's perfectly convenient alibi today.",
+    "exampleSentence": "The detective was dubious of the suspect's convenient alibi today.",
     "learningData": {
       "status": "new",
       "nextReviewDate": "2026-03-30T00:00:00Z",
@@ -14165,7 +14165,7 @@
     "semanticCharge": "positive",
     "memoryHook": null,
     "semanticChargeIntensity": 3,
-    "quizSentence": "She was absolutely ecstatic when she found out she got into her dream college.",
+    "quizSentence": "She was ecstatic when she found out she got into her dream college.",
     "alternateExampleSentence": "The young actress was ecstatic to land the lead role in the production."
   },
   {
@@ -14183,7 +14183,7 @@
       "order"
     ],
     "etymology": "Latin ēdictum ‘thing proclaimed,’ neuter past participle of ēdīcere.",
-    "exampleSentence": "The absolute monarch issued a royal edict banning all forms of public assembly.",
+    "exampleSentence": "The monarch issued a royal edict banning all forms of public assembly.",
     "learningData": {
       "status": "new",
       "nextReviewDate": "2026-03-30T00:00:00Z",
@@ -14200,7 +14200,7 @@
       "kind": "morphology",
       "text": "\"e-\" (out) + \"dict\" (speak) = an official, undeniable order spoken out by a king or authority."
     },
-    "quizSentence": "The absolute monarch issued a harsh edict banning all public gatherings.",
+    "quizSentence": "The monarch issued a harsh edict banning all public gatherings.",
     "alternateExampleSentence": "The principal's new edict prohibited the use of mobile phones on school campus."
   },
   {
@@ -14620,7 +14620,7 @@
       "text": "\"e-\" (out) + \"luc\" (light) = to shine a spotlight on a complex topic to make it clear."
     },
     "quizSentence": "The professor used a simple diagram to elucidate the complex physics theorem.",
-    "alternateExampleSentence": "The confusing instruction manual did absolutely nothing to elucidate the complex assembly process."
+    "alternateExampleSentence": "The confusing instruction manual did nothing to elucidate the complex assembly process."
   },
   {
     "id": "5ebbdb60-a188-4deb-a7af-1b679841127f",
@@ -15533,7 +15533,7 @@
     "word": "Epitome",
     "partOfSpeech": "noun",
     "definition": "A perfect example of a type",
-    "exampleSentence": "The luxury hotel is the absolute epitome of modern elegance and superior customer service.",
+    "exampleSentence": "The luxury hotel is the epitome of modern elegance and superior customer service.",
     "difficultyLevel": 3,
     "frequencyTier": 2,
     "category": "intellect-judgment",
@@ -15560,7 +15560,7 @@
       "kind": "sound_spelling",
       "text": "Epic tome - an epic, massive tome that serves as the perfect, flawless example of fantasy literature."
     },
-    "quizSentence": "That luxurious penthouse suite is the absolute epitome of high-end modern living.",
+    "quizSentence": "That luxurious penthouse suite is the epitome of high-end modern living.",
     "alternateExampleSentence": "Her flawless performance on the ice was the epitome of athletic grace and precision."
   },
   {
@@ -16222,13 +16222,13 @@
       "represent",
       "embody"
     ],
-    "exampleSentence": "Her brilliant academic achievements perfectly exemplify the high standards of the prestigious university.",
+    "exampleSentence": "Her brilliant academic achievements exemplify the high standards of the prestigious university.",
     "memoryHook": {
       "kind": "morphology",
       "text": "Example + -ify = to make into an example."
     },
     "quizSentence": "Her career exemplifies the value of persistent, evidence-based advocacy.",
-    "alternateExampleSentence": "The brutal dictator's terrible actions exemplify the absolute worst traits of human nature."
+    "alternateExampleSentence": "The brutal dictator's terrible actions exemplify the worst traits of human nature."
   },
   {
     "id": "446957eb-96b5-4fa3-8e85-e5218b0cff39",
@@ -16849,7 +16849,7 @@
       "pat"
     ],
     "semanticChargeIntensity": 2,
-    "quizSentence": "That highly complex geopolitical conflict requires more than a facile, one-sentence solution.",
+    "quizSentence": "That complex geopolitical conflict requires more than a facile, one-sentence solution.",
     "alternateExampleSentence": "His facile argument collapsed the moment the experts presented real empirical data."
   },
   {
@@ -16955,7 +16955,7 @@
       "kind": "sound_spelling",
       "text": "Fast tidier - obsessing over every tiny detail; nothing sloppy gets past."
     },
-    "quizSentence": "The fastidious chef demands absolute perfection and total cleanliness in his busy kitchen.",
+    "quizSentence": "The fastidious chef demands perfection and cleanliness in his busy kitchen.",
     "alternateExampleSentence": "A fastidious housekeeper will never tolerate even a single speck of visible dust."
   },
   {
@@ -17146,8 +17146,8 @@
       "kind": "sound_spelling",
       "text": "Fleece - finding a warm fleece jacket in your trunk right as a blizzard hits is a highly fortunate, well-timed event."
     },
-    "definition": "Well chosen or perfectly suited",
-    "exampleSentence": "The speaker used a felicitous analogy that perfectly explained the complex scientific concept.",
+    "definition": "Well chosen or suited",
+    "exampleSentence": "The speaker used a felicitous analogy that explained the complex scientific concept.",
     "partOfSpeech": "adjective",
     "synonyms": [
       "apt",
@@ -17156,7 +17156,7 @@
       "happy"
     ],
     "semanticChargeIntensity": 2,
-    "quizSentence": "The speaker made a felicitous remark that perfectly captured the joyful mood of the wedding.",
+    "quizSentence": "The speaker made a felicitous remark that captured the joyful mood of the wedding.",
     "alternateExampleSentence": "The sunny weather was a felicitous condition for the beautiful outdoor wedding ceremony."
   },
   {
@@ -17343,7 +17343,7 @@
     "word": "Fidelity",
     "partOfSpeech": "noun",
     "definition": "Faithfulness to a person or cause",
-    "exampleSentence": "The dog demonstrated absolute fidelity to his owner by waiting by the hospital door.",
+    "exampleSentence": "The dog demonstrated fidelity to his owner by waiting by the hospital door.",
     "difficultyLevel": 3,
     "frequencyTier": 3,
     "category": "social-behavior",
@@ -17371,7 +17371,7 @@
       "text": "\"fid\" (trust/faith) = strict faithfulness and unwavering loyalty."
     },
     "semanticChargeIntensity": 1,
-    "quizSentence": "The loyal dog demonstrated absolute fidelity by waiting by his master's grave for years.",
+    "quizSentence": "The loyal dog demonstrated fidelity by waiting by his master's grave for years.",
     "alternateExampleSentence": "The engineer praised the incredible audio fidelity of the expensive new speaker system."
   },
   {
@@ -17637,7 +17637,7 @@
       "kind": "sound_spelling",
       "text": "Aluminum foil - wrapping the villain's evil plans in heavy aluminum foil to completely block and ruin them."
     },
-    "quizSentence": "Batman always manages to foil the Joker's highly complex and dangerous criminal plots.",
+    "quizSentence": "Batman always manages to foil the Joker's complex and dangerous criminal plots.",
     "alternateExampleSentence": "The cynical detective served as a perfect foil to his optimistic partner."
   },
   {
@@ -17704,7 +17704,7 @@
       "kind": "sound_spelling",
       "text": "Bear - having the immense patience and self-control not to shoot the bear when it crosses your path."
     },
-    "quizSentence": "The patient teacher showed incredible forbearance when dealing with the highly disruptive student.",
+    "quizSentence": "The patient teacher showed incredible forbearance when dealing with the disruptive student.",
     "alternateExampleSentence": "The teacher handled the noisy children with remarkable forbearance and endless patience."
   },
   {
@@ -18121,7 +18121,7 @@
       "text": "Fruit girl - the girl who only eats free fruit from the trees to save money because she is highly economical."
     },
     "quizSentence": "The frugal student saved money by eating simple, inexpensive meals.",
-    "alternateExampleSentence": "He drives an older car because he prefers a highly frugal financial lifestyle."
+    "alternateExampleSentence": "He drives an older car because he prefers a frugal financial lifestyle."
   },
   {
     "id": "aa84be76-2749-4df7-980d-60da4201c3fb",
@@ -19003,7 +19003,7 @@
     "word": "Heterogeneous",
     "partOfSpeech": "adjective",
     "definition": "Diverse in character or content",
-    "exampleSentence": "The diverse city boasts a highly heterogeneous population from all over the world.",
+    "exampleSentence": "The diverse city boasts a heterogeneous population from all over the world.",
     "difficultyLevel": 3,
     "frequencyTier": 1,
     "category": "intellect-judgment",
@@ -19098,7 +19098,7 @@
     "semanticCharge": "neutral",
     "memoryHook": null,
     "quizSentence": "She worked her way up the corporate hierarchy from intern to executive.",
-    "alternateExampleSentence": "The corporate hierarchy places the chief executive officer at the absolute top level."
+    "alternateExampleSentence": "The corporate hierarchy places the chief executive officer at the top level."
   },
   {
     "id": "b5d99af6-5b85-4a2d-bf75-d354c52be3b0",
@@ -19605,7 +19605,7 @@
       "pressing"
     ],
     "quizSentence": "It is imperative that you submit your application before the midnight deadline.",
-    "alternateExampleSentence": "Clean drinking water is an absolute imperative for the survival of the village."
+    "alternateExampleSentence": "Clean drinking water is an imperative for the survival of the village."
   },
   {
     "id": "18d390ed-c67b-4b35-bbaf-b6f1063e9b86",
@@ -19963,7 +19963,7 @@
     "semanticCharge": "neutral",
     "memoryHook": null,
     "quizSentence": "Her tight-lipped smile carried an implicit warning to stop asking questions.",
-    "alternateExampleSentence": "Her silence was seen as an implicit approval of the highly controversial plan."
+    "alternateExampleSentence": "Her silence was seen as an implicit approval of the controversial plan."
   },
   {
     "id": "cf75da0d-44f3-46bb-afaf-254390b08f19",
@@ -21866,7 +21866,7 @@
       "text": "\"in-\" (not) + \"termin\" (end) = a boring university lecture that feels completely endless."
     },
     "semanticChargeIntensity": 2,
-    "quizSentence": "The three-hour graduation ceremony felt absolutely interminable in the hot sun.",
+    "quizSentence": "The three-hour graduation ceremony felt interminable in the hot sun.",
     "alternateExampleSentence": "We waited in an interminable line just to buy tickets for the concert."
   },
   {
@@ -22674,7 +22674,7 @@
       "text": "\"laud\" (praise) = a speech expressing intense, glowing praise for a hero."
     },
     "semanticChargeIntensity": 2,
-    "quizSentence": "The restaurant critic wrote a highly laudatory review of the new bistro.",
+    "quizSentence": "The restaurant critic wrote a laudatory review of the new bistro.",
     "alternateExampleSentence": "She received laudatory comments from her boss after the successful project launch."
   },
   {
@@ -23123,7 +23123,7 @@
       "text": "\"luc\" (light) = a complex argument suddenly made completely clear and brilliantly illuminated."
     },
     "semanticChargeIntensity": 1,
-    "quizSentence": "Despite his high fever, the patient remained perfectly lucid and able to answer questions.",
+    "quizSentence": "Despite his high fever, the patient remained lucid and able to answer questions.",
     "alternateExampleSentence": "He wrote a lucid explanation of the complex computer science theory today."
   },
   {
@@ -23707,7 +23707,7 @@
     "id": "693a67d8-eb9d-4f47-9cf6-8e00c7478159",
     "word": "Mendacious",
     "partOfSpeech": "adjective",
-    "definition": "Not telling the absolute truth",
+    "definition": "Not telling the truth",
     "exampleSentence": "The politician was caught in a mendacious attempt to hide his debt.",
     "difficultyLevel": 5,
     "frequencyTier": 4,
@@ -24313,7 +24313,7 @@
       "kind": "morphology",
       "text": "\"mut\" (change) = a situation that is highly prone to constant change."
     },
-    "quizSentence": "Language is a highly mutable concept, constantly evolving over the centuries.",
+    "quizSentence": "Language is a mutable concept, constantly evolving over the centuries.",
     "alternateExampleSentence": "The rules of the game are mutable if all players agree today."
   },
   {
@@ -25391,7 +25391,7 @@
       "text": "Odor - a personality or crime so deeply repulsive it hits you like a foul, sickening odor."
     },
     "semanticChargeIntensity": 3,
-    "quizSentence": "Cleaning out the moldy refrigerator is an absolutely odious household chore.",
+    "quizSentence": "Cleaning out the moldy refrigerator is an odious household chore.",
     "alternateExampleSentence": "It is an odious task to clean the kitchen after the party."
   },
   {
@@ -27367,7 +27367,7 @@
     "id": "04edecf1-4a12-4ab7-a71d-8b9a84f6fc9a",
     "word": "Plenitude",
     "partOfSpeech": "noun",
-    "definition": "An absolute abundance or completeness",
+    "definition": "An abundance or completeness",
     "exampleSentence": "The farmer enjoyed a plenitude of fresh vegetables during the harvest season.",
     "difficultyLevel": 6,
     "frequencyTier": 10,
@@ -27467,7 +27467,7 @@
       "kind": "sound_spelling",
       "text": "Ply - like plywood, it bends easily and is highly flexible."
     },
-    "quizSentence": "The hot glass is highly pliable and can be stretched into beautiful, delicate shapes.",
+    "quizSentence": "The hot glass is pliable and can be stretched into beautiful, delicate shapes.",
     "alternateExampleSentence": "He has a pliable personality that makes him an easy team player."
   },
   {
@@ -27990,7 +27990,7 @@
       "kind": "sound_spelling",
       "text": "Possess - someone so attractive you want to possess their attention."
     },
-    "quizSentence": "The real estate agent showed us a highly prepossessing Victorian home with a wrap-around porch.",
+    "quizSentence": "The real estate agent showed us a prepossessing Victorian home with a wrap-around porch.",
     "alternateExampleSentence": "The house has a prepossessing design that attracts many potential buyers today."
   },
   {
@@ -29401,7 +29401,7 @@
     "id": "ff1c4869-8f99-4443-8fbf-72dd249a6598",
     "word": "Rancor",
     "partOfSpeech": "noun",
-    "definition": "Bitterness or absolute long-standing resentfulness",
+    "definition": "Bitterness or long-standing resentfulness",
     "exampleSentence": "The divorce was filled with deep rancor between the two former partners.",
     "difficultyLevel": 5,
     "frequencyTier": 7,
@@ -31033,7 +31033,7 @@
       "text": "Splendid - shining so bright it looks splendid."
     },
     "semanticChargeIntensity": 3,
-    "quizSentence": "The peacock looked absolutely resplendent displaying its bright blue and green tail feathers.",
+    "quizSentence": "The peacock looked resplendent displaying its bright blue and green tail feathers.",
     "alternateExampleSentence": "She looked resplendent in her elegant dress at the annual charity ball."
   },
   {
@@ -31700,7 +31700,7 @@
       "kind": "etymology_story",
       "text": "Latin sanguis (blood): old humor theory tied blood tone to confident optimism."
     },
-    "quizSentence": "Despite the poor economic forecast, the CEO remained highly sanguine about the company's future.",
+    "quizSentence": "Despite the poor economic forecast, the CEO remained sanguine about the company's future.",
     "alternateExampleSentence": "She is sanguine despite the many challenges she faces in her life."
   },
   {
@@ -32122,7 +32122,7 @@
     "word": "Serene",
     "partOfSpeech": "adjective",
     "definition": "calm, peaceful, and untroubled",
-    "exampleSentence": "The lake was perfectly serene during the early hours of the morning.",
+    "exampleSentence": "The lake was serene during the early hours of the morning.",
     "difficultyLevel": 3,
     "frequencyTier": 1,
     "category": "emotion-character",
@@ -32353,7 +32353,7 @@
     "passageDomain": "science_world",
     "semanticCharge": "neutral",
     "memoryHook": null,
-    "quizSentence": "Sugar is highly soluble and will dissolve quickly in a hot cup of tea.",
+    "quizSentence": "Sugar is soluble and will dissolve quickly in a hot cup of tea.",
     "alternateExampleSentence": "The mystery is soluble if you examine all the available facts today."
   },
   {
@@ -32793,7 +32793,7 @@
     "id": "01d2ba51-8a8f-4b47-8635-c4cd6609bf5f",
     "word": "Strident",
     "partOfSpeech": "adjective",
-    "definition": "Loud, incredibly harsh, and grating",
+    "definition": "Loud, harsh, and grating",
     "exampleSentence": "The strident voice of the critic could be heard across the room.",
     "difficultyLevel": 4,
     "frequencyTier": 5,
@@ -32903,7 +32903,7 @@
     "word": "Sublime",
     "partOfSpeech": "adjective",
     "definition": "Inspiring extreme awe",
-    "exampleSentence": "The view from the top of the peak was absolutely sublime today.",
+    "exampleSentence": "The view from the top of the peak was sublime today.",
     "difficultyLevel": 4,
     "frequencyTier": 5,
     "category": "arts-literature",
@@ -32927,14 +32927,14 @@
     "passageDomain": "power_culture",
     "semanticCharge": "neutral",
     "memoryHook": null,
-    "quizSentence": "Tasting a perfectly cooked truffle risotto is a truly sublime culinary experience.",
+    "quizSentence": "Tasting a perfectly cooked truffle risotto is a sublime culinary experience.",
     "alternateExampleSentence": "She wrote a sublime piece of music that touched every single listener."
   },
   {
     "id": "d9ae42b3-7e38-4b3b-82f8-2408f677946f",
     "word": "Submissive",
     "partOfSpeech": "adjective",
-    "definition": "Meekly yielding to absolute authority",
+    "definition": "Yielding to absolute authority",
     "exampleSentence": "The dog is submissive and always listens to his owner's commands daily.",
     "difficultyLevel": 3,
     "frequencyTier": 1,
@@ -33037,7 +33037,7 @@
     "id": "d960da4e-da0b-4612-bf99-00f3f6b2646c",
     "word": "Succinct",
     "partOfSpeech": "adjective",
-    "definition": "Briefly and perfectly clearly expressed",
+    "definition": "Briefly and clearly expressed",
     "exampleSentence": "The professor provided a succinct explanation of the theory in ten minutes.",
     "difficultyLevel": 4,
     "frequencyTier": 5,
@@ -33214,7 +33214,7 @@
     "id": "ac069c2f-33bd-4187-942d-2fdfc23a3a7b",
     "word": "Surrogate",
     "partOfSpeech": "noun",
-    "definition": "A perfectly capable temporary substitute",
+    "definition": "A capable temporary substitute",
     "exampleSentence": "She acted as a surrogate mother for the couple who wanted children.",
     "difficultyLevel": 4,
     "frequencyTier": 5,
@@ -33770,7 +33770,7 @@
     "id": "8b1f512c-2478-4df4-8209-d5e00dc5e8dc",
     "word": "Tome",
     "partOfSpeech": "noun",
-    "definition": "An incredibly large, heavy book",
+    "definition": "A large, heavy book",
     "exampleSentence": "He carried a heavy tome filled with records of the royal family.",
     "difficultyLevel": 4,
     "frequencyTier": 6,
@@ -33805,7 +33805,7 @@
     "id": "b95e2ba8-0827-4d2f-a651-3ce18f1dc5e1",
     "word": "Torpid",
     "partOfSpeech": "adjective",
-    "definition": "Mentally perfectly and inactive",
+    "definition": "Mentally or physically inactive",
     "exampleSentence": "The cold weather made the small lizard feel torpid and very slow.",
     "difficultyLevel": 4,
     "frequencyTier": 6,
@@ -34043,7 +34043,7 @@
       "kind": "morphology",
       "text": "\"trans\" (across) + \"ire\" (go) = passing through; not staying long."
     },
-    "quizSentence": "A hotel near the airport primarily caters to a highly transient population of travelers.",
+    "quizSentence": "A hotel near the airport primarily caters to a transient population of travelers.",
     "alternateExampleSentence": "He has a transient job that requires him to travel every month."
   },
   {
@@ -34371,7 +34371,7 @@
     "id": "70335790-fc19-4266-9f24-3233a61bfd90",
     "word": "Turpitude",
     "partOfSpeech": "noun",
-    "definition": "Complete and utter absolute wickedness",
+    "definition": "Complete and utter wickedness",
     "exampleSentence": "The judge condemned the criminal for his acts of moral turpitude today.",
     "difficultyLevel": 6,
     "frequencyTier": 10,
@@ -34407,7 +34407,7 @@
     "id": "b2698cc6-0d4a-454c-ba6f-59584a71f964",
     "word": "Ubiquitous",
     "partOfSpeech": "adjective",
-    "definition": "Found incredibly and easily everywhere",
+    "definition": "Found easily everywhere",
     "exampleSentence": "Plastic waste has become ubiquitous, polluting even the most remote oceanic environments today.",
     "difficultyLevel": 4,
     "frequencyTier": 6,
@@ -34827,7 +34827,7 @@
     "id": "b8820f68-a182-4314-a064-1b1b400c3518",
     "word": "Validate",
     "partOfSpeech": "verb",
-    "definition": "To perfectly confirm an assertion",
+    "definition": "To confirm an assertion",
     "exampleSentence": "The data will validate the theory he proposed earlier this last month.",
     "difficultyLevel": 3,
     "frequencyTier": 1,
@@ -36073,7 +36073,7 @@
     "id": "1d7c8308-ce58-425e-bb1a-14beccd1be79",
     "word": "Zenith",
     "partOfSpeech": "noun",
-    "definition": "The absolute highest successful peak",
+    "definition": "The highest peak",
     "exampleSentence": "The band reached the zenith of its popularity during the late nineties.",
     "difficultyLevel": 4,
     "frequencyTier": 8,

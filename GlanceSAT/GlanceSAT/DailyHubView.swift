@@ -93,8 +93,7 @@ struct DailyHubView: View {
     @State private var frozenEvolutionTier: Int?
     @State private var frozenPlantShowsWilted: Bool?
     @State private var pendingMilestoneCelebration: Int?
-    @State private var showMilestoneCelebration = false
-    @State private var activeMilestoneCelebration = 0
+    @State private var presentedMilestoneCelebration: PresentedMilestone?
     @State private var pendingStreakUpgradeReveal = false
     @State private var streakUpgradeRevealTask: Task<Void, Never>?
     @State private var showPlantCelebration = false
@@ -257,6 +256,7 @@ struct DailyHubView: View {
                     sessions: quizSessions,
                     force: true
                 )
+                applyBootstrapTodayWords()
             }
             .onAppear {
                 Task {
@@ -339,9 +339,9 @@ struct DailyHubView: View {
             .fullScreenCover(isPresented: $showDailyQuiz, onDismiss: handleDailyQuizCoverDismissed) {
                 dailyQuizCover
             }
-            .fullScreenCover(isPresented: $showMilestoneCelebration) {
-                MilestoneCelebrationView(milestone: activeMilestoneCelebration) {
-                    showMilestoneCelebration = false
+            .fullScreenCover(item: $presentedMilestoneCelebration) { presentation in
+                MilestoneCelebrationView(milestone: presentation.milestone) {
+                    presentedMilestoneCelebration = nil
                 }
             }
             #if DEBUG
@@ -373,14 +373,12 @@ struct DailyHubView: View {
         guard let milestone = pendingMilestoneCelebration else { return }
         pendingMilestoneCelebration = nil
         MilestoneManager.markCelebrated(milestone)
-        activeMilestoneCelebration = milestone
-        showMilestoneCelebration = true
+        presentedMilestoneCelebration = PresentedMilestone(milestone: milestone)
     }
 
     #if DEBUG
     private func presentMilestoneCelebrationPreview(_ milestone: Int) {
-        activeMilestoneCelebration = milestone
-        showMilestoneCelebration = true
+        presentedMilestoneCelebration = PresentedMilestone(milestone: milestone)
     }
     #endif
 
@@ -2430,6 +2428,12 @@ private enum DailyHubPreviewData {
             )
         }
     }
+}
+
+private struct PresentedMilestone: Identifiable {
+    let milestone: Int
+
+    var id: Int { milestone }
 }
 
 private struct DailyHubDebugLifecycleModifier: ViewModifier {

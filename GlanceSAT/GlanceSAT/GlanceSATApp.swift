@@ -140,6 +140,7 @@ private struct AppRootView: View {
             switch phase {
             case .active:
                 Task(priority: .userInitiated) {
+                    await WordJSONImportService.importIfNeeded(container: modelContext.container)
                     await refreshWidgetDataFromHost()
                     await NotificationManager.scheduleStandardDailyReminders()
                 }
@@ -152,6 +153,11 @@ private struct AppRootView: View {
                 }
             default:
                 break
+            }
+        }
+        .onReceive(NotificationCenter.default.publisher(for: .wordDatabaseDidChange)) { _ in
+            Task {
+                await refreshWidgetDataFromHost()
             }
         }
         #if DEBUG
@@ -545,6 +551,14 @@ private struct AppRootView: View {
             }
 
             Section("App Preview") {
+                Button {
+                    Task {
+                        await WordJSONImportService.forceResyncBundledDatabase(container: modelContext.container)
+                    }
+                } label: {
+                    Label("Force sync bundled database", systemImage: "arrow.triangle.2.circlepath")
+                }
+
                 Button {
                     DebugQuizWidgetControls.resetQuizWidget()
                 } label: {

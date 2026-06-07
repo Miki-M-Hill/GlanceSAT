@@ -106,6 +106,8 @@ struct ExploreView: View {
     private func markLibraryNeedsRefresh(clearWordCache: Bool = false) {
         if clearWordCache {
             libraryViewModel.clearWordCache()
+        } else {
+            libraryViewModel.ensureLexicalDataIsFresh()
         }
         needsLibraryRefresh = true
         if isLibraryTabActive {
@@ -351,6 +353,7 @@ struct ExploreView: View {
             }
             .onChange(of: isLibraryTabActive) { _, isActive in
                 guard isActive else { return }
+                libraryViewModel.ensureLexicalDataIsFresh()
                 performLibraryRefreshIfNeeded()
                 resnapLibraryScrollPosition()
                 retryPendingLibraryDeepLinkIfNeeded()

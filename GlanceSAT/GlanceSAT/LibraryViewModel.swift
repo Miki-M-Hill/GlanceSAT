@@ -29,6 +29,7 @@ final class LibraryViewModel {
     private var indexTask: Task<Void, Never>?
     private var loadWordTasks: [UUID: Task<Void, Never>] = [:]
     private var activeFilter = LibraryCatalogFilter()
+    private var consumedLexicalRevision = -1
     private var filteredScanDBOffset = 0
     private var reachedEnd = false
     private var isHandlingDeepLink = false
@@ -36,6 +37,7 @@ final class LibraryViewModel {
 
     func configure(container: ModelContainer) {
         modelContainer = container
+        ensureLexicalDataIsFresh()
     }
 
     func rebuildIndex(filter: LibraryCatalogFilter) {
@@ -131,6 +133,18 @@ final class LibraryViewModel {
         loadWordTasks = [:]
         wordCache = [:]
         wordLoadStates = [:]
+        consumedLexicalRevision = WordJSONImportService.lexicalSyncRevision
+    }
+
+    /// Drops cached `Word` rows when bundled `Database.json` was synced after this view model last fetched.
+    func ensureLexicalDataIsFresh() {
+        let current = WordJSONImportService.lexicalSyncRevision
+        guard current != consumedLexicalRevision else { return }
+        consumedLexicalRevision = current
+        loadWordTasks.values.forEach { $0.cancel() }
+        loadWordTasks = [:]
+        wordCache = [:]
+        wordLoadStates = [:]
     }
 
     /// Deep-link fast path: hydrate one word synchronously so the pager can render before index rebuild.
@@ -153,6 +167,7 @@ final class LibraryViewModel {
 
     /// Indexed fetch on a dedicated context; catalog scans stay on `LibraryCatalogActor`.
     func loadWord(id: UUID, modelContext: ModelContext) async {
+        ensureLexicalDataIsFresh()
         if wordCache[id] != nil {
             wordLoadStates[id] = .loaded
             return
@@ -353,6 +368,7 @@ final class LibraryViewModel {
 
     @MainActor
     private func preloadWords(_ ids: [UUID]) {
+        ensureLexicalDataIsFresh()
         guard let modelContainer else { return }
         let context = ModelContext(modelContainer)
         for id in ids where wordCache[id] == nil {

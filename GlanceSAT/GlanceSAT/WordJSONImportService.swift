@@ -13,12 +13,32 @@ enum WordJSONImportService {
 
     private static let hasSeededDatabaseKey = "hasSeededDatabase_v1"
     private static let randomSortBackfillKey = "hasBackfilledRandomSortHash_v1"
-    private static let bundledDatabaseSyncHashKey = "bundledDatabaseSyncHash_v1"
+    private static let bundledDatabaseSyncHashKey = "bundledDatabaseSyncHash_v2"
+    private static let lexicalSyncRevisionKey = "bundledDatabaseLexicalSyncRevision_v1"
+
+    /// Monotonic counter bumped after bundled lexical metadata is written to SwiftData.
+    static var lexicalSyncRevision: Int {
+        UserDefaults.standard.integer(forKey: lexicalSyncRevisionKey)
+    }
 
     /// Loads bundled JSON on first install; re-syncs lexical fields when bundled content changes.
     /// Concurrent callers coalesce onto a single in-flight import task.
     static func importIfNeeded(container: ModelContainer) async {
         await ImportCoordinator.shared.importIfNeeded(container: container)
+    }
+
+    #if DEBUG
+    /// Clears the stored bundle hash and re-applies bundled lexical fields (debug rebuilds).
+    static func forceResyncBundledDatabase(container: ModelContainer) async {
+        UserDefaults.standard.removeObject(forKey: bundledDatabaseSyncHashKey)
+        await importIfNeeded(container: container)
+    }
+    #endif
+
+    fileprivate static func noteBundledLexicalDatabaseDidChange() {
+        let next = lexicalSyncRevision + 1
+        UserDefaults.standard.set(next, forKey: lexicalSyncRevisionKey)
+        NotificationCenter.default.post(name: .wordDatabaseDidChange, object: nil)
     }
 
     fileprivate static func performImportIfNeeded(container: ModelContainer) async {
@@ -43,7 +63,7 @@ enum WordJSONImportService {
                     defaults.set(bundledHash, forKey: bundledDatabaseSyncHashKey)
                     scheduleRandomSortHashBackfill(container: container)
                     await MainActor.run {
-                        NotificationCenter.default.post(name: .wordDatabaseDidChange, object: nil)
+                        noteBundledLexicalDatabaseDidChange()
                     }
                 } catch {
                     print("Word JSON sync failed: \(error)")
@@ -60,7 +80,7 @@ enum WordJSONImportService {
                     defaults.set(bundledHash, forKey: bundledDatabaseSyncHashKey)
                     scheduleRandomSortHashBackfill(container: container)
                     await MainActor.run {
-                        NotificationCenter.default.post(name: .wordDatabaseDidChange, object: nil)
+                        noteBundledLexicalDatabaseDidChange()
                     }
                 }
             } catch {
