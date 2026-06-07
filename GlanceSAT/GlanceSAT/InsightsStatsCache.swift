@@ -21,7 +21,7 @@ enum InsightsStatsCache {
               snapshot.calendarDayKey == DailyWordBatchService.calendarDayKey() else {
             return nil
         }
-        return snapshot.stats
+        return snapshot.stats.normalizingLegacyCategoryLabels()
     }
 
     static func save(_ stats: InsightsWordStats) {

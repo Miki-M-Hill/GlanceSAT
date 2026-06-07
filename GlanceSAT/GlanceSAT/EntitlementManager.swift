@@ -41,7 +41,7 @@ enum PaywallTransactionResult: Sendable {
 final class EntitlementManager: ObservableObject {
     static let shared = EntitlementManager()
 
-    static let premiumEntitlementID = "premium_access"
+    static let premiumEntitlementID = "Premium Access"
     static let threeDayPassDuration: TimeInterval = 72 * 60 * 60
     static let threeDayPassExpirationKey = "activeThreeDayPassExpiration"
 
@@ -84,6 +84,7 @@ final class EntitlementManager: ObservableObject {
 
     func start() {
         customerInfoTask?.cancel()
+        migrateDownsellClaimFlagToKeychainIfNeeded()
         refreshAccessFromLocalPass()
 
         guard Purchases.isConfigured else {
@@ -129,7 +130,8 @@ final class EntitlementManager: ObservableObject {
     func activateThreeDayPass(markDownsellClaimed: Bool) {
         activeThreeDayPassExpiration = Date().addingTimeInterval(Self.threeDayPassDuration).timeIntervalSince1970
         if markDownsellClaimed {
-            hasClaimedNoCardDownsellPass = true
+            KeychainBooleanStore.setBool(true, forKey: Self.hasClaimedNoCardDownsellKey)
+            UserDefaults.standard.removeObject(forKey: Self.hasClaimedNoCardDownsellKey)
         }
         refreshAccessFromLocalPass()
         syncWidgetSubscriptionState()
@@ -199,6 +201,23 @@ final class EntitlementManager: ObservableObject {
         return package.localizedPriceString
     }
 
+    func localizedCompactPriceLabel(for plan: SubscriptionPlan) -> String {
+        guard let package = packagesByPlan[plan] else {
+            return plan.fallbackCompactPriceLabel
+        }
+        return package.storeProduct.localizedPriceString
+    }
+
+    func localizedStrikethroughPriceLabel(for plan: SubscriptionPlan) -> String? {
+        guard plan == .annual else { return nil }
+        if let monthly = packagesByPlan[.oneMonth] {
+            let monthlyPrice = monthly.storeProduct.price as NSDecimalNumber
+            let annualized = monthlyPrice.multiplying(by: NSDecimalNumber(value: 12))
+            return Self.formatCurrency(annualized, locale: Locale.current)
+        }
+        return plan.fallbackStrikethroughPriceLabel
+    }
+
     /// Approximate daily cost for annual / 3-month plans (monthly omits this line).
     func localizedDailyPriceLabel(for plan: SubscriptionPlan) -> String? {
         guard plan != .oneMonth else { return nil }
@@ -262,6 +281,15 @@ final class EntitlementManager: ObservableObject {
         return NSDecimalNumber(value: roundedCents / 100.0)
     }
 
+    private static func formatCurrency(_ amount: NSDecimalNumber, locale: Locale) -> String {
+        let formatter = NumberFormatter()
+        formatter.numberStyle = .currency
+        formatter.locale = locale
+        formatter.maximumFractionDigits = 2
+        formatter.minimumFractionDigits = 2
+        return formatter.string(from: amount) ?? amount.stringValue
+    }
+
   func purchase(plan: SubscriptionPlan) async throws -> PaywallTransactionResult {
         guard Purchases.isConfigured else {
             throw SubscriptionStoreError.notConfigured
@@ -282,6 +310,9 @@ final class EntitlementManager: ObservableObject {
             syncWidgetSubscriptionState()
             WidgetCenter.shared.reloadAllTimelines()
             adoptLiveSubscriptionStateAfterRealPurchase()
+            if isPremiumEntitlementActive(customerInfo: result.customerInfo) {
+                Task { await NotificationManager.recordTrialStartAndScheduleDay5Reminder() }
+            }
             return .completed(entitlementActive: isPremiumEntitlementActive(customerInfo: result.customerInfo))
         } catch {
             if isUserCancelledPurchase(error) {
@@ -306,6 +337,8 @@ final class EntitlementManager: ObservableObject {
             WidgetCenter.shared.reloadAllTimelines()
             adoptLiveSubscriptionStateAfterRealPurchase()
             if isPremiumEntitlementActive(customerInfo: customerInfo) {
+                let expiration = customerInfo.entitlements[Self.premiumEntitlementID]?.expirationDate
+                Task { await NotificationManager.recordTrialStartFromEntitlementExpiration(expiration) }
                 return .completed(entitlementActive: true)
             }
             return .noActiveEntitlement
@@ -357,8 +390,13 @@ final class EntitlementManager: ObservableObject {
     }
 
     private var hasClaimedNoCardDownsellPass: Bool {
-        get { UserDefaults.standard.bool(forKey: Self.hasClaimedNoCardDownsellKey) }
-        set { UserDefaults.standard.set(newValue, forKey: Self.hasClaimedNoCardDownsellKey) }
+        KeychainBooleanStore.bool(forKey: Self.hasClaimedNoCardDownsellKey)
+    }
+
+    private func migrateDownsellClaimFlagToKeychainIfNeeded() {
+        guard UserDefaults.standard.bool(forKey: Self.hasClaimedNoCardDownsellKey) else { return }
+        KeychainBooleanStore.setBool(true, forKey: Self.hasClaimedNoCardDownsellKey)
+        UserDefaults.standard.removeObject(forKey: Self.hasClaimedNoCardDownsellKey)
     }
 
     private func refreshAccessFromLocalPass() {
@@ -370,6 +408,9 @@ final class EntitlementManager: ObservableObject {
             lastRecordedPremiumExpiration = expiration.timeIntervalSince1970
         }
         revenueCatPremiumActive = customerInfo.entitlements[Self.premiumEntitlementID]?.isActive == true
+        if !revenueCatPremiumActive {
+            NotificationManager.clearTrialReminderScheduling()
+        }
         publishAccess()
     }
 

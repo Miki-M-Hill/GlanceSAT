@@ -19,6 +19,26 @@ struct InsightsWordStats: Sendable, Codable {
     var categoryAttemptsByName: [String: Int]
 }
 
+extension InsightsWordStats {
+    /// Rewrites legacy category labels persisted in Insights cache (e.g. "The Humanities").
+    func normalizingLegacyCategoryLabels() -> InsightsWordStats {
+        var stats = self
+        stats.categories = categories.map {
+            CategoryAccuracy(
+                name: PassageDomain.normalizedInsightsCategoryName($0.name),
+                accuracy: $0.accuracy
+            )
+        }
+
+        var attempts = categoryAttemptsByName
+        if let legacyAttempts = attempts.removeValue(forKey: "The Humanities") {
+            attempts["Humanities", default: 0] += legacyAttempts
+        }
+        stats.categoryAttemptsByName = attempts
+        return stats
+    }
+}
+
 /// Read-only vocabulary aggregation on a dedicated background context (never the view's `ModelContext`).
 actor InsightsStatsActor {
     private let batchSize = 500
@@ -108,7 +128,7 @@ actor InsightsStatsActor {
             tomorrowNewCount: min(10, max(0, 10 - tomorrowReviewCount)),
             categories: categories,
             categoryAttemptsByName: categoryAgg.mapValues(\.attempts)
-        )
+        ).normalizingLegacyCategoryLabels()
     }
 }
 

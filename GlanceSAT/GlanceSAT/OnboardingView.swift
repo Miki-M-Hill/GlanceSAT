@@ -3,6 +3,7 @@
 //  GlanceSAT
 //
 
+import StoreKit
 import SwiftUI
 import RevenueCat
 import SwiftData
@@ -37,6 +38,7 @@ struct OnboardingView: View {
     @State private var calibrationShowsReveal = false
     @State private var calibrationContentOpacity: Double = 1
     @State private var showsThreeDayDownsellSheet = false
+    @State private var showRedemptionSheet = false
 
     private let screenCount = 9
 
@@ -126,6 +128,13 @@ struct OnboardingView: View {
                 dreamScoreRaw = ""
             }
         }
+        .offerCodeRedemption(isPresented: $showRedemptionSheet)
+        .onChange(of: entitlementManager.hasPremiumAccess) { _, hasPremium in
+            guard hasPremium, page == OnboardingFlowPage.paywall else { return }
+            withAnimation(OnboardingMotion.transition) {
+                page = OnboardingFlowPage.widgetInstall
+            }
+        }
         .alert("Subscription", isPresented: Binding(
             get: { paywallErrorMessage != nil },
             set: { if !$0 { paywallErrorMessage = nil } }
@@ -146,7 +155,15 @@ struct OnboardingView: View {
                 showsBackButton: page > 0 && page < 7,
                 onBack: { goBack() },
                 showsCloseButton: page == OnboardingFlowPage.paywall,
-                onClose: { showsThreeDayDownsellSheet = true }
+                onClose: {
+                    if entitlementManager.canOfferPaywallDownsell {
+                        showsThreeDayDownsellSheet = true
+                    } else {
+                        withAnimation(OnboardingMotion.transition) {
+                            page = OnboardingFlowPage.widgetInstall
+                        }
+                    }
+                }
             )
             onboardingTabView
             bottomChrome
@@ -547,13 +564,8 @@ struct OnboardingView: View {
                 action: handlePrimaryCTA
             )
 
-            Text("Cancel anytime within 7 days")
-                .font(.system(size: 11, weight: .regular))
-                .foregroundStyle(OnboardingColors.secondaryText)
-                .multilineTextAlignment(.center)
-                .minimumScaleFactor(0.85)
-                .padding(.horizontal, 4)
-                .modifier(OnboardingAccessibilityLineLimit(isAccessibilitySize: dynamicTypeSize.isAccessibilitySize))
+            PaywallTrialTimelineView()
+                .padding(.vertical, 2)
 
             Button {
                 Task { await OnboardingPaywallScreen.restorePurchases(
@@ -567,6 +579,19 @@ struct OnboardingView: View {
                     .foregroundStyle(OnboardingColors.secondaryText)
                     .modifier(OnboardingAccessibilityLineLimit(isAccessibilitySize: dynamicTypeSize.isAccessibilitySize))
                     .redacted(reason: entitlementManager.isRestoring ? .placeholder : [])
+                    .frame(maxWidth: .infinity)
+                    .padding(.vertical, 4)
+            }
+            .buttonStyle(.plain)
+            .disabled(entitlementManager.isPurchasing || entitlementManager.isRestoring)
+
+            Button {
+                showRedemptionSheet = true
+            } label: {
+                Text("Redeem Code")
+                    .font(.system(size: 13, weight: .medium))
+                    .foregroundStyle(OnboardingColors.secondaryText)
+                    .modifier(OnboardingAccessibilityLineLimit(isAccessibilitySize: dynamicTypeSize.isAccessibilitySize))
                     .frame(maxWidth: .infinity)
                     .padding(.vertical, 4)
             }
@@ -1932,10 +1957,15 @@ private struct OnboardingPaywallScreen: View {
             switch result {
             case .cancelled:
                 break
-            case .completed:
-                advanceToWidgetInstall(page: page)
+            case .completed(let entitlementActive):
+                if entitlementActive {
+                    advanceToWidgetInstall(page: page)
+                } else {
+                    paywallErrorMessage.wrappedValue =
+                        "Subscription is still activating. Tap Restore Purchases, or wait a moment and try again."
+                }
             case .noActiveEntitlement:
-                break
+                paywallErrorMessage.wrappedValue = "No active subscription found."
             }
         } catch {
             paywallErrorMessage.wrappedValue = error.localizedDescription
@@ -1949,12 +1979,13 @@ private struct OnboardingPaywallScreen: View {
         paywallErrorMessage: Binding<String?>
     ) async {
         do {
-            let customerInfo = try await Purchases.shared.restorePurchases()
-            if customerInfo.entitlements["premium_access"]?.isActive == true {
-                withAnimation(OnboardingMotion.transition) {
-                    page.wrappedValue = 8
-                }
-            } else {
+            let result = try await entitlementManager.restorePurchases()
+            switch result {
+            case .cancelled:
+                break
+            case .completed:
+                advanceToWidgetInstall(page: page)
+            case .noActiveEntitlement:
                 paywallErrorMessage.wrappedValue = "No active subscription found."
             }
         } catch {
@@ -1980,6 +2011,10 @@ private struct OnboardingPaywallScreen: View {
         SubscriptionPlan.visiblePlans(satTestWithin90Days: satTestDate == .within90)
     }
 
+    private var usesCompactPaywallLayout: Bool {
+        satTestDate == .within90
+    }
+
     var body: some View {
         VStack(spacing: 0) {
             GeometryReader { proxy in
@@ -1994,32 +2029,39 @@ private struct OnboardingPaywallScreen: View {
                         .multilineTextAlignment(.center)
                         .frame(maxWidth: .infinity, alignment: .center)
 
-                    Spacer(minLength: 16)
+                    Spacer(minLength: usesCompactPaywallLayout ? 10 : 16)
 
-                    Text("Start seeing SAT words naturally throughout your day")
-                        .font(.system(size: 17, weight: .regular))
+                    Text("Start seeing SAT words naturally\nthroughout your day")
+                        .font(.system(size: usesCompactPaywallLayout ? 16 : 17, weight: .regular))
                         .foregroundStyle(OnboardingColors.primaryText)
-                        .lineSpacing(8)
+                        .lineSpacing(usesCompactPaywallLayout ? 4 : 6)
                         .multilineTextAlignment(.center)
+                        .fixedSize(horizontal: false, vertical: true)
+                        .layoutPriority(1)
                         .modifier(OnboardingAccessibilityLineLimit(isAccessibilitySize: dynamicTypeSize.isAccessibilitySize))
                         .frame(maxWidth: .infinity, alignment: .center)
 
-                    Spacer(minLength: 32)
+                    Spacer(minLength: usesCompactPaywallLayout ? 14 : 28)
 
-                    VStack(spacing: 12) {
+                    VStack(spacing: usesCompactPaywallLayout ? 10 : 14) {
                         ForEach(Array(visiblePlans.enumerated()), id: \.element) { index, plan in
-                            PaywallPlanRow(
+                            PaywallSelectablePlanRow(
                                 title: plan.onboardingTitle,
-                                priceLabel: entitlementManager.localizedPriceLabel(for: plan),
-                                dailyPriceLabel: entitlementManager.localizedDailyPriceLabel(for: plan),
+                                priceLabel: entitlementManager.localizedCompactPriceLabel(for: plan),
+                                strikethroughPriceLabel: entitlementManager.localizedStrikethroughPriceLabel(for: plan),
+                                dailyPriceLabel: plan != .oneMonth
+                                    ? entitlementManager.localizedDailyPriceLabel(for: plan)
+                                    : nil,
+                                badgeLabel: plan.paywallBadgeLabel,
                                 isSelected: selectedPlan == plan,
-                                showsDailyPrice: plan != .oneMonth
+                                compactLayout: usesCompactPaywallLayout
                             ) {
                                 selectedPlan = plan
                             }
                             .onboardingStaggered(index: index)
                         }
                     }
+                    .padding(.top, usesCompactPaywallLayout ? 2 : 4)
                     .animation(OnboardingMotion.selection, value: selectedPlan)
 
                     Spacer(minLength: 0)
@@ -2055,7 +2097,7 @@ private struct OnboardingThreeDayDownsellSheet: View {
     @Environment(\.dismiss) private var dismiss
     @Environment(\.dynamicTypeSize) private var dynamicTypeSize
 
-    @AppStorage("activeThreeDayPassExpiration") private var activeThreeDayPassExpiration: Double = 0
+    @ObservedObject private var entitlementManager = EntitlementManager.shared
     @Binding var pendingNavigationAfterThreeDayPass: Bool
     let onContinueWithoutPass: () -> Void
 
@@ -2075,12 +2117,15 @@ private struct OnboardingThreeDayDownsellSheet: View {
                     )
                     .padding(.top, 8)
 
-                    OnboardingPrimaryButton(title: "Start 3-Day Free Pass", isEnabled: true) {
-                        pendingNavigationAfterThreeDayPass = true
-                        activeThreeDayPassExpiration = Date().addingTimeInterval(3 * 24 * 60 * 60).timeIntervalSince1970
-                        EntitlementManager.shared.reapplyAccess()
-                        dismiss()
-                    }
+                    OnboardingPrimaryButton(
+                        title: "Start 3-Day Free Pass",
+                        isEnabled: entitlementManager.canOfferPaywallDownsell,
+                        action: {
+                            pendingNavigationAfterThreeDayPass = true
+                            entitlementManager.activateThreeDayPass(markDownsellClaimed: true)
+                            dismiss()
+                        }
+                    )
                     .padding(.top, 24)
 
                     Button("Continue to widget setup") {
@@ -2108,49 +2153,6 @@ private struct OnboardingThreeDayDownsellSheet: View {
                 }
             }
         }
-    }
-}
-
-private struct PaywallPlanRow: View {
-    let title: String
-    let priceLabel: String
-    let dailyPriceLabel: String?
-    let isSelected: Bool
-    let showsDailyPrice: Bool
-    let onSelect: () -> Void
-
-    var body: some View {
-        Button(action: onSelect) {
-            HStack(alignment: .center, spacing: 12) {
-                VStack(alignment: .center, spacing: 4) {
-                    Text(title)
-                        .font(.system(size: 17, weight: .semibold))
-                        .multilineTextAlignment(.center)
-                    Text(priceLabel)
-                        .font(.system(size: 15, weight: .medium))
-                        .foregroundStyle(OnboardingColors.secondaryText)
-
-                    if showsDailyPrice, let dailyPriceLabel {
-                        Text(dailyPriceLabel)
-                            .font(.system(size: 15, weight: .semibold))
-                            .foregroundStyle(OnboardingColors.hubOrange)
-                    }
-                }
-                .foregroundStyle(OnboardingColors.primaryText)
-                .frame(maxWidth: .infinity)
-
-                Image(systemName: isSelected ? "checkmark.circle.fill" : "circle")
-                    .font(.system(size: 22, weight: .semibold))
-                    .foregroundStyle(isSelected ? OnboardingColors.sageGreen : OnboardingColors.tertiaryText)
-            }
-            .onboardingPremiumCard()
-            .overlay(
-                RoundedRectangle(cornerRadius: 24, style: .continuous)
-                    .stroke(OnboardingColors.sageGreen.opacity(isSelected ? 0.5 : 0), lineWidth: 2)
-            )
-            .scaleEffect(isSelected ? 1.01 : 1)
-        }
-        .buttonStyle(.plain)
     }
 }
 

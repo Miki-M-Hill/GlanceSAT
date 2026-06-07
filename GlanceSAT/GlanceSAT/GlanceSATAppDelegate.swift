@@ -5,11 +5,15 @@
 
 import UIKit
 
-final class GlanceSATAppDelegate: NSObject, UIApplicationDelegate {
+import UserNotifications
+
+final class GlanceSATAppDelegate: NSObject, UIApplicationDelegate, UNUserNotificationCenterDelegate {
     func application(
         _ application: UIApplication,
         didFinishLaunchingWithOptions launchOptions: [UIApplication.LaunchOptionsKey: Any]? = nil
     ) -> Bool {
+        UNUserNotificationCenter.current().delegate = self
+
         if let url = launchOptions?[.url] as? URL {
             WidgetDeepLinkRouter.handleIncomingURL(url)
         }
@@ -26,5 +30,22 @@ final class GlanceSATAppDelegate: NSObject, UIApplicationDelegate {
         supportedInterfaceOrientationsFor window: UIWindow?
     ) -> UIInterfaceOrientationMask {
         .portrait
+    }
+
+    func userNotificationCenter(
+        _ center: UNUserNotificationCenter,
+        willPresent notification: UNNotification,
+        withCompletionHandler completionHandler: @escaping (UNNotificationPresentationOptions) -> Void
+    ) {
+        completionHandler([.banner, .sound])
+    }
+
+    func userNotificationCenter(
+        _ center: UNUserNotificationCenter,
+        didReceive response: UNNotificationResponse,
+        withCompletionHandler completionHandler: @escaping () -> Void
+    ) {
+        _ = NotificationManager.handleTrialReminderResponse(response)
+        completionHandler()
     }
 }

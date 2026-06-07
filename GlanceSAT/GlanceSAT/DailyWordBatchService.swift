@@ -367,9 +367,28 @@ enum DailyWordBatchService {
         newWordIDsByDay = newWordIDsByDay.filter { requiredKeys.contains($0.key) }
 
         var todayWords: [Word]
+        var expandedCommittedTodayBatch = false
         if hadCommittedTodayBatch, let committedTodayIDs = queue[todayKey], !committedTodayIDs.isEmpty {
-            // Calendar-day lock: today's ten are fixed once committed; SRS reconcile only affects future slots.
+            // Calendar-day lock: today's batch IDs stay fixed once committed; SRS reconcile only affects future slots.
             todayWords = resolveWords(wordIDs: committedTodayIDs, modelContext: modelContext)
+            // Premium upgrade after a freemium bootstrap race: expand a short committed batch up to today's cap.
+            if cap > FreemiumLimits.freeDailyWordCount, todayWords.count < cap {
+                let committedIDSet = Set(committedTodayIDs)
+                todayWords = backfillDueWords(
+                    into: todayWords,
+                    modelContext: modelContext,
+                    referenceDate: referenceDate,
+                    dayKey: todayKey
+                )
+                queue[todayKey] = todayWords.map(\.id)
+                var newIDs = Set(newWordIDsByDay[todayKey] ?? [])
+                for word in todayWords where !committedIDSet.contains(word.id)
+                    && word.status.lowercased() == "new" {
+                    newIDs.insert(word.id)
+                }
+                newWordIDsByDay[todayKey] = Array(newIDs)
+                expandedCommittedTodayBatch = true
+            }
         } else if let todayIDs = queue[todayKey], !todayIDs.isEmpty {
             let resolved = resolveWords(wordIDs: todayIDs, modelContext: modelContext)
             if resolved.isEmpty {
@@ -446,7 +465,7 @@ enum DailyWordBatchService {
         EntitlementManager.shared.syncWidgetSubscriptionState()
         WidgetTimelineReloader.scheduleVocabularyReload()
 
-        if hadPastDays || !hadCommittedTodayBatch {
+        if hadPastDays || !hadCommittedTodayBatch || expandedCommittedTodayBatch {
             WidgetTimelineReloader.scheduleAllWidgetReload()
         }
 

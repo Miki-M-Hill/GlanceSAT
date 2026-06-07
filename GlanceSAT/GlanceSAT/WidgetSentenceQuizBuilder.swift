@@ -7,7 +7,7 @@ import Foundation
 import SwiftData
 
 /// Builds sentence-completion quiz payloads for the quiz widget snapshot.
-/// Uses `exampleSentence`, `widgetSentence2`, and `widgetSentence3` only — never `quizSentence`.
+/// Uses `exampleSentence` only — never `quizSentence`.
 enum WidgetSentenceQuizBuilder {
     static func apply(to snapshot: inout WidgetWordSnapshot, target: Word, context: ModelContext) {
         snapshot.sentenceQuizPrompt = ""
@@ -15,28 +15,25 @@ enum WidgetSentenceQuizBuilder {
         snapshot.synonymQuizCorrectAnswer = ""
         snapshot.sentenceQuizSlots = []
 
-        for sentence in target.widgetQuizExampleSentences.prefix(3) {
-            guard let quiz = try? QuizGenerator.makeWidgetSentenceQuiz(
-                for: target,
-                exampleSentence: sentence,
-                context: context
-            ) else {
-                continue
-            }
+        let sentence = target.widgetQuizExampleSentence
+        guard !sentence.isEmpty else { return }
 
-            snapshot.sentenceQuizSlots.append(
-                WidgetSentenceQuizSlot(
-                    prompt: quiz.promptText,
-                    options: quiz.options,
-                    correctAnswer: quiz.correctAnswer
-                )
-            )
+        guard let quiz = try? QuizGenerator.makeWidgetSentenceQuiz(
+            for: target,
+            exampleSentence: sentence,
+            context: context
+        ) else {
+            return
         }
 
-        if let first = snapshot.sentenceQuizSlots.first {
-            snapshot.sentenceQuizPrompt = first.prompt
-            snapshot.synonymQuizOptions = first.options
-            snapshot.synonymQuizCorrectAnswer = first.correctAnswer
-        }
+        let slot = WidgetSentenceQuizSlot(
+            prompt: quiz.promptText,
+            options: quiz.options,
+            correctAnswer: quiz.correctAnswer
+        )
+        snapshot.sentenceQuizSlots = [slot]
+        snapshot.sentenceQuizPrompt = slot.prompt
+        snapshot.synonymQuizOptions = slot.options
+        snapshot.synonymQuizCorrectAnswer = slot.correctAnswer
     }
 }

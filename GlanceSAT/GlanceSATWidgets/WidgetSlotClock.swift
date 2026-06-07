@@ -34,17 +34,9 @@ enum WidgetSlotClock {
         return (vocabSlotIndex + 1) % wordCount
     }
 
-    /// Quiz widget rotates through three widget-only sentences; the in-app daily quiz keeps `quizSentence`.
-    static let widgetQuizSentenceSlotCount = 3
-
-    static func widgetSentenceSlotIndex(for slotIndex: Int) -> Int {
-        slotIndex % widgetQuizSentenceSlotCount
-    }
-
     static func word(atQuizSlot slotIndex: Int, in words: [WidgetWordSnapshot]) -> WidgetWordSnapshot {
         guard !words.isEmpty else { return .placeholder }
-        let base = words[quizWordIndex(vocabSlotIndex: slotIndex, wordCount: words.count)]
-        return base.withSentenceQuizSlot(widgetSentenceSlotIndex(for: slotIndex))
+        return words[quizWordIndex(vocabSlotIndex: slotIndex, wordCount: words.count)]
     }
 
     static func thirtyMinuteFloor(calendar: Calendar = .current, date: Date = Date()) -> Date? {

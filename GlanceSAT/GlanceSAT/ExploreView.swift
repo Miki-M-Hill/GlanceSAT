@@ -361,9 +361,6 @@ struct ExploreView: View {
             .onReceive(NotificationCenter.default.publisher(for: .insightsWordStatsDidUpdate)) { _ in
                 markLibraryNeedsRefresh(clearWordCache: true)
             }
-            .onReceive(NotificationCenter.default.publisher(for: .openGlanceSettingsFromWidget)) { _ in
-                showSettings = true
-            }
             .glanceNavigationBarChrome(colorScheme: colorScheme, isHidden: true)
         }
         .sheet(isPresented: $showLibraryFilters) {

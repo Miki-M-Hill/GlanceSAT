@@ -39,10 +39,11 @@ struct LockScreenWidgetSettingsView: View {
         .background(HubPalette.linen.ignoresSafeArea())
         .navigationTitle("")
         .navigationBarTitleDisplayMode(.inline)
+        .navigationBarBackButtonHidden(true)
         .glanceNavigationBarChrome(colorScheme: colorScheme)
         .toolbar {
             ToolbarItem(placement: .cancellationAction) {
-                DailyQuizBackButton {
+                DailyQuizBackButton(accessibilityLabel: "Back") {
                     dismiss()
                 }
             }

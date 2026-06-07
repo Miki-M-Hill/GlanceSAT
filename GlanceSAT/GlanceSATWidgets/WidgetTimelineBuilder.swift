@@ -135,8 +135,7 @@ enum WidgetTimelineBuilder {
     ) -> WidgetWordSnapshot {
         guard !words.isEmpty else { return .placeholder }
         let slot = slotIndex(for: date, calendar: calendar)
-        let base = words[WidgetSlotClock.quizWordIndex(vocabSlotIndex: slot, wordCount: words.count)]
-        return base.withSentenceQuizSlot(WidgetSlotClock.widgetSentenceSlotIndex(for: slot))
+        return words[WidgetSlotClock.quizWordIndex(vocabSlotIndex: slot, wordCount: words.count)]
     }
 
     static func slotIndex(for date: Date, calendar: Calendar = .current) -> Int {

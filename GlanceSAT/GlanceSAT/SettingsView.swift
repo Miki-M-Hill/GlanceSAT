@@ -154,9 +154,7 @@ struct SettingsView: View {
                 }
 
                 ToolbarItem(placement: .principal) {
-                    Text("Glance")
-                        .font(GlanceHubFont.semibold(17))
-                        .foregroundStyle(HubPalette.espresso)
+                    GlanceScreenTitle()
                         .frame(height: 44)
                 }
             }

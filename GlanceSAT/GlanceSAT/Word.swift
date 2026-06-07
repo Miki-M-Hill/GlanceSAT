@@ -13,11 +13,8 @@ final class Word: Identifiable {
     var partOfSpeech: String
     var definition: String
     var exampleSentence: String
-    /// Alternate sentence for quiz blanks (widget/carousel keep `exampleSentence`).
+    /// Alternate sentence for in-app daily quiz blanks (widget uses `exampleSentence`).
     var quizSentence: String?
-    /// Extra widget-only example sentences for quiz rotation (not used in-app daily quiz).
-    var widgetSentence2: String?
-    var widgetSentence3: String?
     var etymology: String?
     /// When set with `memoryHookText`, the card shows **Hook** instead of Origin/etymology.
     var memoryHookKind: String?
@@ -60,8 +57,6 @@ final class Word: Identifiable {
         definition: String,
         exampleSentence: String,
         quizSentence: String? = nil,
-        widgetSentence2: String? = nil,
-        widgetSentence3: String? = nil,
         etymology: String? = nil,
         memoryHookKind: String? = nil,
         memoryHookText: String? = nil,
@@ -93,8 +88,6 @@ final class Word: Identifiable {
         self.definition = definition
         self.exampleSentence = exampleSentence
         self.quizSentence = quizSentence
-        self.widgetSentence2 = widgetSentence2
-        self.widgetSentence3 = widgetSentence3
         self.etymology = etymology
         self.memoryHookKind = memoryHookKind
         self.memoryHookText = memoryHookText
@@ -306,23 +299,9 @@ extension Word {
         return exampleSentence
     }
 
-    /// Widget quiz rotation sentences (`exampleSentence` + alternates); excludes in-app-only `quizSentence`.
-    var widgetQuizExampleSentences: [String] {
-        var result: [String] = []
-        var seen = Set<String>()
-        let candidates: [String?] = [exampleSentence, widgetSentence2, widgetSentence3]
-        for candidate in candidates {
-            guard let trimmed = candidate?.trimmingCharacters(in: .whitespacesAndNewlines), !trimmed.isEmpty else {
-                continue
-            }
-            let key = trimmed.lowercased()
-                .split(whereSeparator: \.isWhitespace)
-                .joined(separator: " ")
-            guard !seen.contains(key) else { continue }
-            seen.insert(key)
-            result.append(trimmed)
-        }
-        return result
+    /// Example sentence used for widget quiz prompts (excludes in-app-only `quizSentence`).
+    var widgetQuizExampleSentence: String {
+        exampleSentence.trimmingCharacters(in: .whitespacesAndNewlines)
     }
 }
 
@@ -351,7 +330,7 @@ enum PassageDomain: String, CaseIterable, Sendable, Identifiable {
         case .literature: return "Literature"
         case .history: return "History"
         case .socialStudies: return "Social Studies"
-        case .humanities: return "The Humanities"
+        case .humanities: return "Humanities"
         case .science: return "Science"
         }
     }
@@ -400,7 +379,16 @@ enum PassageDomain: String, CaseIterable, Sendable, Identifiable {
     }
 
     nonisolated static func insightsIcon(forDisplayTitle name: String) -> String {
-        displayOrder.first { $0.displayTitle == name }?.insightsIcon ?? "book.fill"
+        let normalized = normalizedInsightsCategoryName(name)
+        return displayOrder.first { $0.displayTitle == normalized }?.insightsIcon ?? "book.fill"
+    }
+
+    /// Maps legacy Insights / cache labels to current `displayTitle` values.
+    nonisolated static func normalizedInsightsCategoryName(_ name: String) -> String {
+        switch name {
+        case "The Humanities": return PassageDomain.humanities.displayTitle
+        default: return name
+        }
     }
 
     nonisolated static func normalizedRaw(_ raw: String) -> String {

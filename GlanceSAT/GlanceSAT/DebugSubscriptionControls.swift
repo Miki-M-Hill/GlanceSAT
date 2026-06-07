@@ -58,7 +58,8 @@ enum DebugSubscriptionControls {
 
     /// Clears downsell / win-back flags so paywall flows can be replayed.
     static func resetPaywallPromoFlags() {
-        UserDefaults.standard.set(false, forKey: "hasClaimedNoCardDownsellPass")
+        KeychainBooleanStore.delete(forKey: "hasClaimedNoCardDownsellPass")
+        UserDefaults.standard.removeObject(forKey: "hasClaimedNoCardDownsellPass")
         UserDefaults.standard.set(false, forKey: "hasShownPostTrialWinBack")
     }
 

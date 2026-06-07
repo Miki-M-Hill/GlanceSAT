@@ -11,9 +11,15 @@ import SwiftData
 actor AppBootstrapActor {
     func prebuildQuiz() async throws -> QuizSessionData {
         let calendarDayKey = DailyWordBatchService.calendarDayKey()
-        let identifiers = try fetchShuffledUnseenIDs(count: DailyWordBatchService.maxDailyWords)
-        let words = identifiers.compactMap { modelContext.model(for: $0) as? Word }
-        let wordIDs = words.map(\.id)
+        let persistedIDs = DailyWordBatchService.loadPersistedTodayWordIDs()
+        let wordIDs: [UUID]
+        if persistedIDs.isEmpty {
+            let identifiers = try fetchShuffledUnseenIDs(count: DailyWordBatchService.maxDailyWords)
+            let words = identifiers.compactMap { modelContext.model(for: $0) as? Word }
+            wordIDs = words.map(\.id)
+        } else {
+            wordIDs = persistedIDs
+        }
         guard !wordIDs.isEmpty else {
             throw QuizPreparationError.emptyQuiz
         }

@@ -102,7 +102,7 @@ private enum InsightsPresentation {
             CategoryAccuracy(name: "Literature", accuracy: 0.84),
             CategoryAccuracy(name: "History", accuracy: 0.69),
             CategoryAccuracy(name: "Social Studies", accuracy: 0.78),
-            CategoryAccuracy(name: "The Humanities", accuracy: 0.86),
+            CategoryAccuracy(name: "Humanities", accuracy: 0.86),
             CategoryAccuracy(name: "Science", accuracy: 0.72),
         ],
         recentQuizTrend: [
@@ -826,7 +826,7 @@ struct GlanceSATProgressScreen: View {
               let best = displayData.categories.max(by: { $0.accuracy < $1.accuracy }) else {
             return nil
         }
-        return "Strongest: \(best.name)"
+        return "Strongest: \(PassageDomain.normalizedInsightsCategoryName(best.name))"
     }
 
     private func insightsPlainText(_ string: String) -> String {
@@ -856,7 +856,7 @@ struct GlanceSATProgressScreen: View {
             return true
         }
         #endif
-        return viewModel.isCategoryReady(name)
+        return viewModel.isCategoryReady(PassageDomain.normalizedInsightsCategoryName(name))
     }
 
     @ViewBuilder
@@ -1137,7 +1137,7 @@ private struct InsightsCategoryRow: View {
 
             VStack(alignment: .leading, spacing: 8) {
                 HStack(alignment: .firstTextBaseline) {
-                    Text(category.name)
+                    Text(PassageDomain.normalizedInsightsCategoryName(category.name))
                         .font(GlanceHubFont.semibold(15))
                         .foregroundStyle(HubPalette.espresso)
                         .lineLimit(2)

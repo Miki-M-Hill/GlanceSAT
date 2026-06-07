@@ -17,7 +17,10 @@ struct GlanceSATQuizWidgetRootView: View {
     }
 
     private var deepLinkURL: URL {
-        WidgetDeepLink.libraryURL(wordID: entry.word.id)
+        if isQuizWidgetLocked {
+            return WidgetDeepLink.paywallURL()
+        }
+        return WidgetDeepLink.libraryURL(wordID: entry.word.id)
     }
 
     var body: some View {
@@ -50,7 +53,7 @@ struct GlanceSATQuizWidgetRootView: View {
                 }
             }
         }
-        .widgetURL(WidgetDeepLink.libraryURL(wordID: entry.word.id))
+        .widgetURL(deepLinkURL)
     }
 
     /// Timeline entries drive phase transitions; live store updates on the scheduled reload.

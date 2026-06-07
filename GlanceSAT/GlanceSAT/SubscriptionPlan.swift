@@ -23,17 +23,26 @@ enum SubscriptionPlan: String, CaseIterable, Identifiable, Sendable {
 
     var onboardingTitle: String {
         switch self {
-        case .oneMonth: return "SAT Sprint (1 month)"
-        case .threeMonth: return "Test Season (3 months)"
-        case .annual: return "Full SAT Prep (annual)"
+        case .oneMonth: return "SAT Sprint (1 Month)"
+        case .threeMonth: return "Test Season (3 Months)"
+        case .annual: return "Full SAT Prep (Annual)"
         }
     }
 
     var appPaywallTitle: String {
         switch self {
-        case .oneMonth: return "1 month"
+        case .oneMonth: return "1 Month"
         case .threeMonth: return "Test Season"
         case .annual: return "Annual"
+        }
+    }
+
+    /// Title copy on the in-app paywall plan rows.
+    var inAppPaywallTitle: String {
+        switch self {
+        case .oneMonth: return "SAT Sprint (1 Month)"
+        case .threeMonth: return "Test Season (3 Months)"
+        case .annual: return "Full SAT Prep (Annual)"
         }
     }
 
@@ -63,10 +72,37 @@ enum SubscriptionPlan: String, CaseIterable, Identifiable, Sendable {
         }
     }
 
+    /// Short price for in-app paywall rows (no billing-period suffix).
+    var fallbackCompactPriceLabel: String {
+        switch self {
+        case .oneMonth: return "$9.99"
+        case .threeMonth: return "$24.99"
+        case .annual: return "$49.99"
+        }
+    }
+
+    /// Orange outline pill on the plan title row, if any.
+    var paywallBadgeLabel: String? {
+        switch self {
+        case .oneMonth: return nil
+        case .threeMonth: return "Most Popular"
+        case .annual: return "58% off"
+        }
+    }
+
+    var fallbackStrikethroughPriceLabel: String? {
+        switch self {
+        case .annual: return "$119.88"
+        default: return nil
+        }
+    }
+
     static func visiblePlans(satTestWithin90Days: Bool) -> [SubscriptionPlan] {
         if satTestWithin90Days {
             return [.oneMonth, .threeMonth, .annual]
         }
         return [.oneMonth, .annual]
     }
+
+    static let inAppPaywallPlans: [SubscriptionPlan] = [.oneMonth, .annual]
 }

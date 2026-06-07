@@ -103,6 +103,7 @@ private struct AppRootView: View {
     @State private var selectedTab: RootTab
     @State private var mountedTabs: Set<RootTab> = [.today]
     @State private var pendingLibraryWordID: UUID?
+    @State private var showGlobalSettings = false
     @State private var quizPreparationManager = QuizPreparationManager()
     @State private var insightsCoordinator = InsightsRefreshCoordinator()
 
@@ -191,6 +192,12 @@ private struct AppRootView: View {
         .environmentObject(paywallPresenter)
         .environmentObject(libraryFreemiumSession)
         .modifier(AppPaywallChrome(paywallPresenter: paywallPresenter, entitlementManager: entitlementManager))
+        .onReceive(NotificationCenter.default.publisher(for: .openGlanceSettingsFromWidget)) { _ in
+            presentInAppSettings()
+        }
+        .sheet(isPresented: $showGlobalSettings) {
+            SettingsView()
+        }
     }
 
     private func applyWidgetDeepLinkRouting() {
@@ -219,14 +226,19 @@ private struct AppRootView: View {
         }
     }
 
-    private func applyWidgetSettingsDeepLinkRouting() {
+    private func presentInAppSettings() {
+        mountedTabs.insert(.library)
         var transaction = Transaction()
         transaction.disablesAnimations = true
         withTransaction(transaction) {
             selectedTab = .library
             pendingLibraryWordID = nil
         }
-        NotificationCenter.default.post(name: .openGlanceSettingsFromWidget, object: nil)
+        showGlobalSettings = true
+    }
+
+    private func applyWidgetSettingsDeepLinkRouting() {
+        presentInAppSettings()
     }
 
     private func refreshWidgetDataFromHost() async {

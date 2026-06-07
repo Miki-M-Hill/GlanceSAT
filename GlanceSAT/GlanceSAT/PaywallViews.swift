@@ -3,16 +3,20 @@
 //  GlanceSAT
 //
 
+import StoreKit
 import SwiftUI
 
 // MARK: - In-app paywall (shared with onboarding styling)
 
 struct AppPaywallScreen: View {
     var dreamScoreLabel: String?
-    var satTestDate: SATTestDate?
     @Binding var selectedPlan: SubscriptionPlan
     @ObservedObject var entitlementManager: EntitlementManager
     let onClose: () -> Void
+
+    private var isCompact: Bool {
+        OnboardingLayoutMetrics.resolve().isCompact
+    }
 
     private var paywallTitle: String {
         if let dreamScoreLabel, !dreamScoreLabel.isEmpty {
@@ -22,7 +26,7 @@ struct AppPaywallScreen: View {
     }
 
     private var visiblePlans: [SubscriptionPlan] {
-        SubscriptionPlan.visiblePlans(satTestWithin90Days: satTestDate == .within90)
+        SubscriptionPlan.inAppPaywallPlans
     }
 
     var body: some View {
@@ -43,7 +47,7 @@ struct AppPaywallScreen: View {
             GeometryReader { proxy in
                 VStack(alignment: .center, spacing: 0) {
                     Text(paywallTitle)
-                        .font(.system(size: OnboardingLayoutMetrics.resolve().isCompact ? 28 : 34, weight: .bold))
+                        .font(.system(size: isCompact ? 28 : 34, weight: .bold))
                         .tracking(-0.8)
                         .foregroundStyle(OnboardingColors.primaryText)
                         .lineLimit(1)
@@ -53,28 +57,32 @@ struct AppPaywallScreen: View {
 
                     Spacer(minLength: 16)
 
-                    Text("Start seeing SAT words naturally throughout your day")
+                    Text("Start seeing SAT words naturally\nthroughout your day")
                         .font(.system(size: 17, weight: .regular))
                         .foregroundStyle(OnboardingColors.primaryText)
-                        .lineSpacing(8)
+                        .lineSpacing(6)
                         .multilineTextAlignment(.center)
+                        .fixedSize(horizontal: false, vertical: true)
                         .frame(maxWidth: .infinity)
 
-                    Spacer(minLength: 32)
+                    Spacer(minLength: 24)
 
-                    VStack(spacing: 12) {
+                    VStack(spacing: 14) {
                         ForEach(visiblePlans) { plan in
-                            AppPaywallPlanRow(
-                                title: plan.appPaywallTitle,
-                                priceLabel: entitlementManager.localizedPriceLabel(for: plan),
+                            PaywallSelectablePlanRow(
+                                title: plan.inAppPaywallTitle,
+                                priceLabel: entitlementManager.localizedCompactPriceLabel(for: plan),
+                                strikethroughPriceLabel: entitlementManager.localizedStrikethroughPriceLabel(for: plan),
                                 dailyPriceLabel: entitlementManager.localizedDailyPriceLabel(for: plan),
+                                badgeLabel: plan.paywallBadgeLabel,
                                 isSelected: selectedPlan == plan,
-                                showsDailyPrice: plan != .oneMonth
+                                compactLayout: false
                             ) {
                                 selectedPlan = plan
                             }
                         }
                     }
+                    .padding(.top, 6)
 
                     Spacer(minLength: 0)
                 }
@@ -86,47 +94,98 @@ struct AppPaywallScreen: View {
     }
 }
 
-private struct AppPaywallPlanRow: View {
+// MARK: - Shared paywall plan UI
+
+struct PaywallBadgePill: View {
+    let label: String
+    var compact: Bool = false
+
+    var body: some View {
+        Text(label)
+            .font(.system(size: compact ? 10 : 11, weight: .semibold))
+            .foregroundStyle(OnboardingColors.hubOrange)
+            .padding(.horizontal, compact ? 8 : 10)
+            .padding(.vertical, compact ? 3 : 4)
+            .background(
+                Capsule(style: .continuous)
+                    .fill(OnboardingColors.linen)
+            )
+            .overlay(
+                Capsule(style: .continuous)
+                    .strokeBorder(OnboardingColors.hubOrange, lineWidth: 1.5)
+            )
+            .fixedSize()
+    }
+}
+
+struct PaywallSelectablePlanRow: View {
     let title: String
     let priceLabel: String
-    let dailyPriceLabel: String?
+    var strikethroughPriceLabel: String?
+    var dailyPriceLabel: String?
+    var badgeLabel: String?
     let isSelected: Bool
-    let showsDailyPrice: Bool
+    var compactLayout: Bool = false
     let onSelect: () -> Void
+
+    private var cardCornerRadius: CGFloat { compactLayout ? 20 : 24 }
+    private var cardPadding: CGFloat { compactLayout ? 14 : 20 }
 
     var body: some View {
         Button(action: onSelect) {
-            HStack(alignment: .center, spacing: 12) {
-                VStack(alignment: .center, spacing: 4) {
-                    Text(title)
-                        .font(.system(size: 17, weight: .semibold))
-                    Text(priceLabel)
-                        .font(.system(size: 15, weight: .medium))
-                        .foregroundStyle(OnboardingColors.secondaryText)
-                    if showsDailyPrice, let dailyPriceLabel {
-                        Text(dailyPriceLabel)
-                            .font(.system(size: 15, weight: .semibold))
-                            .foregroundStyle(OnboardingColors.hubOrange)
-                    }
-                }
-                .foregroundStyle(OnboardingColors.primaryText)
-                .frame(maxWidth: .infinity)
+            ZStack(alignment: .topTrailing) {
+                HStack(alignment: .center, spacing: compactLayout ? 10 : 12) {
+                    VStack(alignment: .center, spacing: compactLayout ? 2 : 4) {
+                        Text(title)
+                            .font(.system(size: compactLayout ? 16 : 17, weight: .semibold))
+                            .multilineTextAlignment(.center)
 
-                Image(systemName: isSelected ? "checkmark.circle.fill" : "circle")
-                    .font(.system(size: 22, weight: .semibold))
-                    .foregroundStyle(isSelected ? OnboardingColors.sageGreen : OnboardingColors.tertiaryText)
+                        HStack(spacing: 6) {
+                            Text(priceLabel)
+                                .font(.system(size: compactLayout ? 14 : 15, weight: .medium))
+                                .foregroundStyle(OnboardingColors.secondaryText)
+
+                            if let strikethroughPriceLabel {
+                                Text(strikethroughPriceLabel)
+                                    .font(.system(size: compactLayout ? 14 : 15, weight: .medium))
+                                    .foregroundStyle(OnboardingColors.tertiaryText)
+                                    .strikethrough(true, color: OnboardingColors.tertiaryText)
+                            }
+                        }
+
+                        if let dailyPriceLabel {
+                            Text(dailyPriceLabel)
+                                .font(.system(size: compactLayout ? 14 : 15, weight: .semibold))
+                                .foregroundStyle(OnboardingColors.hubOrange)
+                        }
+                    }
+                    .foregroundStyle(OnboardingColors.primaryText)
+                    .frame(maxWidth: .infinity)
+
+                    Image(systemName: isSelected ? "checkmark.circle.fill" : "circle")
+                        .font(.system(size: compactLayout ? 20 : 22, weight: .semibold))
+                        .foregroundStyle(isSelected ? OnboardingColors.sageGreen : OnboardingColors.tertiaryText)
+                }
+                .padding(cardPadding)
+                .padding(.top, badgeLabel == nil ? 0 : 4)
+                .background(
+                    RoundedRectangle(cornerRadius: cardCornerRadius, style: .continuous)
+                        .fill(OnboardingColors.cardSurface)
+                )
+                .overlay(
+                    RoundedRectangle(cornerRadius: cardCornerRadius, style: .continuous)
+                        .stroke(OnboardingColors.sageGreen.opacity(isSelected ? 0.5 : 0), lineWidth: 2)
+                )
+
+                if let badgeLabel {
+                    PaywallBadgePill(label: badgeLabel, compact: compactLayout)
+                        .offset(x: -12, y: -11)
+                }
             }
-            .padding(24)
-            .background(
-                RoundedRectangle(cornerRadius: 24, style: .continuous)
-                    .fill(OnboardingColors.cardSurface)
-            )
-            .overlay(
-                RoundedRectangle(cornerRadius: 24, style: .continuous)
-                    .stroke(OnboardingColors.sageGreen.opacity(isSelected ? 0.5 : 0), lineWidth: 2)
-            )
+            .scaleEffect(isSelected ? 1.01 : 1)
         }
         .buttonStyle(.plain)
+        .padding(.top, badgeLabel == nil ? 0 : 6)
     }
 }
 
@@ -199,18 +258,17 @@ struct AppPaywallChrome: ViewModifier {
     @State private var selectedPlan: SubscriptionPlan = .annual
     @State private var paywallErrorMessage: String?
     @State private var showsPaywallError = false
+    @State private var showRedemptionSheet = false
     @AppStorage("onboardingDreamScore") private var onboardingDreamScore = ""
-    @AppStorage("onboardingSATTestDate") private var onboardingSATTestDateRaw = ""
-
-    private var satTestDate: SATTestDate? {
-        SATTestDate(rawValue: onboardingSATTestDateRaw)
-    }
 
     private var primaryButtonTitle: String {
         if entitlementManager.isPurchasing {
-            return "Starting trial…"
+            return "Unlocking…"
         }
-        return "Start my 7-day free trial"
+        if let label = onboardingDreamScore.nilIfEmpty {
+            return "Unlock my \(label) plan"
+        }
+        return "Unlock my plan"
     }
 
     func body(content: Content) -> some View {
@@ -220,7 +278,6 @@ struct AppPaywallChrome: ViewModifier {
                     VStack(spacing: 0) {
                         AppPaywallScreen(
                             dreamScoreLabel: onboardingDreamScore.nilIfEmpty,
-                            satTestDate: satTestDate,
                             selectedPlan: $selectedPlan,
                             entitlementManager: entitlementManager,
                             onClose: { paywallPresenter.handlePaywallCloseAttempt() }
@@ -238,9 +295,12 @@ struct AppPaywallChrome: ViewModifier {
                                                 .scaleEffect(0.85)
                                             Text(primaryButtonTitle)
                                                 .lineLimit(1)
+                                                .minimumScaleFactor(0.85)
                                         }
                                     } else {
                                         Text(primaryButtonTitle)
+                                            .lineLimit(1)
+                                            .minimumScaleFactor(0.85)
                                     }
                                 }
                                 .font(.system(size: 17, weight: .semibold))
@@ -257,10 +317,11 @@ struct AppPaywallChrome: ViewModifier {
                             .buttonStyle(.plain)
                             .disabled(entitlementManager.isPurchasing || entitlementManager.isRestoring)
 
-                            Text("Cancel anytime within 7 days")
+                            Text("Cancel anytime")
                                 .font(.system(size: 11, weight: .regular))
                                 .foregroundStyle(OnboardingColors.secondaryText)
                                 .multilineTextAlignment(.center)
+                                .frame(maxWidth: .infinity)
 
                             Button {
                                 Task { await restorePurchases() }
@@ -270,16 +331,34 @@ struct AppPaywallChrome: ViewModifier {
                                     .foregroundStyle(OnboardingColors.secondaryText)
                                     .redacted(reason: entitlementManager.isRestoring ? .placeholder : [])
                                     .frame(maxWidth: .infinity)
-                                    .padding(.vertical, 4)
+                                    .padding(.vertical, 2)
+                            }
+                            .buttonStyle(.plain)
+                            .disabled(entitlementManager.isPurchasing || entitlementManager.isRestoring)
+
+                            Button {
+                                showRedemptionSheet = true
+                            } label: {
+                                Text("Redeem Code")
+                                    .font(.system(size: 13, weight: .medium))
+                                    .foregroundStyle(OnboardingColors.secondaryText)
+                                    .frame(maxWidth: .infinity)
+                                    .padding(.vertical, 2)
                             }
                             .buttonStyle(.plain)
                             .disabled(entitlementManager.isPurchasing || entitlementManager.isRestoring)
                         }
                         .padding(.horizontal, 24)
+                        .padding(.top, 12)
                         .padding(.bottom, 24)
                     }
                     .background(OnboardingColors.linen.ignoresSafeArea())
                     .environmentObject(entitlementManager)
+                    .offerCodeRedemption(isPresented: $showRedemptionSheet)
+                    .onChange(of: entitlementManager.hasPremiumAccess) { _, hasPremium in
+                        guard hasPremium, paywallPresenter.showsFullPaywall else { return }
+                        paywallPresenter.dismissPaywall()
+                    }
                     .task {
                         await entitlementManager.loadOfferings()
                         applyDefaultPlanSelection()
@@ -299,11 +378,7 @@ struct AppPaywallChrome: ViewModifier {
     }
 
     private func applyDefaultPlanSelection() {
-        if satTestDate == .within90 {
-            selectedPlan = .threeMonth
-        } else {
-            selectedPlan = .annual
-        }
+        selectedPlan = .annual
     }
 
     @MainActor
@@ -354,5 +429,86 @@ struct AppPaywallChrome: ViewModifier {
 private extension String {
     var nilIfEmpty: String? {
         isEmpty ? nil : self
+    }
+}
+
+// MARK: - Trial timeline (paywall chrome)
+
+struct PaywallTrialTimelineView: View {
+    private struct Milestone: Identifiable {
+        let id: Int
+        let dayLabel: String
+        let caption: String
+        let accent: Color
+    }
+
+    private let milestones: [Milestone] = [
+        Milestone(id: 1, dayLabel: "Day 1", caption: "Start free", accent: OnboardingColors.sageGreen),
+        Milestone(id: 5, dayLabel: "Day 5", caption: "Reminder", accent: OnboardingColors.hubOrange),
+        Milestone(id: 7, dayLabel: "Day 7", caption: "Billing starts", accent: OnboardingColors.primaryText)
+    ]
+
+    var body: some View {
+        VStack(spacing: 10) {
+            HStack(alignment: .center, spacing: 0) {
+                ForEach(Array(milestones.enumerated()), id: \.element.id) { index, milestone in
+                    if index > 0 {
+                        timelineConnector
+                    }
+                    timelineNode(accent: milestone.accent, isFirst: index == 0)
+                }
+            }
+            .padding(.horizontal, 8)
+
+            HStack(alignment: .top, spacing: 0) {
+                ForEach(milestones) { milestone in
+                    VStack(spacing: 2) {
+                        Text(milestone.dayLabel)
+                            .font(.system(size: 12, weight: .semibold))
+                            .foregroundStyle(OnboardingColors.primaryText)
+                        Text(milestone.caption)
+                            .font(.system(size: 10, weight: .medium))
+                            .foregroundStyle(OnboardingColors.secondaryText)
+                            .lineLimit(1)
+                            .minimumScaleFactor(0.8)
+                    }
+                    .frame(maxWidth: .infinity)
+                }
+            }
+        }
+        .accessibilityElement(children: .combine)
+        .accessibilityLabel(
+            "7-day free trial. Day 1 starts free, day 5 reminder, day 7 billing begins unless you cancel."
+        )
+    }
+
+    private var timelineConnector: some View {
+        LinearGradient(
+            colors: [
+                OnboardingColors.sageGreen.opacity(0.55),
+                OnboardingColors.hubOrange.opacity(0.45)
+            ],
+            startPoint: .leading,
+            endPoint: .trailing
+        )
+        .frame(height: 2)
+        .frame(maxWidth: .infinity)
+    }
+
+    private func timelineNode(accent: Color, isFirst: Bool) -> some View {
+        ZStack {
+            Circle()
+                .fill(accent.opacity(isFirst ? 0.16 : 0.08))
+                .frame(width: 22, height: 22)
+            Circle()
+                .strokeBorder(accent.opacity(isFirst ? 0.9 : 0.55), lineWidth: isFirst ? 2 : 1.5)
+                .frame(width: 14, height: 14)
+            if isFirst {
+                Circle()
+                    .fill(accent)
+                    .frame(width: 6, height: 6)
+            }
+        }
+        .frame(width: 28)
     }
 }

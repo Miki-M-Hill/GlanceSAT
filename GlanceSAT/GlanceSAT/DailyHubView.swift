@@ -287,7 +287,10 @@ struct DailyHubView: View {
                 }
             }
             .onChange(of: entitlementManager.hasPremiumAccess) { _, _ in
-                Task { await syncDailyWords() }
+                Task {
+                    await syncDailyWords()
+                    await ensurePremiumDailyWordCapacityIfNeeded()
+                }
             }
             .onChange(of: showDailyQuiz) { _, isPresented in
                 if !isPresented {
@@ -1237,8 +1240,16 @@ struct DailyHubView: View {
         }
         if AppLaunchState.hasPerformedInitialFetch {
             applyBootstrapTodayWords()
+            await ensurePremiumDailyWordCapacityIfNeeded()
             return
         }
+        await syncDailyWords()
+    }
+
+    /// RevenueCat can resolve after bootstrap capped today's batch at 3; re-sync so premium shows 10.
+    private func ensurePremiumDailyWordCapacityIfNeeded() async {
+        guard entitlementManager.hasPremiumAccess else { return }
+        guard dailyWords.count < FreemiumLimits.effectiveDailyWordCount else { return }
         await syncDailyWords()
     }
 

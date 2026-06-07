@@ -60,8 +60,9 @@ final class ProgressViewModel: ObservableObject {
         weeklyRemembered = wordStats.weeklyRemembered
         tomorrowReviewCount = wordStats.tomorrowReviewCount
         tomorrowNewCount = wordStats.tomorrowNewCount
-        categories = wordStats.categories
-        categoryAttemptsByName = wordStats.categoryAttemptsByName
+        let normalizedStats = wordStats.normalizingLegacyCategoryLabels()
+        categories = normalizedStats.categories
+        categoryAttemptsByName = normalizedStats.categoryAttemptsByName
 
         quizCount = sessions.count
         quizAccuracy = quizAccuracyPercent(from: sessions)
