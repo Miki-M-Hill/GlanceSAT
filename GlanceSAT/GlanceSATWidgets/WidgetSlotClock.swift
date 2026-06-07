@@ -39,6 +39,15 @@ enum WidgetSlotClock {
         return words[quizWordIndex(vocabSlotIndex: slotIndex, wordCount: words.count)]
     }
 
+    /// Which time today's quiz word has appeared by `slotIndex` (0-based) — drives sentence cycling.
+    static func quizWordOccurrenceIndex(slotIndex: Int, wordCount: Int) -> Int {
+        guard wordCount > 0, slotIndex >= 0 else { return 0 }
+        let quizIndex = quizWordIndex(vocabSlotIndex: slotIndex, wordCount: wordCount)
+        let firstSlot = (quizIndex + wordCount - 1) % wordCount
+        guard slotIndex >= firstSlot else { return 0 }
+        return (slotIndex - firstSlot) / wordCount
+    }
+
     static func thirtyMinuteFloor(calendar: Calendar = .current, date: Date = Date()) -> Date? {
         var components = calendar.dateComponents([.year, .month, .day, .hour], from: date)
         let minute = calendar.component(.minute, from: date)

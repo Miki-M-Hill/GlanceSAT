@@ -17,10 +17,48 @@ struct WidgetQuizSlotState: Codable, Sendable {
     var selectedOption: String
     var wasCorrect: Bool
     var answeredAt: Date
+    /// Sentence-completion variant shown when the user answered (frozen through feedback → vocab).
+    var sentenceSlotIndex: Int
+    /// Total variants available when answered (`sentenceQuizSlots.count`).
+    var sentenceSlotCount: Int
+
+    init(
+        wordID: String,
+        phase: WidgetQuizDisplayPhase,
+        selectedOption: String,
+        wasCorrect: Bool,
+        answeredAt: Date,
+        sentenceSlotIndex: Int = 0,
+        sentenceSlotCount: Int = 1
+    ) {
+        self.wordID = wordID
+        self.phase = phase
+        self.selectedOption = selectedOption
+        self.wasCorrect = wasCorrect
+        self.answeredAt = answeredAt
+        self.sentenceSlotIndex = sentenceSlotIndex
+        self.sentenceSlotCount = max(sentenceSlotCount, 1)
+    }
+
+    init(from decoder: Decoder) throws {
+        let container = try decoder.container(keyedBy: CodingKeys.self)
+        wordID = try container.decode(String.self, forKey: .wordID)
+        phase = try container.decode(WidgetQuizDisplayPhase.self, forKey: .phase)
+        selectedOption = try container.decode(String.self, forKey: .selectedOption)
+        wasCorrect = try container.decode(Bool.self, forKey: .wasCorrect)
+        answeredAt = try container.decode(Date.self, forKey: .answeredAt)
+        sentenceSlotIndex = try container.decodeIfPresent(Int.self, forKey: .sentenceSlotIndex) ?? 0
+        sentenceSlotCount = max(try container.decodeIfPresent(Int.self, forKey: .sentenceSlotCount) ?? 1, 1)
+    }
+
+    private enum CodingKeys: String, CodingKey {
+        case wordID, phase, selectedOption, wasCorrect, answeredAt, sentenceSlotIndex, sentenceSlotCount
+    }
 }
 
 enum WidgetQuizSlotStore {
     private static let prefix = "widget.quiz.slot."
+    private static let nextSentenceSlotPrefix = "widget.quiz.nextSentence."
 
     /// Fixed hold shown in the quiz widget timeline after an in-widget answer (Entry 1 → Entry 2).
     static let widgetTimelineFeedbackHold: TimeInterval = 3.0
@@ -40,25 +78,58 @@ enum WidgetQuizSlotStore {
     }
 
     static func resolvedPhase(slotKey: String, wordID: UUID, now: Date = Date()) -> WidgetQuizDisplayPhase {
-        if let state = matchingState(slotKey: slotKey, wordID: wordID) {
-            switch state.phase {
-            case .quiz:
-                return .quiz
-            case .feedback:
-                if now >= feedbackEndsAt(for: state) {
-                    return .vocab
-                }
-                return .feedback
-            case .vocab:
-                return .vocab
-            }
+        guard let state = load(slotKey: slotKey) else {
+            return .quiz
         }
 
-        if let state = load(slotKey: slotKey), state.phase == .feedback || state.phase == .vocab {
+        switch state.phase {
+        case .vocab:
             return .vocab
+        case .feedback:
+            if state.wordID == wordID.uuidString, now < feedbackEndsAt(for: state) {
+                return .feedback
+            }
+            return .vocab
+        case .quiz:
+            return .quiz
+        }
+    }
+
+    /// Sentence variant for timeline entries — freezes during feedback/vocab; advances only after vocab is stored.
+    static func resolvedSentenceSlotIndex(
+        slotKey: String,
+        wordID: UUID,
+        slotIndex: Int,
+        wordCount: Int,
+        sentenceSlotCount: Int
+    ) -> Int {
+        let variantCount = max(sentenceSlotCount, 1)
+
+        if let state = matchingState(slotKey: slotKey, wordID: wordID),
+           state.phase == .feedback || state.phase == .vocab {
+            return normalizedSentenceSlotIndex(state.sentenceSlotIndex, variantCount: variantCount)
         }
 
-        return .quiz
+        if let dayKey = calendarDayKey(fromSlotKey: slotKey),
+           let queued = readNextSentenceSlotIndex(wordID: wordID, dayKey: dayKey) {
+            return normalizedSentenceSlotIndex(queued, variantCount: variantCount)
+        }
+
+        let occurrence = WidgetSlotClock.quizWordOccurrenceIndex(
+            slotIndex: slotIndex,
+            wordCount: max(wordCount, 1)
+        )
+        return normalizedSentenceSlotIndex(occurrence, variantCount: variantCount)
+    }
+
+    static func calendarDayKey(fromSlotKey slotKey: String) -> String? {
+        guard let separator = slotKey.lastIndex(of: "_") else { return nil }
+        let dayKey = String(slotKey[..<separator])
+        return dayKey.isEmpty ? nil : dayKey
+    }
+
+    static func isSlotInVocabPhase(_ slotKey: String) -> Bool {
+        load(slotKey: slotKey)?.phase == .vocab
     }
 
     /// Fast timeline path right after the user taps an answer (skips rebuilding 48 slots).
@@ -138,7 +209,11 @@ enum WidgetQuizSlotStore {
                   let wordID = UUID(uuidString: state.wordID) else {
                 continue
             }
-            advanceToVocab(slotKey: slotKey, wordID: wordID)
+            advanceToVocab(
+                slotKey: slotKey,
+                wordID: wordID,
+                sentenceSlotCount: state.sentenceSlotCount
+            )
         }
     }
 
@@ -179,6 +254,8 @@ enum WidgetQuizSlotStore {
         wordID: UUID,
         selectedOption: String,
         wasCorrect: Bool,
+        sentenceSlotIndex: Int,
+        sentenceSlotCount: Int,
         answeredAt: Date = Date()
     ) {
         let state = WidgetQuizSlotState(
@@ -186,15 +263,33 @@ enum WidgetQuizSlotStore {
             phase: .feedback,
             selectedOption: selectedOption,
             wasCorrect: wasCorrect,
-            answeredAt: answeredAt
+            answeredAt: answeredAt,
+            sentenceSlotIndex: sentenceSlotIndex,
+            sentenceSlotCount: max(sentenceSlotCount, 1)
         )
         save(state, slotKey: slotKey)
     }
 
-    static func advanceToVocab(slotKey: String, wordID: UUID) {
+    static func advanceToVocab(slotKey: String, wordID: UUID, sentenceSlotCount: Int = 1) {
         guard var state = matchingState(slotKey: slotKey, wordID: wordID) else { return }
         state.phase = .vocab
         save(state, slotKey: slotKey)
+
+        let variantCount = max(sentenceSlotCount, state.sentenceSlotCount, 1)
+        let nextIndex = normalizedSentenceSlotIndex(state.sentenceSlotIndex + 1, variantCount: variantCount)
+        if let dayKey = calendarDayKey(fromSlotKey: slotKey) {
+            writeNextSentenceSlotIndex(nextIndex, wordID: wordID, dayKey: dayKey)
+        }
+    }
+
+    /// Removes all stored slot phases (quiz / feedback / vocab) for debug or day rollover cleanup.
+    static func clearAllSlotStates() {
+        guard let defaults else { return }
+        for key in defaults.dictionaryRepresentation().keys {
+            if key.hasPrefix(prefix) || key.hasPrefix(nextSentenceSlotPrefix) {
+                defaults.removeObject(forKey: key)
+            }
+        }
     }
 
     static func feedbackEndsAt(slotKey: String, wordID: UUID) -> Date? {
@@ -225,5 +320,25 @@ enum WidgetQuizSlotStore {
     private static func save(_ state: WidgetQuizSlotState, slotKey: String) {
         guard let data = try? JSONEncoder().encode(state) else { return }
         defaults?.set(data, forKey: prefix + slotKey)
+    }
+
+    private static func nextSentenceSlotStorageKey(wordID: UUID, dayKey: String) -> String {
+        "\(nextSentenceSlotPrefix)\(dayKey).\(wordID.uuidString)"
+    }
+
+    private static func readNextSentenceSlotIndex(wordID: UUID, dayKey: String) -> Int? {
+        guard let value = defaults?.object(forKey: nextSentenceSlotStorageKey(wordID: wordID, dayKey: dayKey)) as? Int else {
+            return nil
+        }
+        return value
+    }
+
+    private static func writeNextSentenceSlotIndex(_ index: Int, wordID: UUID, dayKey: String) {
+        defaults?.set(index, forKey: nextSentenceSlotStorageKey(wordID: wordID, dayKey: dayKey))
+    }
+
+    private static func normalizedSentenceSlotIndex(_ index: Int, variantCount: Int) -> Int {
+        let count = max(variantCount, 1)
+        return ((index % count) + count) % count
     }
 }

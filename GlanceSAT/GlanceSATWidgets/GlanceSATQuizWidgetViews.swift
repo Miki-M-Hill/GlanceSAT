@@ -182,7 +182,9 @@ private struct GlanceSATQuizPromptView: View {
                             wordID: entry.word.id.uuidString,
                             slotKey: entry.slotKey,
                             selectedOption: option,
-                            correctAnswer: entry.word.synonymQuizCorrectAnswer
+                            correctAnswer: entry.word.synonymQuizCorrectAnswer,
+                            sentenceSlotIndex: entry.sentenceSlotIndex,
+                            sentenceSlotCount: max(entry.word.sentenceQuizSlots.count, 1)
                         )
                     ) {
                         optionCell(option)

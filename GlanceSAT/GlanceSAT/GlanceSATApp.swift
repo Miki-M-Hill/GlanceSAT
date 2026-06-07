@@ -546,6 +546,12 @@ private struct AppRootView: View {
 
             Section("App Preview") {
                 Button {
+                    DebugQuizWidgetControls.resetQuizWidget()
+                } label: {
+                    Label("Reset quiz widget", systemImage: "arrow.counterclockwise.square")
+                }
+
+                Button {
                     withAnimation(.easeInOut(duration: 0.24)) {
                         DebugTodayQuizControls.resetToPreQuizToday()
                     }

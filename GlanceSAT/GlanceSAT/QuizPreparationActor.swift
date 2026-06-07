@@ -69,7 +69,8 @@ actor QuizPreparationActor {
             for: words,
             context: backgroundContext,
             excludingSlots: excludingSlots,
-            srsEligibleWordIDs: srsEligibleWordIDs
+            srsEligibleWordIDs: srsEligibleWordIDs,
+            preferDailyQuizSentences: srsEligibleWordIDs == nil && excludingSlots.isEmpty
         )
         guard questions.count == QuizGenerator.targetQuestionCount else {
             throw QuizPreparationError.emptyQuiz

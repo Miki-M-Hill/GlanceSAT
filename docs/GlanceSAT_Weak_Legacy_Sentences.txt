@@ -1,0 +1,567 @@
+GlanceSAT — Weak legacy first-person sentences only
+Total words: 129
+Total sentences to rewrite: 147
+========================================================================
+
+Summary:
+  1 sentence to rewrite:  111 words
+  2 sentences to rewrite: 18 words
+  3 sentences to rewrite: 0 words
+  quizSentence:              102
+  exampleSentence:           22
+  alternateExampleSentence:  23
+
+========================================================================
+
+Abhor — needs 1 new sentence(s) [alternateExampleSentence]
+  [alternateExampleSentence] (opens with I/My/Me)
+    I truly abhor the practice of keeping wild animals in tiny zoo enclosures.
+
+Abstain — needs 1 new sentence(s) [quizSentence]
+  [quizSentence] (opens with I/My/Me)
+    I will abstain from voting on this issue due to a conflict of interest.
+
+Accommodating — needs 1 new sentence(s) [quizSentence]
+  [quizSentence] (we arrived late)
+    The hotel staff was accommodating when we arrived late after the delayed flight.
+
+Accost — needs 1 new sentence(s) [quizSentence]
+  [quizSentence] (accost me)
+    A stranger tried to accost me in the dark parking lot.
+
+Acquiesce — needs 1 new sentence(s) [quizSentence]
+  [quizSentence] (opens with I/My/Me)
+    I will not acquiesce to such an unreasonable schedule.
+
+Adorn — needs 1 new sentence(s) [quizSentence]
+  [quizSentence] (we plan to adorn)
+    We plan to adorn the banquet hall with hundreds of white roses.
+
+Aesthetic — needs 1 new sentence(s) [quizSentence]
+  [quizSentence] (my + personal)
+    The sleek laptop appeals to my minimalist design aesthetic.
+
+Affable — needs 1 new sentence(s) [quizSentence]
+  [quizSentence] (our new neighbor)
+    Our new neighbor is a very affable and welcoming guy.
+
+Agnostic — needs 1 new sentence(s) [quizSentence]
+  [quizSentence] (opens with I/My/Me)
+    My brother is agnostic and doubts we can ever know if God exists.
+
+Allocate — needs 1 new sentence(s) [quizSentence]
+  [quizSentence] (casual we/our)
+    We must allocate more funding to the struggling public schools.
+
+Ambivalent — needs 1 new sentence(s) [quizSentence]
+  [quizSentence] (opens with I/My/Me)
+    I feel ambivalent about moving to a new city far from home.
+
+Amenable — needs 2 new sentence(s) [quizSentence, alternateExampleSentence]
+  [quizSentence] (opens with I/My/Me)
+    My boss is surprisingly amenable to the idea of working remotely.
+  [alternateExampleSentence] (opens with I/My/Me)
+    My landlord is highly amenable to allowing small pets inside the rental apartment.
+
+Amiable — needs 2 new sentence(s) [quizSentence, alternateExampleSentence]
+  [quizSentence] (casual we/our)
+    The amiable tour guide made our trip enjoyable and easy to follow.
+  [alternateExampleSentence] (casual we/our)
+    We enjoyed a highly amiable conversation with our new neighbors over morning coffee.
+
+Anachronistic — needs 1 new sentence(s) [exampleSentence]
+  [exampleSentence] (casual we/our)
+    Using a manual typewriter feels highly anachronistic in our modern era of digital technology.
+
+Anecdote — needs 1 new sentence(s) [quizSentence]
+  [quizSentence] (opens with I/My/Me)
+    My grandfather loves sharing a funny anecdote from his childhood.
+
+Antiquated — needs 1 new sentence(s) [quizSentence]
+  [quizSentence] (casual we/our)
+    We finally replaced the antiquated fax machine with a digital scanner.
+
+Anxiety — needs 1 new sentence(s) [quizSentence]
+  [quizSentence] (your daily anxiety)
+    Deep breathing exercises can help reduce your daily anxiety.
+
+Appease — needs 1 new sentence(s) [quizSentence]
+  [quizSentence] (we offered)
+    We offered the angry customer a free dessert to appease him.
+
+Ascertain — needs 2 new sentence(s) [quizSentence, alternateExampleSentence]
+  [quizSentence] (casual we/our)
+    We need to ascertain the exact cause of the engine failure.
+  [alternateExampleSentence] (casual we/our)
+    We must properly ascertain the true cost of the project before proceeding further.
+
+Assuage — needs 1 new sentence(s) [quizSentence]
+  [quizSentence] (my sore throat)
+    A warm cup of tea helped assuage my terrible sore throat.
+
+Attain — needs 1 new sentence(s) [quizSentence]
+  [quizSentence] (You must study)
+    You must study diligently to attain a medical degree.
+
+Atypical — needs 1 new sentence(s) [quizSentence]
+  [quizSentence] (casual we/our)
+    It is highly atypical for our usually punctual boss to be late.
+
+Aversion — needs 1 new sentence(s) [quizSentence]
+  [quizSentence] (opens with I/My/Me)
+    I have a strong aversion to eating raw seafood.
+
+Banal — needs 1 new sentence(s) [quizSentence]
+  [quizSentence] (first-person anecdote)
+    The sitcom's plot was so banal that I fell asleep halfway through.
+
+Bane — needs 1 new sentence(s) [quizSentence]
+  [quizSentence] (first-person anecdote)
+    Mosquitoes are the absolute bane of my summer camping trips.
+
+Bequeath — needs 1 new sentence(s) [quizSentence]
+  [quizSentence] (opens with I/My/Me)
+    My grandmother plans to bequeath her antique necklace to me.
+
+Beseech — needs 1 new sentence(s) [quizSentence]
+  [quizSentence] (opens with I/My/Me)
+    I beseech you to reconsider this dangerous and foolish plan.
+
+Brusque — needs 1 new sentence(s) [quizSentence]
+  [quizSentence] (first-person anecdote)
+    The busy doctor gave a brusque reply to my simple question.
+
+Candor — needs 2 new sentence(s) [quizSentence, exampleSentence]
+  [quizSentence] (opens with I/My/Me)
+    I appreciate your candor in telling me that this outfit looks terrible.
+  [exampleSentence] (opens with I/My/Me)
+    I highly appreciate your absolute candor in admitting the serious mistakes in the code.
+
+Carp — needs 1 new sentence(s) [quizSentence]
+  [quizSentence] (opens with I/My/Me)
+    My grandfather loves to carp about how bad modern music sounds.
+
+Chastise — needs 1 new sentence(s) [quizSentence]
+  [quizSentence] (opens with I/My/Me)
+    My boss will certainly chastise me if I submit this report late again.
+
+Cherish — needs 2 new sentence(s) [quizSentence, alternateExampleSentence]
+  [quizSentence] (opens with I/My/Me)
+    I will always cherish the memories of our family trips to the lake.
+  [alternateExampleSentence] (opens with I/My/Me)
+    I cherish the quiet morning hours spent drinking coffee before the household awakens.
+
+Cloying — needs 1 new sentence(s) [exampleSentence]
+  [exampleSentence] (first-person anecdote)
+    The bakery's new frosting was far too cloying for my personal taste preferences.
+
+Cognizant — needs 1 new sentence(s) [quizSentence]
+  [quizSentence] (casual we/our)
+    We must be fully cognizant of the risks before proceeding with the surgery.
+
+Complacency — needs 1 new sentence(s) [quizSentence]
+  [quizSentence] (casual we/our)
+    Our early success led to a dangerous complacency that ruined the project.
+
+Condolence — needs 1 new sentence(s) [quizSentence]
+  [quizSentence] (opens with I/My/Me)
+    I sent a heartfelt card to express my condolence for her loss.
+
+Conducive — needs 1 new sentence(s) [exampleSentence]
+  [exampleSentence] (first-person anecdote)
+    The noisy coffee shop was not conducive to studying for my difficult physics exam.
+
+Confidant — needs 1 new sentence(s) [quizSentence]
+  [quizSentence] (opens with I/My/Me)
+    My sister has always been my closest confidant and trusted advisor.
+
+Congenial — needs 1 new sentence(s) [alternateExampleSentence]
+  [alternateExampleSentence] (casual we/our)
+    Our new neighbors are congenial people who frequently host dinner parties.
+
+Consign — needs 1 new sentence(s) [quizSentence]
+  [quizSentence] (opens with I/My/Me)
+    I decided to consign my old designer clothes to a local thrift boutique.
+
+Consolation — needs 1 new sentence(s) [alternateExampleSentence]
+  [alternateExampleSentence] (first-person anecdote)
+    Her warm letter provided true consolation during my period of deep grief.
+
+Constrain — needs 2 new sentence(s) [quizSentence, exampleSentence]
+  [quizSentence] (casual we/our)
+    Tight budget rules will severely constrain our ability to hire new staff.
+  [exampleSentence] (casual we/our)
+    The tight budget will constrain our ability to hire new software engineers.
+
+Construe — needs 2 new sentence(s) [quizSentence, exampleSentence]
+  [quizSentence] (first-person anecdote)
+    Please do not construe my silence as an agreement with your ridiculous plan.
+  [exampleSentence] (first-person anecdote)
+    Please do not construe my constructive feedback as a personal attack.
+
+Curt — needs 1 new sentence(s) [quizSentence]
+  [quizSentence] (first-person anecdote)
+    Her curt response made it obvious that she was annoyed with my questions.
+
+Curtail — needs 2 new sentence(s) [quizSentence, alternateExampleSentence]
+  [quizSentence] (casual we/our)
+    We have to curtail our spending if we ever want to buy a house.
+  [alternateExampleSentence] (casual we/our)
+    Due to the approaching thunderstorm, we had to quickly curtail our afternoon hike.
+
+Defer — needs 2 new sentence(s) [quizSentence, alternateExampleSentence]
+  [quizSentence] (opens with I/My/Me)
+    I will defer to my lawyer's expertise regarding this complicated contract.
+  [alternateExampleSentence] (opens with I/My/Me)
+    I will defer to your expertise on the software framework for this project.
+
+Delineate — needs 1 new sentence(s) [quizSentence]
+  [quizSentence] (casual we/our)
+    The property map clearly delineates the border between our two yards.
+
+Deplore — needs 2 new sentence(s) [quizSentence, exampleSentence]
+  [quizSentence] (We absolutely deplore)
+    We absolutely deplore the use of violence to solve political disputes.
+  [exampleSentence] (We deeply deplore)
+    We deeply deplore the violent actions taken by the rioters during the protest.
+
+Dissuade — needs 1 new sentence(s) [quizSentence]
+  [quizSentence] (opens with I/My/Me)
+    I tried to dissuade my brother from buying that expensive sports car.
+
+Dubious — needs 1 new sentence(s) [quizSentence]
+  [quizSentence] (opens with I/My/Me)
+    I remain highly dubious of his claim that he won the lottery twice.
+
+Effrontery — needs 1 new sentence(s) [alternateExampleSentence]
+  [alternateExampleSentence] (opens with I/My/Me)
+    I cannot believe the effrontery of the thief who attempted to sell my bicycle.
+
+Embellish — needs 1 new sentence(s) [quizSentence]
+  [quizSentence] (opens with I/My/Me)
+    My uncle loves to embellish his fishing stories to make the fish sound bigger.
+
+Exculpate — needs 1 new sentence(s) [quizSentence]
+  [quizSentence] (first-person anecdote)
+    The newly discovered security footage will exculpate my client from all robbery charges.
+
+Excursion — needs 1 new sentence(s) [alternateExampleSentence]
+  [alternateExampleSentence] (casual we/our)
+    Our brief excursion into the dense forest ended when it began to rain heavily.
+
+Fathom — needs 1 new sentence(s) [quizSentence]
+  [quizSentence] (opens with I/My/Me)
+    I cannot fathom why anyone would want to go skydiving without a backup parachute.
+
+Feasible — needs 1 new sentence(s) [alternateExampleSentence]
+  [alternateExampleSentence] (casual we/our)
+    Building a permanent settlement on Mars may become technologically feasible within our lifetimes.
+
+Flabbergasted — needs 1 new sentence(s) [quizSentence]
+  [quizSentence] (opens with I/My/Me)
+    I was flabbergasted when I saw the outrageous total on my restaurant receipt.
+
+Garrulous — needs 1 new sentence(s) [exampleSentence]
+  [exampleSentence] (first-person anecdote)
+    The garrulous passenger next to me talked loudly during the entire six-hour flight.
+
+Genial — needs 1 new sentence(s) [alternateExampleSentence]
+  [alternateExampleSentence] (casual we/our)
+    Our new manager is a genial leader who always listens to employee concerns.
+
+Gregarious — needs 1 new sentence(s) [quizSentence]
+  [quizSentence] (opens with I/My/Me)
+    My gregarious roommate throws a party almost every single weekend.
+
+Hallowed — needs 1 new sentence(s) [quizSentence]
+  [quizSentence] (casual we/our)
+    We walked respectfully through the hallowed grounds of the national cemetery.
+
+Haughty — needs 2 new sentence(s) [quizSentence, exampleSentence]
+  [quizSentence] (casual we/our)
+    The haughty waiter sneered when we asked for ketchup at the fancy restaurant.
+  [exampleSentence] (casual we/our)
+    The haughty waiter rolled his eyes when we asked for a cheaper wine.
+
+Hypothetical — needs 1 new sentence(s) [alternateExampleSentence]
+  [alternateExampleSentence] (casual we/our)
+    We cannot base our entire business strategy on a purely hypothetical market shift.
+
+Impede — needs 1 new sentence(s) [exampleSentence]
+  [exampleSentence] (casual we/our)
+    The heavy snowfall will likely impede our morning commute to the city office.
+
+Impervious — needs 1 new sentence(s) [quizSentence]
+  [quizSentence] (opens with I/My/Me)
+    My new winter coat is impervious to the freezing wind.
+
+Impinge — needs 1 new sentence(s) [quizSentence]
+  [quizSentence] (opens with I/My/Me)
+    I won't let your bad mood impinge upon my enjoyment of this vacation.
+
+Implacable — needs 1 new sentence(s) [quizSentence]
+  [quizSentence] (we offered)
+    The implacable crying baby refused every pacifier we offered.
+
+Incessant — needs 1 new sentence(s) [quizSentence]
+  [quizSentence] (first-person anecdote)
+    The incessant dripping of the leaky faucet kept me awake all night.
+
+Inclination — needs 1 new sentence(s) [quizSentence]
+  [quizSentence] (opens with I/My/Me)
+    I have a strong inclination to stay home and read instead of going out tonight.
+
+Inextricable — needs 1 new sentence(s) [quizSentence]
+  [quizSentence] (first-person anecdote)
+    The history of the town is an inextricable part of my own family's heritage.
+
+Innovate — needs 1 new sentence(s) [alternateExampleSentence]
+  [alternateExampleSentence] (casual we/our)
+    Brilliant engineers continue to innovate the ways we store and harness solar energy.
+
+Insinuate — needs 2 new sentence(s) [quizSentence, alternateExampleSentence]
+  [quizSentence] (first-person anecdote)
+    Are you trying to insinuate that I stole the money from the cash register?
+  [alternateExampleSentence] (first-person anecdote)
+    Are you trying to insinuate that I stole the money from the register?
+
+Intimation — needs 1 new sentence(s) [quizSentence]
+  [quizSentence] (first-person anecdote)
+    Her sudden frown was my first intimation that the plan was going wrong.
+
+Intractable — needs 1 new sentence(s) [quizSentence]
+  [quizSentence] (first-person anecdote)
+    The puzzle proved so intractable that I eventually threw it in the trash.
+
+Irascible — needs 1 new sentence(s) [quizSentence]
+  [quizSentence] (casual we/our)
+    Our irascible neighbor yells at any kids who dare step on his lawn.
+
+Languid — needs 1 new sentence(s) [quizSentence]
+  [quizSentence] (casual we/our)
+    We spent a languid Sunday afternoon napping in the hammock.
+
+Lenient — needs 1 new sentence(s) [quizSentence]
+  [quizSentence] (first-person anecdote)
+    The lenient professor allowed me to turn in my term paper three days late.
+
+Lethargic — needs 1 new sentence(s) [quizSentence]
+  [quizSentence] (first-person anecdote)
+    A heavy lunch of pasta and bread left me feeling lethargic all afternoon.
+
+Luminous — needs 1 new sentence(s) [quizSentence]
+  [quizSentence] (first-person anecdote)
+    The luminous dial on my watch allows me to check the time in pitch darkness.
+
+Mercurial — needs 1 new sentence(s) [alternateExampleSentence]
+  [alternateExampleSentence] (casual we/our)
+    His mercurial personality makes him difficult to predict during our team meetings.
+
+Mitigate — needs 1 new sentence(s) [quizSentence]
+  [quizSentence] (casual we/our)
+    We planted tall trees along the road to mitigate the terrible traffic noise.
+
+Modicum — needs 1 new sentence(s) [quizSentence]
+  [quizSentence] (opens with I/My/Me)
+    I expect at least a modicum of respect when I am speaking to you.
+
+Mundane — needs 1 new sentence(s) [quizSentence]
+  [quizSentence] (first-person anecdote)
+    Sorting laundry is one mundane chore I complete every Sunday morning.
+
+Mutable — needs 1 new sentence(s) [exampleSentence]
+  [exampleSentence] (casual we/our)
+    Human emotions are mutable and change based on our daily life experiences.
+
+Neophyte — needs 1 new sentence(s) [quizSentence]
+  [quizSentence] (first-person anecdote)
+    As a complete neophyte to chess, I lost my first game in under five minutes.
+
+Nominal — needs 1 new sentence(s) [quizSentence]
+  [quizSentence] (opens with I/My/Me)
+    I purchased the broken antique clock for a purely nominal fee at the garage sale.
+
+Obsequious — needs 1 new sentence(s) [quizSentence]
+  [quizSentence] (casual we/our)
+    The obsequious waiter constantly hovered near our table offering unnecessary compliments.
+
+Obtuse — needs 1 new sentence(s) [quizSentence]
+  [quizSentence] (opens with I/My/Me)
+    I was being deliberately obtuse when I pretended not to understand his insult.
+
+Officious — needs 2 new sentence(s) [quizSentence, exampleSentence]
+  [quizSentence] (first-person anecdote)
+    An officious security guard demanded to check my ID three times in ten minutes.
+  [exampleSentence] (first-person anecdote)
+    The officious clerk insisted on checking my identification three separate times today.
+
+Paradigm — needs 1 new sentence(s) [alternateExampleSentence]
+  [alternateExampleSentence] (casual we/our)
+    She challenged the current paradigm regarding how we teach advanced software engineering.
+
+Paramount — needs 1 new sentence(s) [exampleSentence]
+  [exampleSentence] (casual we/our)
+    It is of paramount importance that we finish the project by Friday.
+
+Pellucid — needs 1 new sentence(s) [quizSentence]
+  [quizSentence] (casual we/our)
+    The shallow tropical water was so pellucid we could see coins on the bottom.
+
+Penchant — needs 1 new sentence(s) [quizSentence]
+  [quizSentence] (opens with I/My/Me)
+    My grandmother has a well-known penchant for buying unnecessarily expensive shoes.
+
+Perfunctory — needs 1 new sentence(s) [quizSentence]
+  [quizSentence] (first-person anecdote)
+    The bored cashier gave a perfunctory nod as she handed back my receipt.
+
+Pertinacious — needs 1 new sentence(s) [exampleSentence]
+  [exampleSentence] (first-person anecdote)
+    The pertinacious salesman refused to leave until I bought his new product.
+
+Pervasive — needs 1 new sentence(s) [exampleSentence]
+  [exampleSentence] (casual we/our)
+    The use of mobile phones is pervasive in our modern digital society.
+
+Pragmatic — needs 1 new sentence(s) [quizSentence]
+  [quizSentence] (casual we/our)
+    We need a pragmatic solution to this budget crisis, not just unrealistic wishful thinking.
+
+Presumptuous — needs 1 new sentence(s) [quizSentence]
+  [quizSentence] (I + personal verb)
+    It was presumptuous of him to assume I would pay for his expensive dinner.
+
+Procure — needs 1 new sentence(s) [quizSentence]
+  [quizSentence] (opens with I/My/Me)
+    I need to procure some rare spices before I can cook this authentic Indian dish.
+
+Propensity — needs 1 new sentence(s) [quizSentence]
+  [quizSentence] (opens with I/My/Me)
+    My clumsy brother has a propensity for dropping his phone and cracking the screen.
+
+Prudence — needs 1 new sentence(s) [alternateExampleSentence]
+  [alternateExampleSentence] (casual we/our)
+    Prudence dictates that we should wait for more data before investing money.
+
+Quaint — needs 2 new sentence(s) [quizSentence, exampleSentence]
+  [quizSentence] (casual we/our)
+    We stayed in a quaint little bed-and-breakfast covered in climbing ivy.
+  [exampleSentence] (casual we/our)
+    We stayed in a quaint cottage located in a small rural village.
+
+Quotidian — needs 1 new sentence(s) [quizSentence]
+  [quizSentence] (first-person anecdote)
+    Checking my email and making coffee are part of my quotidian morning routine.
+
+Rash — needs 1 new sentence(s) [quizSentence]
+  [quizSentence] (Quitting your job)
+    Quitting your job before finding a new one is a rash financial decision.
+
+Raucous — needs 1 new sentence(s) [quizSentence]
+  [quizSentence] (first-person anecdote)
+    A raucous party next door kept me awake until three in the morning.
+
+Recalcitrant — needs 1 new sentence(s) [quizSentence]
+  [quizSentence] (casual we/our)
+    The recalcitrant horse refused to enter the trailer no matter how hard we pulled.
+
+Recapitulate — needs 1 new sentence(s) [quizSentence]
+  [quizSentence] (casual we/our)
+    Let me briefly recapitulate the main points of the presentation before we conclude.
+
+Relish — needs 1 new sentence(s) [quizSentence]
+  [quizSentence] (opens with I/My/Me)
+    I always relish the opportunity to sleep in late on a rainy Sunday morning.
+
+Remiss — needs 2 new sentence(s) [quizSentence, alternateExampleSentence]
+  [quizSentence] (opens with I/My/Me)
+    I would be remiss if I didn't thank my wonderful parents for their endless support.
+  [alternateExampleSentence] (remiss of me)
+    It was remiss of me to forget your birthday during this week.
+
+Renovate — needs 1 new sentence(s) [quizSentence]
+  [quizSentence] (casual we/our)
+    We hired a contractor to entirely renovate our outdated 1970s kitchen.
+
+Reputable — needs 1 new sentence(s) [quizSentence]
+  [quizSentence] (You should...your car)
+    You should always take your car to a reputable mechanic rather than a shady garage.
+
+Ruse — needs 1 new sentence(s) [alternateExampleSentence]
+  [alternateExampleSentence] (first-person anecdote)
+    It was just a ruse to get me to reveal the secret.
+
+Satiate — needs 1 new sentence(s) [quizSentence]
+  [quizSentence] (first-person anecdote)
+    A heavy bowl of oatmeal is usually enough to satiate my hunger until lunchtime.
+
+Seminal — needs 1 new sentence(s) [exampleSentence]
+  [exampleSentence] (casual we/our)
+    The scientist published a seminal paper that changed how we study biology.
+
+Surmise — needs 2 new sentence(s) [quizSentence, exampleSentence]
+  [quizSentence] (first-person anecdote)
+    From his wet umbrella, I could easily surmise that it was raining outside.
+  [exampleSentence] (opens with I/My/Me)
+    I can only surmise that he was late because of the traffic.
+
+Tacit — needs 2 new sentence(s) [quizSentence, alternateExampleSentence]
+  [quizSentence] (opens with I/My/Me)
+    My boss gave a tacit nod of approval when I suggested leaving the office early.
+  [alternateExampleSentence] (first-person anecdote)
+    He gave a tacit nod to show that he agreed with me.
+
+Taciturn — needs 1 new sentence(s) [quizSentence]
+  [quizSentence] (opens with I/My/Me)
+    My grandfather is a taciturn man who prefers quiet whittling to making idle conversation.
+
+Tedious — needs 1 new sentence(s) [exampleSentence]
+  [exampleSentence] (casual we/our)
+    The project was tedious and took much longer than we had planned.
+
+Tranquil — needs 1 new sentence(s) [quizSentence]
+  [quizSentence] (casual we/our)
+    We spent a tranquil evening sipping wine on the porch and listening to the crickets.
+
+Trepidation — needs 1 new sentence(s) [quizSentence]
+  [quizSentence] (opens with I/My/Me)
+    I opened the letter from the IRS with a profound sense of trepidation.
+
+Truncate — needs 1 new sentence(s) [quizSentence]
+  [quizSentence] (casual we/our)
+    We had to truncate our beach vacation by two days because a hurricane was approaching.
+
+Turgid — needs 1 new sentence(s) [quizSentence]
+  [quizSentence] (first-person anecdote)
+    The academic paper was so turgid that I reread every sentence twice.
+
+Ubiquitous — needs 1 new sentence(s) [exampleSentence]
+  [exampleSentence] (casual we/our)
+    Digital screens have become ubiquitous in our modern and busy urban society.
+
+Umbrage — needs 1 new sentence(s) [quizSentence]
+  [quizSentence] (first-person anecdote)
+    He took immediate umbrage at my suggestion that his painting looked like a child's drawing.
+
+Unctuous — needs 1 new sentence(s) [exampleSentence]
+  [exampleSentence] (first-person anecdote)
+    The unctuous salesman tried to charm me into buying the expensive car.
+
+Upbraid — needs 1 new sentence(s) [quizSentence]
+  [quizSentence] (opens with I/My/Me)
+    My mother will certainly upbraid me if I track muddy footprints across her clean floor.
+
+Vacillate — needs 1 new sentence(s) [quizSentence]
+  [quizSentence] (opens with I/My/Me)
+    I continue to vacillate between ordering the steak or the salmon for dinner.
+
+Vex — needs 2 new sentence(s) [quizSentence, exampleSentence]
+  [quizSentence] (first-person anecdote)
+    The difficult crossword puzzle continued to vex me for the entire morning.
+  [exampleSentence] (first-person anecdote)
+    The constant noise from the neighbor's house continues to vex me daily.
+
+Zephyr — needs 1 new sentence(s) [alternateExampleSentence]
+  [alternateExampleSentence] (casual we/our)
+    We enjoyed the cool zephyr while sitting on the deck at night.
+

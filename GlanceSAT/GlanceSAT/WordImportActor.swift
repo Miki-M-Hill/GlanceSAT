@@ -5,6 +5,7 @@
 
 import Foundation
 import SwiftData
+import CryptoKit
 
 extension Notification.Name {
     static let wordDatabaseDidChange = Notification.Name("com.mikihill.GlanceSAT.wordDatabaseDidChange")
@@ -16,6 +17,7 @@ actor WordImportActor {
     private static let resourceNamesInPriorityOrder = ["Database", "words"]
     private static let resourceExtension = "json"
 
+    /// Inserts missing words and refreshes bundled lexical fields on existing rows.
     func importFromBundle(url: URL, container: ModelContainer) async throws {
         let records = try Self.loadRecords(from: url)
         let backgroundContext = ModelContext(container)
@@ -23,6 +25,12 @@ actor WordImportActor {
         try? backgroundContext.save()
         try await syncBundledLexicalMetadata(records: records, context: backgroundContext)
         try? backgroundContext.save()
+    }
+
+    nonisolated static func bundledDatabaseContentHash(at url: URL) -> String? {
+        guard let data = try? Data(contentsOf: url) else { return nil }
+        let digest = SHA256.hash(data: data)
+        return digest.map { String(format: "%02x", $0) }.joined()
     }
 
     nonisolated static func bundledDatabaseURL() -> URL? {
@@ -93,6 +101,11 @@ actor WordImportActor {
     private func applyBundledMetadata(record: WordJSONRecord, to word: Word) -> Bool {
         var changed = false
 
+        if word.word != record.word {
+            word.word = record.word
+            changed = true
+        }
+
         if let lexical = try? record.bundledPrimaryLexical() {
             if word.partOfSpeech != lexical.partOfSpeech {
                 word.partOfSpeech = lexical.partOfSpeech
@@ -109,6 +122,11 @@ actor WordImportActor {
             let bundledQuizSentence = WordJSONRecord.normalizedOptionalQuizSentence(record.quizSentence)
             if word.quizSentence != bundledQuizSentence {
                 word.quizSentence = bundledQuizSentence
+                changed = true
+            }
+            let bundledAlternate = WordJSONRecord.normalizedOptionalQuizSentence(record.alternateExampleSentence)
+            if word.alternateExampleSentence != bundledAlternate {
+                word.alternateExampleSentence = bundledAlternate
                 changed = true
             }
             if word.synonyms != lexical.synonyms {
@@ -309,6 +327,7 @@ struct WordJSONRecord: Decodable, Sendable {
     var partOfSpeech: String?
     var definition: String?
     var exampleSentence: String?
+    var alternateExampleSentence: String?
     var quizSentence: String?
     var etymology: String?
     var memoryHook: MemoryHookDTO?
@@ -374,11 +393,12 @@ struct WordJSONRecord: Decodable, Sendable {
             let first = senses[0]
             let encoder = JSONEncoder()
             let sensesEncoded = try String(data: encoder.encode(senses), encoding: .utf8)
+            let resolvedExample = Self.normalizedOptionalQuizSentence(exampleSentence) ?? first.exampleSentence
             return BundledPrimaryLexical(
-                partOfSpeech: first.partOfSpeech,
-                definition: first.definition,
-                exampleSentence: first.exampleSentence,
-                synonyms: first.synonyms,
+                partOfSpeech: partOfSpeech ?? first.partOfSpeech,
+                definition: definition ?? first.definition,
+                exampleSentence: resolvedExample,
+                synonyms: synonyms ?? first.synonyms,
                 sensesJSON: sensesEncoded
             )
         }
@@ -426,6 +446,7 @@ struct WordJSONRecord: Decodable, Sendable {
             partOfSpeech: lexical.partOfSpeech,
             definition: lexical.definition,
             exampleSentence: lexical.exampleSentence,
+            alternateExampleSentence: Self.normalizedOptionalQuizSentence(alternateExampleSentence),
             quizSentence: Self.normalizedOptionalQuizSentence(quizSentence),
             etymology: etymology,
             memoryHookKind: hookPair.kind,

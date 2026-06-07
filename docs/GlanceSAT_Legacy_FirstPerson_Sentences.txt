@@ -1,0 +1,646 @@
+GlanceSAT — Words with first-person / direct-address sentences (I, me, my, we, our, you, your)
+Total words affected: 199
+========================================================================
+
+Summary by field count:
+  quizSentence only:        110
+  exampleSentence only:     18
+  alternateExample only:    35
+  multiple fields:          36
+
+========================================================================
+
+Abate
+  [quizSentence] We waited indoors for the howling winds to finally abate.
+  [exampleSentence] We must wait for the heavy storm to abate before driving home.
+
+Abhor
+  [alternateExampleSentence] I truly abhor the practice of keeping wild animals in tiny zoo enclosures.
+
+Abjure
+  [quizSentence] To gain citizenship, you must abjure allegiance to your former nation.
+
+Abstain
+  [quizSentence] I will abstain from voting on this issue due to a conflict of interest.
+
+Accommodating
+  [quizSentence] The hotel staff was accommodating when we arrived late after the delayed flight.
+
+Accost
+  [quizSentence] A stranger tried to accost me in the dark parking lot.
+
+Acquiesce
+  [quizSentence] I will not acquiesce to such an unreasonable schedule.
+
+Adhere
+  [alternateExampleSentence] You must use heavy glue so the tiles will adhere to the wall.
+
+Adorn
+  [quizSentence] We plan to adorn the banquet hall with hundreds of white roses.
+
+Aesthetic
+  [quizSentence] The sleek laptop appeals to my minimalist design aesthetic.
+
+Affable
+  [quizSentence] Our new neighbor is a very affable and welcoming guy.
+
+Agnostic
+  [quizSentence] My brother is agnostic and doubts we can ever know if God exists.
+
+Alleviate
+  [quizSentence] Taking ibuprofen can help alleviate the swelling in your ankle.
+
+Allocate
+  [quizSentence] We must allocate more funding to the struggling public schools.
+  [alternateExampleSentence] You should carefully allocate your limited study time before the crucial final exam.
+
+Ambivalent
+  [quizSentence] I feel ambivalent about moving to a new city far from home.
+
+Amenable
+  [quizSentence] My boss is surprisingly amenable to the idea of working remotely.
+  [alternateExampleSentence] My landlord is highly amenable to allowing small pets inside the rental apartment.
+
+Amenity
+  [exampleSentence] The luxury hotel features every modern amenity you could possibly want for a vacation.
+
+Amiable
+  [quizSentence] The amiable tour guide made our trip enjoyable and easy to follow.
+  [alternateExampleSentence] We enjoyed a highly amiable conversation with our new neighbors over morning coffee.
+
+Anachronistic
+  [exampleSentence] Using a manual typewriter feels highly anachronistic in our modern era of digital technology.
+
+Anecdote
+  [quizSentence] My grandfather loves sharing a funny anecdote from his childhood.
+
+Antecedent
+  [alternateExampleSentence] You must perfectly identify the grammatical antecedent of the pronoun in this complex sentence.
+
+Antiquated
+  [quizSentence] We finally replaced the antiquated fax machine with a digital scanner.
+
+Anxiety
+  [quizSentence] Deep breathing exercises can help reduce your daily anxiety.
+
+Appease
+  [quizSentence] We offered the angry customer a free dessert to appease him.
+
+Ascertain
+  [quizSentence] We need to ascertain the exact cause of the engine failure.
+  [alternateExampleSentence] We must properly ascertain the true cost of the project before proceeding further.
+
+Assess
+  [alternateExampleSentence] The strict teacher will carefully assess your complete understanding of the mathematical formula.
+
+Assuage
+  [quizSentence] A warm cup of tea helped assuage my terrible sore throat.
+
+Atrophy
+  [quizSentence] Without regular exercise, your muscles will slowly begin to atrophy.
+
+Attain
+  [quizSentence] You must study diligently to attain a medical degree.
+
+Atypical
+  [quizSentence] It is highly atypical for our usually punctual boss to be late.
+
+Aversion
+  [quizSentence] I have a strong aversion to eating raw seafood.
+
+Banal
+  [quizSentence] The sitcom's plot was so banal that I fell asleep halfway through.
+
+Bane
+  [quizSentence] Mosquitoes are the absolute bane of my summer camping trips.
+
+Bequeath
+  [quizSentence] My grandmother plans to bequeath her antique necklace to me.
+
+Beseech
+  [quizSentence] I beseech you to reconsider this dangerous and foolish plan.
+
+Brusque
+  [quizSentence] The busy doctor gave a brusque reply to my simple question.
+
+Calibrate
+  [quizSentence] You must calibrate the scale before weighing the chemical samples.
+
+Candor
+  [quizSentence] I appreciate your candor in telling me that this outfit looks terrible.
+  [exampleSentence] I highly appreciate your absolute candor in admitting the serious mistakes in the code.
+
+Carp
+  [quizSentence] My grandfather loves to carp about how bad modern music sounds.
+
+Chastise
+  [quizSentence] My boss will certainly chastise me if I submit this report late again.
+
+Cherish
+  [quizSentence] I will always cherish the memories of our family trips to the lake.
+  [alternateExampleSentence] I cherish the quiet morning hours spent drinking coffee before the household awakens.
+
+Chronological
+  [alternateExampleSentence] You must present the complex events of the story in a strict chronological sequence.
+
+Cloying
+  [exampleSentence] The bakery's new frosting was far too cloying for my personal taste preferences.
+
+Coerce
+  [quizSentence] You cannot coerce a witness into providing a false testimony.
+
+Cognizant
+  [quizSentence] We must be fully cognizant of the risks before proceeding with the surgery.
+
+Colloquial
+  [alternateExampleSentence] You should strictly avoid using colloquial phrases in a formal academic research paper.
+
+Commensurate
+  [quizSentence] Your starting salary will be commensurate with your level of experience.
+  [alternateExampleSentence] Your starting salary will be commensurate with your previous experience and educational background.
+
+Complacency
+  [quizSentence] Our early success led to a dangerous complacency that ruined the project.
+
+Complement
+  [quizSentence] That dark green tie perfectly complements the color of your eyes.
+
+Compliment
+  [quizSentence] It is always nice to receive a genuine compliment on your hard work.
+
+Compress
+  [quizSentence] You can use software to compress the video file so it sends faster.
+  [exampleSentence] You must compress the digital video file before sending it through regular email.
+
+Concise
+  [quizSentence] Please keep your presentation concise and skip the unnecessary details.
+
+Condolence
+  [quizSentence] I sent a heartfelt card to express my condolence for her loss.
+
+Conducive
+  [exampleSentence] The noisy coffee shop was not conducive to studying for my difficult physics exam.
+
+Confidant
+  [quizSentence] My sister has always been my closest confidant and trusted advisor.
+
+Congenial
+  [alternateExampleSentence] Our new neighbors are congenial people who frequently host dinner parties.
+
+Consign
+  [quizSentence] I decided to consign my old designer clothes to a local thrift boutique.
+
+Consolation
+  [alternateExampleSentence] Her warm letter provided true consolation during my period of deep grief.
+
+Constrain
+  [quizSentence] Tight budget rules will severely constrain our ability to hire new staff.
+  [exampleSentence] The tight budget will constrain our ability to hire new software engineers.
+
+Construe
+  [quizSentence] Please do not construe my silence as an agreement with your ridiculous plan.
+  [exampleSentence] Please do not construe my constructive feedback as a personal attack.
+
+Contextualize
+  [exampleSentence] To understand the novel, you must contextualize the author's writing within history.
+
+Contravene
+  [quizSentence] By parking in front of the fire hydrant, you contravene city traffic laws.
+  [alternateExampleSentence] You cannot contravene the terms of the signed contract without facing strict penalties.
+
+Corrosive
+  [quizSentence] Battery acid is highly corrosive and will burn right through your clothes.
+
+Criteria
+  [quizSentence] You must meet all the physical criteria to be accepted into the military.
+
+Curt
+  [quizSentence] Her curt response made it obvious that she was annoyed with my questions.
+
+Curtail
+  [quizSentence] We have to curtail our spending if we ever want to buy a house.
+  [alternateExampleSentence] Due to the approaching thunderstorm, we had to quickly curtail our afternoon hike.
+
+Defer
+  [quizSentence] I will defer to my lawyer's expertise regarding this complicated contract.
+  [alternateExampleSentence] I will defer to your expertise on the software framework for this project.
+
+Deleterious
+  [quizSentence] Smoking has deleterious effects on your respiratory system over time.
+
+Delineate
+  [quizSentence] The property map clearly delineates the border between our two yards.
+
+Denigrate
+  [quizSentence] You shouldn't denigrate her artistic efforts just because you don't like abstract art.
+  [alternateExampleSentence] It is unprofessional to unfairly denigrate your former employer during a job interview.
+
+Deplore
+  [quizSentence] We absolutely deplore the use of violence to solve political disputes.
+  [exampleSentence] We deeply deplore the violent actions taken by the rioters during the protest.
+
+Disparage
+  [quizSentence] It is unprofessional to disparage your former employer during a job interview.
+
+Dissuade
+  [quizSentence] I tried to dissuade my brother from buying that expensive sports car.
+
+Dither
+  [alternateExampleSentence] If you dither over which college to attend, you might miss the deadline.
+
+Divulge
+  [alternateExampleSentence] The doctor cannot legally divulge your private medical history to the public.
+
+Dubious
+  [quizSentence] I remain highly dubious of his claim that he won the lottery twice.
+
+Effrontery
+  [alternateExampleSentence] I cannot believe the effrontery of the thief who attempted to sell my bicycle.
+
+Embellish
+  [quizSentence] My uncle loves to embellish his fishing stories to make the fish sound bigger.
+
+Emend
+  [alternateExampleSentence] You must quickly emend the severe grammatical errors before submitting your final essay.
+
+Emollient
+  [quizSentence] Apply this thick emollient lotion to soothe your terribly dry, cracked winter skin.
+
+Empirical
+  [alternateExampleSentence] Without solid empirical evidence, your argument relies entirely on speculation and personal bias.
+
+Encumber
+  [quizSentence] Do not encumber yourself with heavy luggage on our long walking tour.
+
+Entail
+  [quizSentence] Adopting a puppy will entail a serious commitment of your time and energy.
+
+Etymology
+  [alternateExampleSentence] Understanding the etymology of a difficult word can help you remember its specific definition.
+
+Exculpate
+  [quizSentence] The newly discovered security footage will exculpate my client from all robbery charges.
+
+Excursion
+  [alternateExampleSentence] Our brief excursion into the dense forest ended when it began to rain heavily.
+
+Extraneous
+  [quizSentence] Please remove all extraneous details from your report to keep it under two pages.
+  [exampleSentence] You must remove all extraneous information from your resume to keep it concise.
+
+Fathom
+  [quizSentence] I cannot fathom why anyone would want to go skydiving without a backup parachute.
+
+Feasible
+  [alternateExampleSentence] Building a permanent settlement on Mars may become technologically feasible within our lifetimes.
+
+Flabbergasted
+  [quizSentence] I was flabbergasted when I saw the outrageous total on my restaurant receipt.
+
+Forsake
+  [alternateExampleSentence] A true loyal friend will never forsake you during a difficult financial crisis.
+
+Garrulous
+  [exampleSentence] The garrulous passenger next to me talked loudly during the entire six-hour flight.
+
+Genial
+  [alternateExampleSentence] Our new manager is a genial leader who always listens to employee concerns.
+
+Gregarious
+  [quizSentence] My gregarious roommate throws a party almost every single weekend.
+
+Guile
+  [quizSentence] It takes a lot of guile to successfully bluff your way through a poker tournament.
+
+Hallowed
+  [quizSentence] We walked respectfully through the hallowed grounds of the national cemetery.
+
+Haughty
+  [quizSentence] The haughty waiter sneered when we asked for ketchup at the fancy restaurant.
+  [exampleSentence] The haughty waiter rolled his eyes when we asked for a cheaper wine.
+
+Hypothetical
+  [quizSentence] The physics exam asked us to solve a hypothetical scenario involving time travel.
+  [alternateExampleSentence] We cannot base our entire business strategy on a purely hypothetical market shift.
+
+Immerse
+  [exampleSentence] You must immerse yourself in the language to truly become fluent in Spanish.
+
+Impede
+  [exampleSentence] The heavy snowfall will likely impede our morning commute to the city office.
+
+Imperative
+  [quizSentence] It is imperative that you submit your application before the midnight deadline.
+  [exampleSentence] It is imperative that you finish this crucial assignment before the deadline tomorrow.
+
+Impervious
+  [quizSentence] My new winter coat is impervious to the freezing wind.
+
+Impetuous
+  [quizSentence] Marrying someone you just met in Vegas is a highly impetuous decision.
+
+Impinge
+  [quizSentence] I won't let your bad mood impinge upon my enjoyment of this vacation.
+
+Implacable
+  [quizSentence] The implacable crying baby refused every pacifier we offered.
+
+Impute
+  [quizSentence] You cannot impute the company's financial failure to one single employee.
+
+Incessant
+  [quizSentence] The incessant dripping of the leaky faucet kept me awake all night.
+  [exampleSentence] The incessant barking of the neighbor's dog kept us awake all night.
+
+Inclination
+  [quizSentence] I have a strong inclination to stay home and read instead of going out tonight.
+
+Increment
+  [quizSentence] Your salary will increase by a small increment every six months.
+
+Inextricable
+  [quizSentence] The history of the town is an inextricable part of my own family's heritage.
+
+Innovate
+  [alternateExampleSentence] Brilliant engineers continue to innovate the ways we store and harness solar energy.
+
+Inoculate
+  [quizSentence] You must inoculate your new puppy against rabies before bringing him to the park.
+
+Insinuate
+  [quizSentence] Are you trying to insinuate that I stole the money from the cash register?
+  [alternateExampleSentence] Are you trying to insinuate that I stole the money from the register?
+
+Interject
+  [quizSentence] Please do not interject your opinions while the guest speaker is presenting.
+
+Interminable
+  [alternateExampleSentence] We waited in an interminable line just to buy tickets for the concert.
+
+Intimation
+  [quizSentence] Her sudden frown was my first intimation that the plan was going wrong.
+
+Intractable
+  [quizSentence] The puzzle proved so intractable that I eventually threw it in the trash.
+
+Irascible
+  [quizSentence] Our irascible neighbor yells at any kids who dare step on his lawn.
+
+Irrevocable
+  [quizSentence] Sending that angry email is an irrevocable mistake you will surely regret.
+
+Judicious
+  [alternateExampleSentence] You must use judicious care when selecting investments for your retirement account.
+
+Languid
+  [quizSentence] We spent a languid Sunday afternoon napping in the hammock.
+
+Lenient
+  [quizSentence] The lenient professor allowed me to turn in my term paper three days late.
+
+Lethargic
+  [quizSentence] A heavy lunch of pasta and bread left me feeling lethargic all afternoon.
+
+Limpid
+  [quizSentence] We could see straight to the bottom of the limpid mountain stream.
+
+Luminous
+  [quizSentence] The luminous dial on my watch allows me to check the time in pitch darkness.
+  [exampleSentence] The luminous moon provided enough light to guide us through the forest.
+
+Mercurial
+  [alternateExampleSentence] His mercurial personality makes him difficult to predict during our team meetings.
+
+Mitigate
+  [quizSentence] We planted tall trees along the road to mitigate the terrible traffic noise.
+
+Moderate
+  [quizSentence] A moderate amount of daily sunlight is actually healthy for your skin.
+
+Modicum
+  [quizSentence] I expect at least a modicum of respect when I am speaking to you.
+
+Modulate
+  [quizSentence] You need to modulate your tone of voice when speaking to a customer.
+  [alternateExampleSentence] You should modulate the heat to ensure the sauce does not burn.
+
+Mundane
+  [quizSentence] Sorting laundry is one mundane chore I complete every Sunday morning.
+
+Mutable
+  [exampleSentence] Human emotions are mutable and change based on our daily life experiences.
+
+Neophyte
+  [quizSentence] As a complete neophyte to chess, I lost my first game in under five minutes.
+
+Nocturnal
+  [alternateExampleSentence] We observed the nocturnal habits of the forest animals using thermal cameras.
+
+Nominal
+  [quizSentence] I purchased the broken antique clock for a purely nominal fee at the garage sale.
+
+Noxious
+  [alternateExampleSentence] You should wear gloves to protect your hands from these noxious chemicals.
+
+Obsequious
+  [quizSentence] The obsequious waiter constantly hovered near our table offering unnecessary compliments.
+
+Obtuse
+  [quizSentence] I was being deliberately obtuse when I pretended not to understand his insult.
+
+Officious
+  [quizSentence] An officious security guard demanded to check my ID three times in ten minutes.
+  [exampleSentence] The officious clerk insisted on checking my identification three separate times today.
+
+Ostracism
+  [quizSentence] Speaking out against the cult's leader will result in your immediate social ostracism.
+
+Paradigm
+  [alternateExampleSentence] She challenged the current paradigm regarding how we teach advanced software engineering.
+
+Paramount
+  [exampleSentence] It is of paramount importance that we finish the project by Friday.
+
+Pellucid
+  [quizSentence] The shallow tropical water was so pellucid we could see coins on the bottom.
+
+Penchant
+  [quizSentence] My grandmother has a well-known penchant for buying unnecessarily expensive shoes.
+
+Perfunctory
+  [quizSentence] The bored cashier gave a perfunctory nod as she handed back my receipt.
+
+Pertinacious
+  [exampleSentence] The pertinacious salesman refused to leave until I bought his new product.
+
+Perusal
+  [quizSentence] The lengthy legal document requires careful perusal before you sign your name.
+
+Pervasive
+  [exampleSentence] The use of mobile phones is pervasive in our modern digital society.
+
+Portent
+  [quizSentence] A black cat crossing your path is considered an unlucky portent in many cultures.
+
+Postulate
+  [alternateExampleSentence] He started his logic proof by asking us to postulate that the lines are parallel.
+
+Pragmatic
+  [quizSentence] We need a pragmatic solution to this budget crisis, not just unrealistic wishful thinking.
+
+Preclude
+  [quizSentence] A prior felony conviction will preclude you from purchasing a firearm in this state.
+
+Prepossessing
+  [quizSentence] The real estate agent showed us a highly prepossessing Victorian home with a wrap-around porch.
+
+Prescribe
+  [quizSentence] The doctor will prescribe a strong course of antibiotics to clear up your infection.
+
+Presumptuous
+  [quizSentence] It was presumptuous of him to assume I would pay for his expensive dinner.
+
+Procure
+  [quizSentence] I need to procure some rare spices before I can cook this authentic Indian dish.
+
+Propensity
+  [quizSentence] My clumsy brother has a propensity for dropping his phone and cracking the screen.
+
+Prudence
+  [alternateExampleSentence] Prudence dictates that we should wait for more data before investing money.
+
+Quaint
+  [quizSentence] We stayed in a quaint little bed-and-breakfast covered in climbing ivy.
+  [exampleSentence] We stayed in a quaint cottage located in a small rural village.
+
+Qualify
+  [exampleSentence] You must qualify your statement by providing more evidence for the claim.
+
+Quotidian
+  [quizSentence] Checking my email and making coffee are part of my quotidian morning routine.
+
+Rash
+  [quizSentence] Quitting your job before finding a new one is a rash financial decision.
+
+Raucous
+  [quizSentence] A raucous party next door kept me awake until three in the morning.
+
+Recalcitrant
+  [quizSentence] The recalcitrant horse refused to enter the trailer no matter how hard we pulled.
+
+Recapitulate
+  [quizSentence] Let me briefly recapitulate the main points of the presentation before we conclude.
+
+Reciprocate
+  [quizSentence] If someone invites you to their home for dinner, you should eventually reciprocate.
+  [exampleSentence] It is important to reciprocate the kindness shown by your good friends.
+
+Relish
+  [quizSentence] I always relish the opportunity to sleep in late on a rainy Sunday morning.
+
+Remiss
+  [quizSentence] I would be remiss if I didn't thank my wonderful parents for their endless support.
+  [alternateExampleSentence] It was remiss of me to forget your birthday during this week.
+
+Renovate
+  [quizSentence] We hired a contractor to entirely renovate our outdated 1970s kitchen.
+
+Reputable
+  [quizSentence] You should always take your car to a reputable mechanic rather than a shady garage.
+  [alternateExampleSentence] You should hire a reputable company to fix the roof of house.
+
+Rescind
+  [quizSentence] The university will rescind your acceptance letter if you fail your final high school exams.
+
+Revoke
+  [quizSentence] The judge will immediately revoke your driver's license if you get another speeding ticket.
+  [alternateExampleSentence] The club will revoke your membership if you break the house rules.
+
+Ruminate
+  [alternateExampleSentence] You should ruminate on the proposal before you give a final answer.
+
+Ruse
+  [alternateExampleSentence] It was just a ruse to get me to reveal the secret.
+
+Satiate
+  [quizSentence] A heavy bowl of oatmeal is usually enough to satiate my hunger until lunchtime.
+
+Scrutinize
+  [alternateExampleSentence] You should scrutinize the contract before you sign it with the firm.
+
+Seminal
+  [exampleSentence] The scientist published a seminal paper that changed how we study biology.
+
+Soluble
+  [exampleSentence] The salt is soluble in water and will disappear if you stir.
+  [alternateExampleSentence] The mystery is soluble if you examine all the available facts today.
+
+Solvent
+  [alternateExampleSentence] You need a strong solvent to remove the paint from the floor.
+
+Speculative
+  [alternateExampleSentence] Investing your life savings in unproven cryptocurrency remains a deeply speculative financial strategy.
+
+Succinct
+  [alternateExampleSentence] Please keep your final report succinct and focus on the main results.
+
+Surmise
+  [quizSentence] From his wet umbrella, I could easily surmise that it was raining outside.
+  [exampleSentence] I can only surmise that he was late because of the traffic.
+
+Tacit
+  [quizSentence] My boss gave a tacit nod of approval when I suggested leaving the office early.
+  [alternateExampleSentence] He gave a tacit nod to show that he agreed with me.
+
+Taciturn
+  [quizSentence] My grandfather is a taciturn man who prefers quiet whittling to making idle conversation.
+
+Tedious
+  [exampleSentence] The project was tedious and took much longer than we had planned.
+
+Tranquil
+  [quizSentence] We spent a tranquil evening sipping wine on the porch and listening to the crickets.
+
+Trepidation
+  [quizSentence] I opened the letter from the IRS with a profound sense of trepidation.
+
+Truncate
+  [quizSentence] We had to truncate our beach vacation by two days because a hurricane was approaching.
+  [alternateExampleSentence] You should truncate the long video to make it fit the screen.
+
+Turgid
+  [quizSentence] The academic paper was so turgid that I reread every sentence twice.
+
+Ubiquitous
+  [exampleSentence] Digital screens have become ubiquitous in our modern and busy urban society.
+
+Umbrage
+  [quizSentence] He took immediate umbrage at my suggestion that his painting looked like a child's drawing.
+
+Unctuous
+  [exampleSentence] The unctuous salesman tried to charm me into buying the expensive car.
+
+Upbraid
+  [quizSentence] My mother will certainly upbraid me if I track muddy footprints across her clean floor.
+
+Vacillate
+  [quizSentence] I continue to vacillate between ordering the steak or the salmon for dinner.
+  [alternateExampleSentence] Do not vacillate when you need to make a fast, important decision.
+
+Validate
+  [quizSentence] You must stamp your parking ticket at the desk to validate it for free exit.
+
+Veracity
+  [alternateExampleSentence] You should check the veracity of the facts before you post online.
+
+Vex
+  [quizSentence] The difficult crossword puzzle continued to vex me for the entire morning.
+  [exampleSentence] The constant noise from the neighbor's house continues to vex me daily.
+  [alternateExampleSentence] It does not help to vex yourself over things you cannot change.
+
+Wallow
+  [exampleSentence] Do not wallow in your sadness after a difficult day at work.
+
+Zephyr
+  [alternateExampleSentence] We enjoyed the cool zephyr while sitting on the deck at night.
+

@@ -13,7 +13,9 @@ final class Word: Identifiable {
     var partOfSpeech: String
     var definition: String
     var exampleSentence: String
-    /// Alternate sentence for in-app daily quiz blanks (widget uses `exampleSentence`).
+    /// Second widget / supplemental-quiz example sentence (cycles with `exampleSentence`).
+    var alternateExampleSentence: String?
+    /// Dedicated sentence for the primary daily quiz (never used for widget rotation).
     var quizSentence: String?
     var etymology: String?
     /// When set with `memoryHookText`, the card shows **Hook** instead of Origin/etymology.
@@ -56,6 +58,7 @@ final class Word: Identifiable {
         partOfSpeech: String,
         definition: String,
         exampleSentence: String,
+        alternateExampleSentence: String? = nil,
         quizSentence: String? = nil,
         etymology: String? = nil,
         memoryHookKind: String? = nil,
@@ -87,6 +90,7 @@ final class Word: Identifiable {
         self.partOfSpeech = partOfSpeech
         self.definition = definition
         self.exampleSentence = exampleSentence
+        self.alternateExampleSentence = alternateExampleSentence
         self.quizSentence = quizSentence
         self.etymology = etymology
         self.memoryHookKind = memoryHookKind
@@ -299,9 +303,25 @@ extension Word {
         return exampleSentence
     }
 
-    /// Example sentence used for widget quiz prompts (excludes in-app-only `quizSentence`).
-    var widgetQuizExampleSentence: String {
-        exampleSentence.trimmingCharacters(in: .whitespacesAndNewlines)
+    /// Example sentences for widget quiz prompts and supplemental quizzes (excludes `quizSentence`).
+    var widgetQuizExampleSentences: [String] {
+        var sentences: [String] = []
+        let primary = exampleSentence.trimmingCharacters(in: .whitespacesAndNewlines)
+        if !primary.isEmpty { sentences.append(primary) }
+        if let alternate = alternateExampleSentence?.trimmingCharacters(in: .whitespacesAndNewlines),
+           !alternate.isEmpty,
+           alternate != primary {
+            sentences.append(alternate)
+        }
+        return sentences
+    }
+
+    /// Picks a rotating widget / supplemental sentence variant.
+    func widgetQuizExampleSentence(at occurrenceIndex: Int) -> String {
+        let sentences = widgetQuizExampleSentences
+        guard !sentences.isEmpty else { return "" }
+        let normalized = ((occurrenceIndex % sentences.count) + sentences.count) % sentences.count
+        return sentences[normalized]
     }
 }
 

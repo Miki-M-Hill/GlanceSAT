@@ -11,6 +11,7 @@ struct GlanceSATQuizEntry: TimelineEntry {
     let word: WidgetWordSnapshot
     let slotKey: String
     let displayPhase: WidgetQuizDisplayPhase
+    let sentenceSlotIndex: Int
     let selectedOption: String?
     let wasCorrect: Bool?
     let isStaleSnapshot: Bool
@@ -22,6 +23,7 @@ struct GlanceSATQuizEntry: TimelineEntry {
         word: WidgetWordSnapshot,
         slotKey: String,
         displayPhase: WidgetQuizDisplayPhase,
+        sentenceSlotIndex: Int = 0,
         selectedOption: String? = nil,
         wasCorrect: Bool? = nil,
         isStaleSnapshot: Bool = false,
@@ -32,6 +34,7 @@ struct GlanceSATQuizEntry: TimelineEntry {
         self.word = word
         self.slotKey = slotKey
         self.displayPhase = displayPhase
+        self.sentenceSlotIndex = sentenceSlotIndex
         self.selectedOption = selectedOption
         self.wasCorrect = wasCorrect
         self.isStaleSnapshot = isStaleSnapshot
@@ -142,11 +145,20 @@ struct GlanceSATQuizProvider: TimelineProvider {
         WidgetQuizSlotStore.finalizeExpiredFeedback(now: date)
         if let feedback = WidgetQuizSlotStore.anyActiveFeedback(now: date),
            let word = quizWord(forSlotKey: feedback.slotKey, in: words) {
+            let slotIndex = WidgetSlotClock.slotIndex(fromSlotKey: feedback.slotKey) ?? 0
+            let sentenceSlotIndex = WidgetQuizSlotStore.resolvedSentenceSlotIndex(
+                slotKey: feedback.slotKey,
+                wordID: word.id,
+                slotIndex: slotIndex,
+                wordCount: words.count,
+                sentenceSlotCount: word.sentenceQuizSlots.count
+            )
             return GlanceSATQuizEntry(
                 date: date,
-                word: word,
+                word: word.withSentenceQuizSlot(sentenceSlotIndex),
                 slotKey: feedback.slotKey,
                 displayPhase: .feedback,
+                sentenceSlotIndex: sentenceSlotIndex,
                 selectedOption: feedback.selectedOption,
                 wasCorrect: feedback.wasCorrect
             )
@@ -159,7 +171,8 @@ struct GlanceSATQuizProvider: TimelineProvider {
             date: date,
             word: word,
             slotKey: slotKey,
-            todayKey: todayKey
+            todayKey: todayKey,
+            dailyWordCount: words.count
         )
     }
 
@@ -211,7 +224,8 @@ struct GlanceSATQuizProvider: TimelineProvider {
                     date: slotDate,
                     word: word,
                     slotKey: slotKey,
-                    todayKey: todayKey
+                    todayKey: todayKey,
+                    dailyWordCount: words.count
                 )
             )
         }
@@ -257,11 +271,21 @@ struct GlanceSATQuizProvider: TimelineProvider {
         }
 
         let transitionDate = feedback.endsAt
+        let slotIndex = WidgetSlotClock.slotIndex(fromSlotKey: feedback.slotKey) ?? 0
+        let sentenceSlotIndex = WidgetQuizSlotStore.resolvedSentenceSlotIndex(
+            slotKey: feedback.slotKey,
+            wordID: word.id,
+            slotIndex: slotIndex,
+            wordCount: words.count,
+            sentenceSlotCount: word.sentenceQuizSlots.count
+        )
+        let displayWord = word.withSentenceQuizSlot(sentenceSlotIndex)
         let feedbackEntry = GlanceSATQuizEntry(
             date: now,
-            word: word,
+            word: displayWord,
             slotKey: feedback.slotKey,
             displayPhase: .feedback,
+            sentenceSlotIndex: sentenceSlotIndex,
             selectedOption: feedback.selectedOption,
             wasCorrect: feedback.wasCorrect
         )
@@ -270,7 +294,9 @@ struct GlanceSATQuizProvider: TimelineProvider {
             word: word,
             slotKey: feedback.slotKey,
             todayKey: todayKey,
-            forceDisplayPhase: .vocab
+            dailyWordCount: words.count,
+            forceDisplayPhase: .vocab,
+            forceSentenceSlotIndex: sentenceSlotIndex
         )
         return Timeline(entries: [feedbackEntry, vocabEntry], policy: .after(transitionDate))
     }
@@ -291,24 +317,43 @@ struct GlanceSATQuizProvider: TimelineProvider {
         word: WidgetWordSnapshot,
         slotKey: String,
         todayKey: String,
-        forceDisplayPhase: WidgetQuizDisplayPhase? = nil
+        dailyWordCount: Int,
+        forceDisplayPhase: WidgetQuizDisplayPhase? = nil,
+        forceSentenceSlotIndex: Int? = nil
     ) -> GlanceSATQuizEntry {
+        let slotIndex = WidgetSlotClock.slotIndex(fromSlotKey: slotKey) ?? WidgetTimelineBuilder.slotIndex(for: date)
+        let sentenceSlotIndex = forceSentenceSlotIndex ?? WidgetQuizSlotStore.resolvedSentenceSlotIndex(
+            slotKey: slotKey,
+            wordID: word.id,
+            slotIndex: slotIndex,
+            wordCount: dailyWordCount,
+            sentenceSlotCount: word.sentenceQuizSlots.count
+        )
+        let resolvedWord = word.withSentenceQuizSlot(sentenceSlotIndex)
+
         let evaluationDate = phaseEvaluationDate(forSlotDate: date)
         let phase: WidgetQuizDisplayPhase
         if let forceDisplayPhase {
             phase = forceDisplayPhase
-        } else if !word.hasSentenceQuiz {
+        } else if !resolvedWord.hasSentenceQuiz {
+            phase = .vocab
+        } else if WidgetQuizSlotStore.isSlotInVocabPhase(slotKey) {
             phase = .vocab
         } else {
-            phase = WidgetQuizSlotStore.resolvedPhase(slotKey: slotKey, wordID: word.id, now: evaluationDate)
+            phase = WidgetQuizSlotStore.resolvedPhase(
+                slotKey: slotKey,
+                wordID: resolvedWord.id,
+                now: evaluationDate
+            )
         }
 
-        let feedbackState = WidgetQuizSlotStore.feedbackDisplayState(slotKey: slotKey, wordID: word.id)
+        let feedbackState = WidgetQuizSlotStore.feedbackDisplayState(slotKey: slotKey, wordID: resolvedWord.id)
         return GlanceSATQuizEntry(
             date: date,
-            word: word,
+            word: resolvedWord,
             slotKey: slotKey,
             displayPhase: phase,
+            sentenceSlotIndex: sentenceSlotIndex,
             selectedOption: phase == .feedback ? feedbackState?.selectedOption : nil,
             wasCorrect: phase == .feedback ? feedbackState?.wasCorrect : nil
         )
@@ -339,6 +384,10 @@ struct GlanceSATQuizProvider: TimelineProvider {
             if let lastIndex = result.indices.last,
                abs(result[lastIndex].date.timeIntervalSince(entry.date)) < 0.5 {
                 let last = result[lastIndex]
+                if last.slotKey == entry.slotKey {
+                    result[lastIndex] = preferredQuizEntry(last, entry)
+                    continue
+                }
                 if last.displayPhase == entry.displayPhase,
                    last.word.id == entry.word.id {
                     continue
@@ -347,6 +396,20 @@ struct GlanceSATQuizProvider: TimelineProvider {
             result.append(entry)
         }
         return result
+    }
+
+    private static func preferredQuizEntry(
+        _ a: GlanceSATQuizEntry,
+        _ b: GlanceSATQuizEntry
+    ) -> GlanceSATQuizEntry {
+        func rank(_ phase: WidgetQuizDisplayPhase) -> Int {
+            switch phase {
+            case .vocab: return 2
+            case .feedback: return 1
+            case .quiz: return 0
+            }
+        }
+        return rank(a.displayPhase) >= rank(b.displayPhase) ? a : b
     }
 }
 

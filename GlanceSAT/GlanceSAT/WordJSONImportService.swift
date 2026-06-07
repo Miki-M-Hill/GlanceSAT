@@ -13,8 +13,9 @@ enum WordJSONImportService {
 
     private static let hasSeededDatabaseKey = "hasSeededDatabase_v1"
     private static let randomSortBackfillKey = "hasBackfilledRandomSortHash_v1"
+    private static let bundledDatabaseSyncHashKey = "bundledDatabaseSyncHash_v1"
 
-    /// Loads bundled JSON once per install; subsequent launches skip the 1.1MB decode entirely.
+    /// Loads bundled JSON on first install; re-syncs lexical fields when bundled content changes.
     /// Concurrent callers coalesce onto a single in-flight import task.
     static func importIfNeeded(container: ModelContainer) async {
         await ImportCoordinator.shared.importIfNeeded(container: container)
@@ -22,21 +23,41 @@ enum WordJSONImportService {
 
     fileprivate static func performImportIfNeeded(container: ModelContainer) async {
         let defaults = UserDefaults.standard
+        guard let url = WordImportActor.bundledDatabaseURL() else { return }
+        guard let bundledHash = WordImportActor.bundledDatabaseContentHash(at: url) else { return }
+
         if databaseHasWords(container: container) {
             if !defaults.bool(forKey: hasSeededDatabaseKey) {
                 defaults.set(true, forKey: hasSeededDatabaseKey)
             }
-            scheduleRandomSortHashBackfill(container: container)
+
+            let lastSyncedHash = defaults.string(forKey: bundledDatabaseSyncHashKey)
+            if lastSyncedHash == bundledHash {
+                scheduleRandomSortHashBackfill(container: container)
+                return
+            }
+
+            await Task.detached(priority: .utility) {
+                do {
+                    try await WordImportActor().importFromBundle(url: url, container: container)
+                    defaults.set(bundledHash, forKey: bundledDatabaseSyncHashKey)
+                    scheduleRandomSortHashBackfill(container: container)
+                    await MainActor.run {
+                        NotificationCenter.default.post(name: .wordDatabaseDidChange, object: nil)
+                    }
+                } catch {
+                    print("Word JSON sync failed: \(error)")
+                }
+            }.value
             return
         }
-
-        guard let url = WordImportActor.bundledDatabaseURL() else { return }
 
         await Task.detached(priority: .utility) {
             do {
                 try await WordImportActor().importFromBundle(url: url, container: container)
                 if databaseHasWords(container: container) {
                     defaults.set(true, forKey: hasSeededDatabaseKey)
+                    defaults.set(bundledHash, forKey: bundledDatabaseSyncHashKey)
                     scheduleRandomSortHashBackfill(container: container)
                     await MainActor.run {
                         NotificationCenter.default.post(name: .wordDatabaseDidChange, object: nil)

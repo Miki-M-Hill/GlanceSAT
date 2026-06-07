@@ -15,19 +15,32 @@ struct AnswerWidgetQuizIntent: AppIntent {
     @Parameter(title: "Slot Key") var slotKey: String
     @Parameter(title: "Selected Option") var selectedOption: String
     @Parameter(title: "Correct Answer") var correctAnswer: String
+    @Parameter(title: "Sentence Slot Index") var sentenceSlotIndex: Int
+    @Parameter(title: "Sentence Slot Count") var sentenceSlotCount: Int
 
     init() {
         wordID = ""
         slotKey = ""
         selectedOption = ""
         correctAnswer = ""
+        sentenceSlotIndex = 0
+        sentenceSlotCount = 1
     }
 
-    init(wordID: String, slotKey: String, selectedOption: String, correctAnswer: String) {
+    init(
+        wordID: String,
+        slotKey: String,
+        selectedOption: String,
+        correctAnswer: String,
+        sentenceSlotIndex: Int,
+        sentenceSlotCount: Int
+    ) {
         self.wordID = wordID
         self.slotKey = slotKey
         self.selectedOption = selectedOption
         self.correctAnswer = correctAnswer
+        self.sentenceSlotIndex = sentenceSlotIndex
+        self.sentenceSlotCount = max(sentenceSlotCount, 1)
     }
 
     func perform() async throws -> some IntentResult {
@@ -48,6 +61,8 @@ struct AnswerWidgetQuizIntent: AppIntent {
             wordID: id,
             selectedOption: selectedOption,
             wasCorrect: wasCorrect,
+            sentenceSlotIndex: sentenceSlotIndex,
+            sentenceSlotCount: max(sentenceSlotCount, 1),
             answeredAt: answeredAt
         )
 

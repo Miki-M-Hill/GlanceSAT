@@ -65,7 +65,8 @@ enum QuizGenerator {
         for words: [SATWord],
         context: ModelContext,
         excludingSlots excludedSlots: Set<String> = [],
-        srsEligibleWordIDs: Set<UUID>? = nil
+        srsEligibleWordIDs: Set<UUID>? = nil,
+        preferDailyQuizSentences: Bool = true
     ) throws -> [QuizQuestion] {
         let due = Array(words.prefix(targetQuestionCount))
         guard !due.isEmpty else { return [] }
@@ -114,10 +115,18 @@ enum QuizGenerator {
         }
 
         let sentenceEligible = remaining
-            .filter {
-                !$0.quizCompletionSentence.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty
-                    && !slotExclusions.contains(Self.questionSlotKey(targetID: $0.id, type: .sentenceCompletion))
-                    && Self.canUseSentenceCompletion(sentence: $0.quizCompletionSentence, word: $0.word)
+            .filter { word in
+                guard !slotExclusions.contains(Self.questionSlotKey(targetID: word.id, type: .sentenceCompletion)) else {
+                    return false
+                }
+                if preferDailyQuizSentences {
+                    let sentence = word.quizCompletionSentence.trimmingCharacters(in: .whitespacesAndNewlines)
+                    return !sentence.isEmpty
+                        && Self.canUseSentenceCompletion(sentence: sentence, word: word.word)
+                }
+                return word.widgetQuizExampleSentences.contains {
+                    Self.canUseSentenceCompletion(sentence: $0, word: word.word)
+                }
             }
             .sorted { sentenceScore(for: $0) > sentenceScore(for: $1) }
 
@@ -125,12 +134,16 @@ enum QuizGenerator {
         var sentenceAssignedIDs = Set<UUID>()
         for word in sentenceEligible {
             guard sentenceQuestions.count < sentenceCap else { break }
-            guard Self.canUseSentenceCompletion(sentence: word.quizCompletionSentence, word: word.word) else {
+            let sentence = preferDailyQuizSentences
+                ? word.quizCompletionSentence
+                : word.widgetQuizExampleSentence(at: sentenceQuestions.count)
+            guard Self.canUseSentenceCompletion(sentence: sentence, word: word.word) else {
                 continue
             }
             sentenceQuestions.append(
                 try makeSentenceCompletionQuestion(
                     for: word,
+                    sentence: sentence,
                     context: context,
                     usedDistractorIDs: &usedDistractorIDs
                 )
@@ -169,6 +182,7 @@ enum QuizGenerator {
                let question = try makeFallbackQuestion(
                    for: word,
                    excludedSlots: slotExclusions,
+                   preferDailyQuizSentences: preferDailyQuizSentences,
                    context: context
                ) {
                 allQuestions.append(question)
@@ -193,6 +207,7 @@ enum QuizGenerator {
                 guard let question = try makeFallbackQuestion(
                     for: word,
                     excludedSlots: slotExclusions,
+                    preferDailyQuizSentences: preferDailyQuizSentences,
                     context: context
                 ) else { continue }
                 allQuestions.append(question)
@@ -210,6 +225,7 @@ enum QuizGenerator {
     private static func makeFallbackQuestion(
         for word: SATWord,
         excludedSlots: Set<String>,
+        preferDailyQuizSentences: Bool,
         context: ModelContext
     ) throws -> QuizQuestion? {
         let synonymSlot = questionSlotKey(targetID: word.id, type: .synonym)
@@ -219,11 +235,20 @@ enum QuizGenerator {
         }
 
         let sentenceSlot = questionSlotKey(targetID: word.id, type: .sentenceCompletion)
-        if !excludedSlots.contains(sentenceSlot),
-           !word.quizCompletionSentence.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty,
-           canUseSentenceCompletion(sentence: word.quizCompletionSentence, word: word.word) {
-            var usedDistractorIDs = Set<UUID>()
-            return try makeSentenceCompletionQuestion(for: word, context: context, usedDistractorIDs: &usedDistractorIDs)
+        if !excludedSlots.contains(sentenceSlot) {
+            let sentence = preferDailyQuizSentences
+                ? word.quizCompletionSentence
+                : word.widgetQuizExampleSentences.first ?? word.exampleSentence
+            if !sentence.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty,
+               canUseSentenceCompletion(sentence: sentence, word: word.word) {
+                var usedDistractorIDs = Set<UUID>()
+                return try makeSentenceCompletionQuestion(
+                    for: word,
+                    sentence: sentence,
+                    context: context,
+                    usedDistractorIDs: &usedDistractorIDs
+                )
+            }
         }
 
         return nil
@@ -382,10 +407,12 @@ enum QuizGenerator {
 
     private static func makeSentenceCompletionQuestion(
         for target: SATWord,
+        sentence: String? = nil,
         context: ModelContext,
         usedDistractorIDs: inout Set<UUID>
     ) throws -> QuizQuestion {
-        let sentenceBuild = Self.buildSentencePrompt(target.quizCompletionSentence, word: target.word)
+        let resolvedSentence = sentence ?? target.quizCompletionSentence
+        let sentenceBuild = Self.buildSentencePrompt(resolvedSentence, word: target.word)
         let prompt = sentenceBuild.prompt
         let inflection = sentenceBuild.inflection
         let correct = Self.inflect(target.word, as: inflection)
