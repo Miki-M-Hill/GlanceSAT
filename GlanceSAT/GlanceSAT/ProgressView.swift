@@ -500,20 +500,52 @@ struct GlanceSATProgressScreen: View {
     }
 
     /// Matches freemium mock: streak + SAT + overview row 1; paywall copy centered in the gap above the tab bar.
+    @ViewBuilder
     private func freeInsightsLayout(metrics: TodayHubLayoutMetrics) -> some View {
+        if GlanceDeviceLayout.isPad {
+            freeInsightsPadLayout(metrics: metrics)
+        } else {
+            freeInsightsPhoneLayout(metrics: metrics)
+        }
+    }
+
+    /// iPad: float paywall copy centered in the gap below the first overview row.
+    private func freeInsightsPadLayout(metrics: TodayHubLayoutMetrics) -> some View {
+        freeInsightsFloatingPaywallLayout(metrics: metrics, placement: .padCentered)
+    }
+
+    /// iPhone: float paywall copy in the gap below the first overview row.
+    private func freeInsightsPhoneLayout(metrics: TodayHubLayoutMetrics) -> some View {
+        freeInsightsFloatingPaywallLayout(metrics: metrics, placement: .phoneUpperMid)
+    }
+
+    private enum InsightsFreemiumPaywallPlacement {
+        /// Button center ~36% down the lock region (legacy iPhone placement).
+        case phoneUpperMid
+        /// Vertically center the caption + CTA block between overview tiles and tab bar.
+        case padCentered
+    }
+
+    private func freeInsightsFloatingPaywallLayout(
+        metrics: TodayHubLayoutMetrics,
+        placement: InsightsFreemiumPaywallPlacement
+    ) -> some View {
         GeometryReader { proxy in
             let topInset = insightsTopContentInset(screenHeight: metrics.size.height)
             let bottomPad = RootTabBarLayout.scrollEndMargin
             let lockBottom = max(0, proxy.size.height - bottomPad)
             let lockTop = max(topInset, insightsOverviewBottomY)
             let lockGapHeight = max(0, lockBottom - lockTop)
-            /// Upper-mid gap: button center lands ~36% down the lock region; subtitle sits 12pt above it.
-            let paywallButtonCenterFromGapTop = lockGapHeight * 0.36
-            let paywallCalloutEstimatedHeight: CGFloat = 96
-            let paywallBlockTop = max(
-                0,
-                paywallButtonCenterFromGapTop - paywallCalloutEstimatedHeight * 0.72
-            )
+            let paywallCalloutEstimatedHeight: CGFloat = placement == .padCentered ? 108 : 96
+            let paywallBlockTop: CGFloat = {
+                switch placement {
+                case .phoneUpperMid:
+                    let paywallButtonCenterFromGapTop = lockGapHeight * 0.36
+                    return max(0, paywallButtonCenterFromGapTop - paywallCalloutEstimatedHeight * 0.72)
+                case .padCentered:
+                    return max(0, (lockGapHeight - paywallCalloutEstimatedHeight) / 2)
+                }
+            }()
 
             ZStack(alignment: .top) {
                 HubPalette.linen

@@ -191,6 +191,10 @@ struct TodayHubLayoutMetrics: Equatable {
 
 /// Layout helpers for consistent sizing across iPhone models (SE → Pro Max).
 enum GlanceDeviceLayout {
+    static var isPad: Bool {
+        UIDevice.current.userInterfaceIdiom == .pad
+    }
+
     /// iPhone XS / mini class and smaller in portrait height.
     static var isCompactPhone: Bool {
         max(UIScreen.main.bounds.width, UIScreen.main.bounds.height) <= 844
