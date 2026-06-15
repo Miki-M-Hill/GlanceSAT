@@ -130,6 +130,8 @@ struct PaywallSelectablePlanRow: View {
 
     private var cardCornerRadius: CGFloat { compactLayout ? 20 : 24 }
     private var cardPadding: CGFloat { compactLayout ? 14 : 20 }
+    private var fullPriceFontSize: CGFloat { compactLayout ? 14 : 15 }
+    private var secondaryPriceFontSize: CGFloat { fullPriceFontSize * 0.8 }
 
     var body: some View {
         Button(action: onSelect) {
@@ -142,21 +144,21 @@ struct PaywallSelectablePlanRow: View {
 
                         HStack(spacing: 6) {
                             Text(priceLabel)
-                                .font(.system(size: compactLayout ? 14 : 15, weight: .medium))
-                                .foregroundStyle(OnboardingColors.secondaryText)
+                                .font(.system(size: fullPriceFontSize, weight: .medium))
+                                .foregroundStyle(OnboardingColors.hubOrange)
 
                             if let strikethroughPriceLabel {
                                 Text(strikethroughPriceLabel)
-                                    .font(.system(size: compactLayout ? 14 : 15, weight: .medium))
-                                    .foregroundStyle(OnboardingColors.tertiaryText)
-                                    .strikethrough(true, color: OnboardingColors.tertiaryText)
+                                    .font(.system(size: secondaryPriceFontSize, weight: .medium))
+                                    .foregroundStyle(OnboardingColors.secondaryText)
+                                    .strikethrough(true, color: OnboardingColors.secondaryText)
                             }
                         }
 
                         if let dailyPriceLabel {
                             Text(dailyPriceLabel)
-                                .font(.system(size: compactLayout ? 14 : 15, weight: .semibold))
-                                .foregroundStyle(OnboardingColors.hubOrange)
+                                .font(.system(size: secondaryPriceFontSize, weight: .semibold))
+                                .foregroundStyle(OnboardingColors.secondaryText)
                         }
                     }
                     .foregroundStyle(OnboardingColors.primaryText)
@@ -186,6 +188,43 @@ struct PaywallSelectablePlanRow: View {
         }
         .buttonStyle(.plain)
         .padding(.top, badgeLabel == nil ? 0 : 6)
+    }
+}
+
+// MARK: - Legal links (paywall chrome)
+
+struct PaywallLegalLinksRow: View {
+    @State private var inAppWebPage: PresentableWebURL?
+
+    var body: some View {
+        HStack(spacing: 0) {
+            Button {
+                inAppWebPage = PresentableWebURL(url: AppExternalLinks.terms)
+            } label: {
+                Text("Terms")
+            }
+            .buttonStyle(.plain)
+
+            Text(" · ")
+                .accessibilityHidden(true)
+
+            Button {
+                inAppWebPage = PresentableWebURL(url: AppExternalLinks.privacy)
+            } label: {
+                Text("Privacy")
+            }
+            .buttonStyle(.plain)
+        }
+        .font(.system(size: 13, weight: .medium))
+        .foregroundStyle(OnboardingColors.secondaryText)
+        .frame(maxWidth: .infinity)
+        .padding(.vertical, 4)
+        .accessibilityElement(children: .combine)
+        .accessibilityLabel("Terms and Privacy Policy")
+        .sheet(item: $inAppWebPage) { page in
+            SafariSheet(url: page.url)
+                .ignoresSafeArea()
+        }
     }
 }
 
@@ -347,6 +386,8 @@ struct AppPaywallChrome: ViewModifier {
                             }
                             .buttonStyle(.plain)
                             .disabled(entitlementManager.isPurchasing || entitlementManager.isRestoring)
+
+                            PaywallLegalLinksRow()
                         }
                         .padding(.horizontal, 24)
                         .padding(.top, 12)

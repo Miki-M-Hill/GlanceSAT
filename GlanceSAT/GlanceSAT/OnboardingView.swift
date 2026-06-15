@@ -39,6 +39,10 @@ struct OnboardingView: View {
     @State private var calibrationContentOpacity: Double = 1
     @State private var showsThreeDayDownsellSheet = false
     @State private var showRedemptionSheet = false
+    @State private var tabContentMetrics = OnboardingLayoutMetrics.resolve(
+        height: max(UIScreen.main.bounds.height - 180, 500)
+    )
+    @State private var slideDirection: OnboardingSlideDirection = .forward
 
     private let screenCount = 9
 
@@ -131,9 +135,7 @@ struct OnboardingView: View {
         .offerCodeRedemption(isPresented: $showRedemptionSheet)
         .onChange(of: entitlementManager.hasPremiumAccess) { _, hasPremium in
             guard hasPremium, page == OnboardingFlowPage.paywall else { return }
-            withAnimation(OnboardingMotion.transition) {
-                page = OnboardingFlowPage.widgetInstall
-            }
+            navigateToPage(OnboardingFlowPage.widgetInstall, direction: .forward)
         }
         .alert("Subscription", isPresented: Binding(
             get: { paywallErrorMessage != nil },
@@ -159,31 +161,78 @@ struct OnboardingView: View {
                     if entitlementManager.canOfferPaywallDownsell {
                         showsThreeDayDownsellSheet = true
                     } else {
-                        withAnimation(OnboardingMotion.transition) {
-                            page = OnboardingFlowPage.widgetInstall
-                        }
+                        navigateToPage(OnboardingFlowPage.widgetInstall, direction: .forward)
                     }
                 }
             )
-            onboardingTabView
+            GeometryReader { proxy in
+                ZStack {
+                    onboardingPageContainer
+                }
+                .frame(width: proxy.size.width, height: proxy.size.height)
+                .clipped()
+                .onAppear {
+                    updateTabContentMetrics(height: proxy.size.height)
+                }
+                .onChange(of: proxy.size.height) { _, height in
+                    updateTabContentMetrics(height: height)
+                }
+            }
             bottomChrome
+        }
+        .environment(\.onboardingLayoutMetrics, tabContentMetrics)
+    }
+
+    private func updateTabContentMetrics(height: CGFloat) {
+        guard height > 100 else { return }
+        let metrics = OnboardingLayoutMetrics.resolve(height: height)
+        guard metrics.isCompact != tabContentMetrics.isCompact
+            || metrics.pickerHeight != tabContentMetrics.pickerHeight else { return }
+        var transaction = Transaction()
+        transaction.disablesAnimations = true
+        withTransaction(transaction) {
+            tabContentMetrics = metrics
         }
     }
 
-    private var onboardingTabView: some View {
-        TabView(selection: $page) {
-            habitsCarouselScreen.tag(0)
-            studySmartScreen.tag(1)
-            timelineScreen.tag(2)
-            goalsScreen.tag(3)
-            calibrationScreen.tag(4)
-            ritualScreen.tag(5)
-            personalizedPlanScreen.tag(6)
-            paywallScreen.tag(7)
-            widgetScreen.tag(8)
+    private var onboardingPageContainer: some View {
+        onboardingScreen(at: page)
+            .compositingGroup()
+            .id(page)
+            .transition(
+                .asymmetric(
+                    insertion: .move(edge: slideDirection.insertionEdge),
+                    removal: .move(edge: slideDirection.removalEdge)
+                )
+            )
+    }
+
+    @ViewBuilder
+    private func onboardingScreen(at index: Int) -> some View {
+        switch index {
+        case 0: habitsCarouselScreen
+        case 1: studySmartScreen
+        case 2: timelineScreen
+        case 3: goalsScreen
+        case 4: calibrationScreen
+        case 5: ritualScreen
+        case 6: personalizedPlanScreen
+        case 7: paywallScreen
+        case 8: widgetScreen
+        default: EmptyView()
         }
-        .tabViewStyle(.page(indexDisplayMode: .never))
-        .animation(.easeInOut(duration: 0.35), value: page)
+    }
+
+    private func navigateToPage(_ newPage: Int, direction: OnboardingSlideDirection) {
+        slideDirection = direction
+        withAnimation(OnboardingMotion.pageSlide) {
+            page = newPage
+        }
+    }
+
+    private func advancePage() {
+        guard page < screenCount - 1 else { return }
+        navigateToPage(page + 1, direction: .forward)
     }
 
     // MARK: - Screens
@@ -249,14 +298,13 @@ struct OnboardingView: View {
                 Spacer(minLength: 40)
 
                 VStack(spacing: 12) {
-                    ForEach(Array(SATTestDate.allCases.enumerated()), id: \.element) { index, option in
+                    ForEach(SATTestDate.allCases, id: \.self) { option in
                         OnboardingSelectionRow(
                             title: option.displayTitle,
                             isSelected: satTestDate == option
                         ) {
                             satTestDateRaw = option.rawValue
                         }
-                        .onboardingStaggered(index: index)
                     }
                 }
                 .animation(OnboardingMotion.selection, value: satTestDateRaw)
@@ -469,10 +517,10 @@ struct OnboardingView: View {
     private var paywallScreen: some View {
         OnboardingPaywallScreen(
             page: $page,
+            slideDirection: $slideDirection,
             satTestDate: satTestDate,
             dreamScoreLabel: dreamScoreDisplayLabel,
             selectedPlan: $selectedPaywallPlan,
-            metrics: OnboardingLayoutMetrics.resolve(),
             entitlementManager: entitlementManager,
             paywallErrorMessage: $paywallErrorMessage,
             showsThreeDayDownsellSheet: $showsThreeDayDownsellSheet
@@ -529,7 +577,8 @@ struct OnboardingView: View {
                 text: "Add the widget, then tap Done."
             )
         }
-        .frame(maxWidth: .infinity, alignment: .leading)
+        .fixedSize(horizontal: true, vertical: false)
+        .frame(maxWidth: .infinity, alignment: .center)
     }
 
     // MARK: - Bottom chrome
@@ -570,6 +619,7 @@ struct OnboardingView: View {
             Button {
                 Task { await OnboardingPaywallScreen.restorePurchases(
                     page: $page,
+                    slideDirection: $slideDirection,
                     entitlementManager: entitlementManager,
                     paywallErrorMessage: $paywallErrorMessage
                 ) }
@@ -597,6 +647,8 @@ struct OnboardingView: View {
             }
             .buttonStyle(.plain)
             .disabled(entitlementManager.isPurchasing || entitlementManager.isRestoring)
+
+            PaywallLegalLinksRow()
         }
 
         return Group {
@@ -683,9 +735,7 @@ struct OnboardingView: View {
 
     private func goBack() {
         guard page > 0 else { return }
-        withAnimation(OnboardingMotion.transition) {
-            page -= 1
-        }
+        navigateToPage(page - 1, direction: .backward)
     }
 
     private func handlePrimaryCTA() {
@@ -701,6 +751,7 @@ struct OnboardingView: View {
                 await OnboardingPaywallScreen.startTrialPurchase(
                     plan: selectedPaywallPlan,
                     page: $page,
+                    slideDirection: $slideDirection,
                     entitlementManager: entitlementManager,
                     paywallErrorMessage: $paywallErrorMessage
                 )
@@ -711,9 +762,7 @@ struct OnboardingView: View {
         }
 
         guard page < screenCount - 1 else { return }
-        withAnimation(OnboardingMotion.transition) {
-            page += 1
-        }
+        advancePage()
     }
 
     private func handleCalibrationSelection(question: DiagnosticQuestion, optionIndex: Int) {
@@ -916,13 +965,29 @@ enum OnboardingColors {
     static let espresso = primaryText
 }
 
+private enum OnboardingSlideDirection {
+    case forward, backward
+
+    var insertionEdge: Edge {
+        switch self {
+        case .forward: return .trailing
+        case .backward: return .leading
+        }
+    }
+
+    var removalEdge: Edge {
+        switch self {
+        case .forward: return .leading
+        case .backward: return .trailing
+        }
+    }
+}
+
 private enum OnboardingMotion {
     static let selection = Animation.spring(response: 0.4, dampingFraction: 0.7, blendDuration: 0)
     static let transition = Animation.spring(response: 0.45, dampingFraction: 0.82, blendDuration: 0)
+    static let pageSlide = Animation.easeInOut(duration: 0.35)
     static let fade = Animation.spring(response: 0.5, dampingFraction: 0.86, blendDuration: 0)
-    static func stagger(_ index: Int) -> Animation {
-        .spring(response: 0.55, dampingFraction: 0.84).delay(Double(index) * 0.07)
-    }
 }
 
 private enum OnboardingLayout {
@@ -945,23 +1010,6 @@ private struct OnboardingPremiumCardModifier: ViewModifier {
     }
 }
 
-private struct OnboardingStaggerModifier: ViewModifier {
-    let index: Int
-    @State private var visible = false
-
-    func body(content: Content) -> some View {
-        content
-            .opacity(visible ? 1 : 0)
-            .offset(y: visible ? 0 : 10)
-            .onAppear {
-                visible = false
-                withAnimation(OnboardingMotion.stagger(index)) {
-                    visible = true
-                }
-            }
-    }
-}
-
 private extension View {
     func onboardingPremiumCard(cornerRadius: CGFloat = 24, padding: CGFloat = 24) -> some View {
         modifier(OnboardingPremiumCardModifier(cornerRadius: cornerRadius, padding: padding))
@@ -969,10 +1017,6 @@ private extension View {
 
     func onboardingTileCard() -> some View {
         onboardingPremiumCard(cornerRadius: 20, padding: 12)
-    }
-
-    func onboardingStaggered(index: Int) -> some View {
-        modifier(OnboardingStaggerModifier(index: index))
     }
 }
 
@@ -1060,6 +1104,17 @@ private struct OnboardingPrimaryButton: View {
 
 // MARK: - Viewport shell (no scrolling)
 
+private struct OnboardingLayoutMetricsKey: EnvironmentKey {
+    static let defaultValue = OnboardingLayoutMetrics.resolve()
+}
+
+extension EnvironmentValues {
+    var onboardingLayoutMetrics: OnboardingLayoutMetrics {
+        get { self[OnboardingLayoutMetricsKey.self] }
+        set { self[OnboardingLayoutMetricsKey.self] = newValue }
+    }
+}
+
 struct OnboardingLayoutMetrics {
     let isCompact: Bool
     let sectionBreak: CGFloat
@@ -1070,7 +1125,8 @@ struct OnboardingLayoutMetrics {
     let widgetSectionSpacing: CGFloat
 
     static func resolve(height: CGFloat = UIScreen.main.bounds.height) -> OnboardingLayoutMetrics {
-        let isCompact = height < 700
+        let effectiveHeight = height > 100 ? height : estimatedTabContentHeight()
+        let isCompact = effectiveHeight < 700
         return OnboardingLayoutMetrics(
             isCompact: isCompact,
             sectionBreak: isCompact ? 28 : 40,
@@ -1080,22 +1136,26 @@ struct OnboardingLayoutMetrics {
             widgetSectionSpacing: isCompact ? 24 : 32
         )
     }
+
+    /// Fallback when a nested GeometryReader has not laid out yet (avoids compact → regular flash).
+    private static func estimatedTabContentHeight() -> CGFloat {
+        max(UIScreen.main.bounds.height - 180, 500)
+    }
 }
 
 private struct OnboardingViewport<Content: View>: View {
+    @Environment(\.onboardingLayoutMetrics) private var metrics
     @ViewBuilder let content: (OnboardingLayoutMetrics) -> Content
 
     var body: some View {
-        GeometryReader { proxy in
-            let metrics = OnboardingLayoutMetrics.resolve(height: proxy.size.height)
-            VStack(spacing: 0) {
-                Spacer(minLength: metrics.isCompact ? 8 : 16)
-                content(metrics)
-                Spacer(minLength: metrics.isCompact ? 8 : 16)
-            }
-            .padding(.horizontal, OnboardingLayout.horizontalPadding)
-            .frame(width: proxy.size.width, height: proxy.size.height)
+        VStack(spacing: 0) {
+            Spacer(minLength: metrics.isCompact ? 8 : 16)
+            content(metrics)
+                .animation(nil, value: metrics.isCompact)
+            Spacer(minLength: metrics.isCompact ? 8 : 16)
         }
+        .padding(.horizontal, OnboardingLayout.horizontalPadding)
+        .frame(maxWidth: .infinity, maxHeight: .infinity)
     }
 }
 
@@ -1238,7 +1298,6 @@ private struct CalibrationQuestionCard: View {
                         ) {
                             onSelect(index)
                         }
-                        .onboardingStaggered(index: index)
                     }
                 }
 
@@ -1930,12 +1989,13 @@ private enum OnboardingFlowPage {
 
 private struct OnboardingPaywallScreen: View {
     @Environment(\.dynamicTypeSize) private var dynamicTypeSize
+    @Environment(\.onboardingLayoutMetrics) private var metrics
 
     @Binding var page: Int
+    @Binding var slideDirection: OnboardingSlideDirection
     let satTestDate: SATTestDate?
     let dreamScoreLabel: String?
     @Binding var selectedPlan: SubscriptionPlan
-    let metrics: OnboardingLayoutMetrics
     @ObservedObject var entitlementManager: EntitlementManager
     @Binding var paywallErrorMessage: String?
     @Binding var showsThreeDayDownsellSheet: Bool
@@ -1949,6 +2009,7 @@ private struct OnboardingPaywallScreen: View {
     static func startTrialPurchase(
         plan: SubscriptionPlan,
         page: Binding<Int>,
+        slideDirection: Binding<OnboardingSlideDirection>,
         entitlementManager: EntitlementManager,
         paywallErrorMessage: Binding<String?>
     ) async {
@@ -1959,7 +2020,7 @@ private struct OnboardingPaywallScreen: View {
                 break
             case .completed(let entitlementActive):
                 if entitlementActive {
-                    advanceToWidgetInstall(page: page)
+                    advanceToWidgetInstall(page: page, slideDirection: slideDirection)
                 } else {
                     paywallErrorMessage.wrappedValue =
                         "Subscription is still activating. Tap Restore Purchases, or wait a moment and try again."
@@ -1975,6 +2036,7 @@ private struct OnboardingPaywallScreen: View {
     @MainActor
     static func restorePurchases(
         page: Binding<Int>,
+        slideDirection: Binding<OnboardingSlideDirection>,
         entitlementManager: EntitlementManager,
         paywallErrorMessage: Binding<String?>
     ) async {
@@ -1984,7 +2046,7 @@ private struct OnboardingPaywallScreen: View {
             case .cancelled:
                 break
             case .completed:
-                advanceToWidgetInstall(page: page)
+                advanceToWidgetInstall(page: page, slideDirection: slideDirection)
             case .noActiveEntitlement:
                 paywallErrorMessage.wrappedValue = "No active subscription found."
             }
@@ -1994,8 +2056,12 @@ private struct OnboardingPaywallScreen: View {
     }
 
     @MainActor
-    private static func advanceToWidgetInstall(page: Binding<Int>) {
-        withAnimation(OnboardingMotion.transition) {
+    private static func advanceToWidgetInstall(
+        page: Binding<Int>,
+        slideDirection: Binding<OnboardingSlideDirection>
+    ) {
+        slideDirection.wrappedValue = .forward
+        withAnimation(OnboardingMotion.pageSlide) {
             page.wrappedValue = OnboardingFlowPage.widgetInstall
         }
     }
@@ -2044,7 +2110,7 @@ private struct OnboardingPaywallScreen: View {
                     Spacer(minLength: usesCompactPaywallLayout ? 14 : 28)
 
                     VStack(spacing: usesCompactPaywallLayout ? 10 : 14) {
-                        ForEach(Array(visiblePlans.enumerated()), id: \.element) { index, plan in
+                        ForEach(visiblePlans) { plan in
                             PaywallSelectablePlanRow(
                                 title: plan.onboardingTitle,
                                 priceLabel: entitlementManager.localizedCompactPriceLabel(for: plan),
@@ -2058,7 +2124,6 @@ private struct OnboardingPaywallScreen: View {
                             ) {
                                 selectedPlan = plan
                             }
-                            .onboardingStaggered(index: index)
                         }
                     }
                     .padding(.top, usesCompactPaywallLayout ? 2 : 4)
@@ -2074,7 +2139,7 @@ private struct OnboardingPaywallScreen: View {
             OnboardingThreeDayDownsellSheet(
                 pendingNavigationAfterThreeDayPass: $pendingNavigationAfterThreeDayPass,
                 onContinueWithoutPass: {
-                    Self.advanceToWidgetInstall(page: $page)
+                    Self.advanceToWidgetInstall(page: $page, slideDirection: $slideDirection)
                 }
             )
             .presentationDetents([.medium, .large])
@@ -2087,7 +2152,7 @@ private struct OnboardingPaywallScreen: View {
             guard newValue > Date().timeIntervalSince1970 else { return }
             pendingNavigationAfterThreeDayPass = false
             DispatchQueue.main.async {
-                Self.advanceToWidgetInstall(page: $page)
+                Self.advanceToWidgetInstall(page: $page, slideDirection: $slideDirection)
             }
         }
     }
