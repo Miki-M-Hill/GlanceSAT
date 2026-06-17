@@ -10,6 +10,7 @@ import SwiftUI
 
 struct AppPaywallScreen: View {
     var dreamScoreLabel: String?
+    var paywallSource: String = "unknown"
     @Binding var selectedPlan: SubscriptionPlan
     @ObservedObject var entitlementManager: EntitlementManager
     let onClose: () -> Void
@@ -79,6 +80,10 @@ struct AppPaywallScreen: View {
                                 compactLayout: false
                             ) {
                                 selectedPlan = plan
+                                AnalyticsManager.trackPaywallPlanTapped(
+                                    planID: plan.rawValue,
+                                    source: paywallSource
+                                )
                             }
                         }
                     }
@@ -317,6 +322,7 @@ struct AppPaywallChrome: ViewModifier {
                     VStack(spacing: 0) {
                         AppPaywallScreen(
                             dreamScoreLabel: onboardingDreamScore.nilIfEmpty,
+                            paywallSource: paywallPresenter.lastPresentedSource ?? "unknown",
                             selectedPlan: $selectedPlan,
                             entitlementManager: entitlementManager,
                             onClose: { paywallPresenter.handlePaywallCloseAttempt() }
@@ -424,6 +430,8 @@ struct AppPaywallChrome: ViewModifier {
 
     @MainActor
     private func startTrialPurchase() async {
+        let source = paywallPresenter.lastPresentedSource ?? "unknown"
+        AnalyticsManager.trackCheckoutStarted(source: source, planID: selectedPlan.rawValue)
         do {
             let result = try await entitlementManager.purchase(plan: selectedPlan)
             switch result {
@@ -444,6 +452,8 @@ struct AppPaywallChrome: ViewModifier {
 
     @MainActor
     private func restorePurchases() async {
+        let source = paywallPresenter.lastPresentedSource ?? "unknown"
+        AnalyticsManager.trackRestorePurchasesTapped(source: source)
         do {
             let result = try await entitlementManager.restorePurchases()
             switch result {

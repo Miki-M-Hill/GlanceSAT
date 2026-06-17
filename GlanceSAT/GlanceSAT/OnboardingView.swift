@@ -117,13 +117,19 @@ struct OnboardingView: View {
         .tint(OnboardingColors.sageGreen)
         .onAppear {
             applyDefaultPaywallSelection()
+            AnalyticsManager.trackOnboardingStarted()
         }
-        .onChange(of: satTestDateRaw) { _, _ in
+        .onChange(of: satTestDateRaw) { _, newValue in
+            guard !newValue.isEmpty else { return }
+            AnalyticsManager.trackOnboardingTimelineSelected(satTestDate: newValue)
             applyDefaultPaywallSelection()
         }
         .onChange(of: page) { oldPage, newPage in
             if oldPage == 4 && newPage != 4 {
                 cancelCalibrationAdvanceTask()
+            }
+            if newPage == OnboardingFlowPage.paywall {
+                AnalyticsManager.trackPaywallViewed(source: "onboarding")
             }
         }
         .onChange(of: previousScoreRaw) { _, _ in
@@ -158,6 +164,7 @@ struct OnboardingView: View {
                 onBack: { goBack() },
                 showsCloseButton: page == OnboardingFlowPage.paywall,
                 onClose: {
+                    AnalyticsManager.trackPaywallDismissed(source: "onboarding")
                     if entitlementManager.canOfferPaywallDownsell {
                         showsThreeDayDownsellSheet = true
                     } else {
@@ -540,13 +547,19 @@ struct OnboardingView: View {
             ScrollView(.vertical, showsIndicators: false) {
                 VStack(alignment: .center, spacing: metrics.widgetSectionSpacing) {
                     OnboardingHeaderBlock(
-                        title: "Add Glance to your lock screen",
-                        metrics: metrics
+                        title: "Add Glance to your Lock Screen",
+                        metrics: metrics,
+                        titleLineLimit: 2,
+                        titleCompactFontSize: 26,
+                        titleRegularFontSize: 30
                     )
 
                     LockScreenStaticPreview(isCompact: metrics.isCompact)
 
-                    widgetInstallSteps
+                    widgetInstallSteps(
+                        isCompact: metrics.isCompact,
+                        availableWidth: proxy.size.width - (OnboardingLayout.horizontalPadding * 2)
+                    )
                 }
                 .frame(maxWidth: .infinity, alignment: .top)
                 .frame(minHeight: contentMinHeight, alignment: .top)
@@ -558,26 +571,32 @@ struct OnboardingView: View {
         }
     }
 
-    private var widgetInstallSteps: some View {
-        VStack(alignment: .leading, spacing: 14) {
+    private func widgetInstallSteps(isCompact: Bool, availableWidth: CGFloat) -> some View {
+        let contentWidth = min(availableWidth, 340)
+
+        return VStack(alignment: .leading, spacing: isCompact ? 12 : 14) {
             WidgetInstallStep(
                 number: 1,
-                text: "Long-press your Lock Screen and tap Customize."
+                text: "Long-press your Lock Screen and tap Customize.",
+                isCompact: isCompact
             )
             WidgetInstallStep(
                 number: 2,
-                text: "Tap the widget area below the time."
+                text: "Tap the widget area below the time.",
+                isCompact: isCompact
             )
             WidgetInstallStep(
                 number: 3,
-                text: "Select Glance from the widget list."
+                text: "Select Glance from the widget list.",
+                isCompact: isCompact
             )
             WidgetInstallStep(
                 number: 4,
-                text: "Add the widget, then tap Done."
+                text: "Add the widget, then tap Done.",
+                isCompact: isCompact
             )
         }
-        .fixedSize(horizontal: true, vertical: false)
+        .frame(width: contentWidth, alignment: .leading)
         .frame(maxWidth: .infinity, alignment: .center)
     }
 
@@ -590,11 +609,11 @@ struct OnboardingView: View {
                 isEnabled: !isFinishingOnboarding,
                 isLoading: isFinishingOnboarding,
                 loadingTitle: "Getting your words ready…",
-                action: finishOnboarding
+                action: { finishOnboarding(widgetDeferred: false) }
             )
 
             Button("I'll do this in a minute") {
-                finishOnboarding()
+                finishOnboarding(widgetDeferred: true)
             }
             .font(.system(size: 15, weight: .medium))
             .foregroundStyle(OnboardingColors.secondaryText)
@@ -617,6 +636,7 @@ struct OnboardingView: View {
                 .padding(.vertical, 2)
 
             Button {
+                AnalyticsManager.trackRestorePurchasesTapped(source: "onboarding")
                 Task { await OnboardingPaywallScreen.restorePurchases(
                     page: $page,
                     slideDirection: $slideDirection,
@@ -735,11 +755,33 @@ struct OnboardingView: View {
 
     private func goBack() {
         guard page > 0 else { return }
+        AnalyticsManager.trackOnboardingBackTapped(fromScreenIndex: page)
         navigateToPage(page - 1, direction: .backward)
+    }
+
+    private func onboardingStepName(for page: Int) -> String? {
+        switch page {
+        case 0: return "habits"
+        case 1: return "study_smart"
+        case 2: return "sat_date"
+        case 3: return "goals"
+        case 4: return "diagnostic"
+        case 5: return "reminder"
+        case 6: return "plan_preview"
+        case 7: return "paywall"
+        case 8: return "widget_install"
+        default: return nil
+        }
     }
 
     private func handlePrimaryCTA() {
         switch page {
+        case 3:
+            AnalyticsManager.trackOnboardingGoalsSelected(
+                isFirstSAT: isFirstSAT == true,
+                previousScore: previousScoreRaw.isEmpty ? nil : previousScoreRaw,
+                dreamScore: dreamScoreRaw
+            )
         case 4:
             persistDiagnosticBaseline()
         case 5:
@@ -747,6 +789,10 @@ struct OnboardingView: View {
                 await NotificationManager.requestAuthorizationAndScheduleReminders()
             }
         case OnboardingFlowPage.paywall:
+            AnalyticsManager.trackCheckoutStarted(
+                source: "onboarding",
+                planID: selectedPaywallPlan.rawValue
+            )
             Task {
                 await OnboardingPaywallScreen.startTrialPurchase(
                     plan: selectedPaywallPlan,
@@ -759,6 +805,10 @@ struct OnboardingView: View {
             return
         default:
             break
+        }
+
+        if let stepName = onboardingStepName(for: page) {
+            AnalyticsManager.trackOnboardingStepCompleted(stepName: stepName)
         }
 
         guard page < screenCount - 1 else { return }
@@ -775,6 +825,10 @@ struct OnboardingView: View {
         guard diagnosticAnswers[question.id] == nil else { return }
 
         diagnosticAnswers[question.id] = optionIndex
+        AnalyticsManager.trackOnboardingCalibrationAnswer(
+            questionID: question.id,
+            optionIndex: optionIndex
+        )
 
         withAnimation(.easeIn(duration: 0.15)) {
             visibleInsight = question.insightTag
@@ -795,6 +849,7 @@ struct OnboardingView: View {
     private func skipCalibrationIfWaiting() {
         guard calibrationAdvanceTask != nil else { return }
         guard let question = DiagnosticQuestionBank.questions[safe: calibrationQuestionIndex] else { return }
+        AnalyticsManager.trackOnboardingCalibrationSkippedWait()
         cancelCalibrationAdvanceTask()
         advanceCalibration(after: question)
     }
@@ -822,6 +877,7 @@ struct OnboardingView: View {
                 persistDiagnosticBaseline()
                 calibrationShowsReveal = true
                 calibrationComplete = true
+                AnalyticsManager.trackOnboardingCalibrationCompleted(diagnosticBaseline: diagnosticBaseline)
             } else {
                 calibrationQuestionIndex += 1
             }
@@ -851,9 +907,18 @@ struct OnboardingView: View {
         }
     }
 
-    private func finishOnboarding() {
+    private func finishOnboarding(widgetDeferred: Bool? = nil) {
         guard !isFinishingOnboarding else { return }
         isFinishingOnboarding = true
+        if let widgetDeferred {
+            if widgetDeferred {
+                AnalyticsManager.trackOnboardingWidgetDeferred()
+            } else {
+                AnalyticsManager.trackOnboardingWidgetConfirmed()
+            }
+        }
+        AnalyticsManager.trackOnboardingStepCompleted(stepName: "widget_install")
+        AnalyticsManager.trackOnboardingCompleted()
         WidgetAppGroup.saveOnboardingCompletionDate()
         Task { @MainActor in
             await WidgetReminderNotificationCoordinator.updateWidgetReminderNotification()
@@ -1133,7 +1198,7 @@ struct OnboardingLayoutMetrics {
             lockScreenHeight: isCompact ? 188 : 228,
             pickerHeight: isCompact ? 112 : 132,
             widgetPlaceholderHeight: isCompact ? 88 : 108,
-            widgetSectionSpacing: isCompact ? 24 : 32
+            widgetSectionSpacing: isCompact ? 20 : 28
         )
     }
 
@@ -1165,18 +1230,29 @@ private struct OnboardingHeaderBlock: View {
     let title: String
     var subheader: String?
     let metrics: OnboardingLayoutMetrics
+    var titleLineLimit: Int = 1
+    var titleCompactFontSize: CGFloat?
+    var titleRegularFontSize: CGFloat?
+
+    private var resolvedTitleFontSize: CGFloat {
+        if metrics.isCompact {
+            return titleCompactFontSize ?? 28
+        }
+        return titleRegularFontSize ?? 34
+    }
 
     var body: some View {
-        VStack(alignment: .center, spacing: 12) {
+        VStack(alignment: .center, spacing: metrics.isCompact ? 10 : 12) {
             Text(title)
-                .font(.system(size: metrics.isCompact ? 28 : 34, weight: .bold, design: .default))
-                .tracking(-0.8)
+                .font(.system(size: resolvedTitleFontSize, weight: .bold, design: .default))
+                .tracking(titleLineLimit > 1 ? -0.4 : -0.8)
                 .foregroundStyle(OnboardingColors.primaryText)
                 .lineSpacing(2)
                 .layoutPriority(1)
-                .lineLimit(1)
-                .minimumScaleFactor(0.62)
+                .lineLimit(titleLineLimit)
+                .minimumScaleFactor(titleLineLimit > 1 ? 0.9 : 0.62)
                 .multilineTextAlignment(.center)
+                .frame(maxWidth: .infinity)
 
             if let subheader {
                 OnboardingBodyText(subheader, compactScale: metrics.isCompact)
@@ -1641,22 +1717,28 @@ private struct PersonalizedPlanTile: View {
 private struct WidgetInstallStep: View {
     let number: Int
     let text: String
+    var isCompact: Bool = false
+
+    private var badgeSize: CGFloat { isCompact ? 24 : 26 }
+    private var horizontalSpacing: CGFloat { isCompact ? 10 : 12 }
+    private var badgeColumnWidth: CGFloat { isCompact ? 24 : 26 }
 
     var body: some View {
-        HStack(alignment: .top, spacing: 12) {
+        HStack(alignment: .top, spacing: horizontalSpacing) {
             Text("\(number)")
-                .font(.system(size: 13, weight: .bold))
+                .font(.system(size: isCompact ? 12 : 13, weight: .bold))
                 .foregroundColor(.white)
-                .frame(width: 26, height: 26)
+                .frame(width: badgeSize, height: badgeSize)
                 .background(OnboardingColors.sageGreen, in: Circle())
+                .frame(width: badgeColumnWidth, alignment: .center)
 
             Text(text)
-                .font(.system(size: 17, weight: .medium))
+                .font(.system(size: isCompact ? 15 : 16, weight: .medium))
                 .foregroundStyle(OnboardingColors.primaryText)
-                .lineSpacing(4)
+                .lineSpacing(isCompact ? 3 : 4)
                 .multilineTextAlignment(.leading)
-                .minimumScaleFactor(0.85)
                 .fixedSize(horizontal: false, vertical: true)
+                .frame(maxWidth: .infinity, alignment: .leading)
         }
     }
 }
@@ -2123,6 +2205,7 @@ private struct OnboardingPaywallScreen: View {
                                 compactLayout: usesCompactPaywallLayout
                             ) {
                                 selectedPlan = plan
+                                AnalyticsManager.trackPaywallPlanTapped(planID: plan.rawValue, source: "onboarding")
                             }
                         }
                     }

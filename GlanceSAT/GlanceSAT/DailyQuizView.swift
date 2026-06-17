@@ -50,6 +50,7 @@ struct DailyQuizView: View {
     @State private var shouldAnimateBetweenQuestions = false
     /// Session day keys before this quiz was saved — used for streak-transition review prompts.
     @State private var preQuizSessionDayKeys: Set<String>?
+    @State private var didTrackQuizStart = false
 
     /// Matches `answerOptions` row spacing so the footer sits the same distance below the last answer.
     private static let answerOptionVerticalSpacing: CGFloat = 12
@@ -111,6 +112,7 @@ struct DailyQuizView: View {
             }
             resetQuestionTimer()
             capturePreQuizStreakSnapshotIfNeeded()
+            trackDailyQuizStartedIfNeeded()
         }
         .onChange(of: activeQuestionID, initial: true) { _, _ in
             resetQuestionTimer()
@@ -118,6 +120,7 @@ struct DailyQuizView: View {
         .onChange(of: questionDeckToken, initial: true) { _, _ in
             shouldAnimateBetweenQuestions = false
             resetQuestionTimer()
+            trackDailyQuizStartedIfNeeded()
         }
         .onChange(of: isContentLoading) { _, isLoading in
             guard !isLoading else { return }
@@ -629,6 +632,7 @@ struct DailyQuizView: View {
             if !newlyMasteredWords.contains(where: { $0.id == mastered.id }) {
                 newlyMasteredWords.append(mastered)
             }
+            AnalyticsManager.trackWordMastered(wordID: word.id, word: word.word, source: "daily_quiz")
         }
         try? modelContext.save()
     }
@@ -650,6 +654,16 @@ struct DailyQuizView: View {
             selectedAnswer = snapshot.selectedAnswer
             isAnswerRevealed = snapshot.isAnswerRevealed
         }
+    }
+
+    private func trackDailyQuizStartedIfNeeded() {
+        guard !didTrackQuizStart, !questions.isEmpty, !quizComplete else { return }
+        guard resume == nil, currentQuestionIndex == 0 else { return }
+        didTrackQuizStart = true
+        AnalyticsManager.trackDailyQuizStarted(
+            questionCount: questions.count,
+            isSupplemental: isSupplementalPersistence
+        )
     }
 
     private func persistInProgressIfNeeded() {
@@ -682,6 +696,11 @@ struct DailyQuizView: View {
         )
         modelContext.insert(session)
         try? modelContext.save()
+        AnalyticsManager.trackDailyQuizCompleted(
+            wordsReviewed: questions.count,
+            score: correctCount,
+            isSupplemental: isSupplementalPersistence
+        )
         onComplete?(
             DailyQuizCompletion(
                 totalQuestions: questions.count,

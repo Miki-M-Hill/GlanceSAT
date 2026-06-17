@@ -593,7 +593,7 @@ struct GlanceSATProgressScreen: View {
                 .fixedSize(horizontal: false, vertical: true)
 
             Button {
-                paywallPresenter.presentPaywall()
+                paywallPresenter.presentPaywall(source: "insights")
             } label: {
                 Text("See all insights")
                     .font(GlanceHubFont.semibold(17))

@@ -130,6 +130,7 @@ final class EntitlementManager: ObservableObject {
     func activateThreeDayPass(markDownsellClaimed: Bool) {
         activeThreeDayPassExpiration = Date().addingTimeInterval(Self.threeDayPassDuration).timeIntervalSince1970
         if markDownsellClaimed {
+            AnalyticsManager.trackThreeDayPassClaimed()
             KeychainBooleanStore.setBool(true, forKey: Self.hasClaimedNoCardDownsellKey)
             UserDefaults.standard.removeObject(forKey: Self.hasClaimedNoCardDownsellKey)
         }
@@ -311,6 +312,7 @@ final class EntitlementManager: ObservableObject {
             WidgetCenter.shared.reloadAllTimelines()
             adoptLiveSubscriptionStateAfterRealPurchase()
             if isPremiumEntitlementActive(customerInfo: result.customerInfo) {
+                AnalyticsManager.trackSubscriptionCompleted(planID: plan.rawValue)
                 Task { await NotificationManager.recordTrialStartAndScheduleDay5Reminder() }
             }
             return .completed(entitlementActive: isPremiumEntitlementActive(customerInfo: result.customerInfo))
@@ -337,6 +339,7 @@ final class EntitlementManager: ObservableObject {
             WidgetCenter.shared.reloadAllTimelines()
             adoptLiveSubscriptionStateAfterRealPurchase()
             if isPremiumEntitlementActive(customerInfo: customerInfo) {
+                AnalyticsManager.trackSubscriptionRestored()
                 let expiration = customerInfo.entitlements[Self.premiumEntitlementID]?.expirationDate
                 Task { await NotificationManager.recordTrialStartFromEntitlementExpiration(expiration) }
                 return .completed(entitlementActive: true)

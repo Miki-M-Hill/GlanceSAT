@@ -6,6 +6,10 @@
 	<string>6771475177</string>
 	<key>RevenueCatAPIKey</key>
 	<string>appl_rvLSfKMEPGwoMicqywylEfEJBaf</string>
+	<key>PostHogProjectToken</key>
+	<string>phc_mx4iotWVrbAaqtNH479GbbPg9gbYjezWWKaP4My5vDkv</string>
+	<key>PostHogHost</key>
+	<string>https://us.i.posthog.com</string>
 	<key>LSApplicationQueriesSchemes</key>
 	<array>
 		<string>instagram</string>

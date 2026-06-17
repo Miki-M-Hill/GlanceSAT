@@ -232,7 +232,8 @@ struct ExploreView: View {
             currentVisibleWordId = revert
             trackedScrollPosition = revert
             LibraryPagerDiagnostics.endProgrammaticScroll("freemiumRevert")
-            paywallPresenter.presentPaywall(onDismissed: {
+            AnalyticsManager.trackDailyLimitHit(source: "library_swipe", limitType: "library_pager")
+            paywallPresenter.presentPaywall(source: "library_swipe", onDismissed: {
                 NotificationCenter.default.post(name: .libraryFreemiumPaywallDismissed, object: nil)
             })
             return
@@ -351,8 +352,9 @@ struct ExploreView: View {
                 )
                 handleIndexRevisionChanged()
             }
-            .onChange(of: isLibraryTabActive) { _, isActive in
+            .onChange(of: isLibraryTabActive, initial: true) { _, isActive in
                 guard isActive else { return }
+                AnalyticsManager.trackLibraryViewed()
                 libraryViewModel.ensureLexicalDataIsFresh()
                 performLibraryRefreshIfNeeded()
                 resnapLibraryScrollPosition()

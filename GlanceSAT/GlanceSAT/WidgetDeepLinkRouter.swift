@@ -56,6 +56,7 @@ enum WidgetDeepLinkRouter {
         guard matchesSupportedScheme(url) else { return false }
 
         if isTodayHostOrPath(url) {
+            AnalyticsManager.trackWidgetTapped(destination: "today")
             UserDefaults.standard.set(true, forKey: navigateToTodayKey)
             UserDefaults.standard.removeObject(forKey: pendingWordIDKey)
             UserDefaults.standard.removeObject(forKey: navigateToPaywallKey)
@@ -64,6 +65,7 @@ enum WidgetDeepLinkRouter {
         }
 
         if isPaywallHostOrPath(url) {
+            AnalyticsManager.trackWidgetTapped(destination: "paywall")
             UserDefaults.standard.set(true, forKey: navigateToPaywallKey)
             UserDefaults.standard.removeObject(forKey: pendingWordIDKey)
             UserDefaults.standard.removeObject(forKey: navigateToTodayKey)
@@ -72,6 +74,7 @@ enum WidgetDeepLinkRouter {
         }
 
         if isSettingsHostOrPath(url) {
+            AnalyticsManager.trackWidgetTapped(destination: "settings")
             UserDefaults.standard.set(true, forKey: navigateToSettingsKey)
             UserDefaults.standard.removeObject(forKey: pendingWordIDKey)
             UserDefaults.standard.removeObject(forKey: navigateToTodayKey)
@@ -80,6 +83,7 @@ enum WidgetDeepLinkRouter {
         }
 
         guard let wordID = wordID(from: url) else { return false }
+        AnalyticsManager.trackWidgetTapped(destination: "library_word", wordID: wordID.uuidString)
         UserDefaults.standard.removeObject(forKey: navigateToTodayKey)
         UserDefaults.standard.set(wordID.uuidString, forKey: pendingWordIDKey)
         return true

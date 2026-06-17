@@ -23,12 +23,14 @@ enum NotificationManager {
 
     static func requestAuthorizationAndScheduleReminders(for daysAhead: Int = 7) async {
         let center = UNUserNotificationCenter.current()
+        AnalyticsManager.trackNotificationPermissionPrompted()
         do {
             let granted = try await center.requestAuthorization(options: [.alert, .sound, .badge])
+            AnalyticsManager.trackNotificationPermissionResult(granted: granted)
             guard granted else { return }
             await scheduleStandardDailyReminders(for: daysAhead)
         } catch {
-            // Notification setup should never block onboarding.
+            AnalyticsManager.trackNotificationPermissionResult(granted: false)
         }
     }
 

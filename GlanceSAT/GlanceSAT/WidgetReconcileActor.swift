@@ -50,7 +50,11 @@ actor WidgetReconcileActor {
             default:
                 continue
             }
+            let wasMastered = word.status.lowercased() == "mastered"
             _ = SRSEngine.calculateNextReview(word: word, quality: quality, reviewedAt: reviewedAt)
+            if !wasMastered, word.status.lowercased() == "mastered" {
+                AnalyticsManager.trackWordMastered(wordID: word.id, word: word.word, source: "widget")
+            }
 
             appliedKeys.insert(dedupeKey)
             didMutate = true

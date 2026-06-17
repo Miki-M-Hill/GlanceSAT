@@ -139,6 +139,7 @@ private struct AppRootView: View {
         .onChange(of: scenePhase) { _, phase in
             switch phase {
             case .active:
+                AnalyticsManager.checkForWidgetInstalls()
                 Task(priority: .userInitiated) {
                     await WordJSONImportService.importIfNeeded(container: modelContext.container)
                     await refreshWidgetDataFromHost()
@@ -177,7 +178,8 @@ private struct AppRootView: View {
             guard WidgetDeepLinkRouter.handleIncomingURL(url) else { return }
             AppLaunchState.markDataLoaded()
             if WidgetDeepLinkRouter.consumeNavigateToPaywallFromWidget() {
-                paywallPresenter.presentPaywall()
+                AnalyticsManager.trackDailyLimitHit(source: "widget", limitType: "widget_daily_limit")
+                paywallPresenter.presentPaywall(source: "widget")
                 return
             }
             if WidgetDeepLinkRouter.consumeNavigateToSettingsFromWidget() {
@@ -189,7 +191,8 @@ private struct AppRootView: View {
         .onAppear {
             SATExamDateStore.migrateToAppGroupIfNeeded()
             if WidgetDeepLinkRouter.consumeNavigateToPaywallFromWidget() {
-                paywallPresenter.presentPaywall()
+                AnalyticsManager.trackDailyLimitHit(source: "widget", limitType: "widget_daily_limit")
+                paywallPresenter.presentPaywall(source: "widget")
             } else if WidgetDeepLinkRouter.consumeNavigateToSettingsFromWidget() {
                 applyWidgetSettingsDeepLinkRouting()
             }
@@ -220,7 +223,8 @@ private struct AppRootView: View {
 
         if let wordID = WidgetDeepLinkRouter.peekPendingWordID() {
             if libraryFreemiumSession.isLockedForSession, !entitlementManager.hasPremiumAccess {
-                paywallPresenter.presentPaywall()
+                AnalyticsManager.trackDailyLimitHit(source: "library_tab", limitType: "library_session_lock")
+                paywallPresenter.presentPaywall(source: "library_tab")
                 return
             }
             var transaction = Transaction()
@@ -390,13 +394,15 @@ private struct AppRootView: View {
         if tab == .library,
            libraryFreemiumSession.isLockedForSession,
            !entitlementManager.hasPremiumAccess {
-            paywallPresenter.presentPaywall()
+            AnalyticsManager.trackDailyLimitHit(source: "library_tab", limitType: "library_session_lock")
+            paywallPresenter.presentPaywall(source: "library_tab")
             return
         }
 
         withAnimation(.easeInOut(duration: 0.22)) {
             selectedTab = tab
         }
+        AnalyticsManager.trackTabSelected(tab: tab.title.lowercased())
         updateLibrarySwipeNudge(for: tab)
     }
 
@@ -730,6 +736,7 @@ struct GlanceSATApp: App {
 
     init() {
         GlanceNavigationBarAppearance.configure()
+        AnalyticsManager.configureIfNeeded()
         EntitlementManager.configureIfNeeded()
         #if DEBUG
         LibraryPagerDiagnostics.isEnabled = true

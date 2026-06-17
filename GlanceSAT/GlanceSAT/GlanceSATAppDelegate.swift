@@ -45,6 +45,7 @@ final class GlanceSATAppDelegate: NSObject, UIApplicationDelegate, UNUserNotific
         didReceive response: UNNotificationResponse,
         withCompletionHandler completionHandler: @escaping () -> Void
     ) {
+        AnalyticsManager.trackNotificationTapped(identifier: response.notification.request.identifier)
         _ = NotificationManager.handleTrialReminderResponse(response)
         completionHandler()
     }

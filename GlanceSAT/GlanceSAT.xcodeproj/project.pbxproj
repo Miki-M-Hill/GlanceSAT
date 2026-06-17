@@ -9,6 +9,8 @@
 /* Begin PBXBuildFile section */
 		A1F0010B2FA84BFA00FDDC59 /* GlanceSATWidgets.appex in Embed Foundation Extensions */ = {isa = PBXBuildFile; fileRef = A1F001022FA84BFA00FDDC59 /* GlanceSATWidgets.appex */; settings = {ATTRIBUTES = (CodeSignOnCopy, RemoveHeadersOnCopy, ); }; };
 		DB9377472FC4DEA10029E909 /* RevenueCat in Frameworks */ = {isa = PBXBuildFile; productRef = RC001PROD2FA84BFA00FDDC59 /* RevenueCat */; };
+		PH001BLD2FC4DEA10029E909 /* PostHog in Frameworks */ = {isa = PBXBuildFile; productRef = PH001PROD2FA84BFA00FDDC59 /* PostHog */; };
+		SE001BLD2FC4DEA10029E909 /* Sentry in Frameworks */ = {isa = PBXBuildFile; productRef = SE001PROD2FA84BFA00FDDC59 /* Sentry */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -80,6 +82,8 @@
 			buildActionMask = 2147483647;
 			files = (
 				DB9377472FC4DEA10029E909 /* RevenueCat in Frameworks */,
+				PH001BLD2FC4DEA10029E909 /* PostHog in Frameworks */,
+				SE001BLD2FC4DEA10029E909 /* Sentry in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -149,6 +153,8 @@
 			name = GlanceSAT;
 			packageProductDependencies = (
 				RC001PROD2FA84BFA00FDDC59 /* RevenueCat */,
+				PH001PROD2FA84BFA00FDDC59 /* PostHog */,
+				SE001PROD2FA84BFA00FDDC59 /* Sentry */,
 			);
 			productName = GlanceSAT;
 			productReference = DB026E5F2FA84BFA00FDDC59 /* GlanceSAT.app */;
@@ -183,6 +189,8 @@
 			minimizedProjectReferenceProxies = 1;
 			packageReferences = (
 				RC001PKG2FA84BFA00FDDC59 /* XCRemoteSwiftPackageReference "purchases-ios" */,
+				PH001PKG2FA84BFA00FDDC59 /* XCRemoteSwiftPackageReference "posthog-ios" */,
+				SE001PKG2FA84BFA00FDDC59 /* XCRemoteSwiftPackageReference "sentry-cocoa" */,
 			);
 			preferredProjectObjectVersion = 77;
 			productRefGroup = DB026E602FA84BFA00FDDC59 /* Products */;
@@ -540,6 +548,22 @@
 				minimumVersion = 5.14.0;
 			};
 		};
+		PH001PKG2FA84BFA00FDDC59 /* XCRemoteSwiftPackageReference "posthog-ios" */ = {
+			isa = XCRemoteSwiftPackageReference;
+			repositoryURL = "https://github.com/PostHog/posthog-ios.git";
+			requirement = {
+				kind = upToNextMajorVersion;
+				minimumVersion = 3.59.3;
+			};
+		};
+		SE001PKG2FA84BFA00FDDC59 /* XCRemoteSwiftPackageReference "sentry-cocoa" */ = {
+			isa = XCRemoteSwiftPackageReference;
+			repositoryURL = "https://github.com/getsentry/sentry-cocoa.git";
+			requirement = {
+				kind = upToNextMajorVersion;
+				minimumVersion = 8.0.0;
+			};
+		};
 /* End XCRemoteSwiftPackageReference section */
 
 /* Begin XCSwiftPackageProductDependency section */
@@ -547,6 +571,16 @@
 			isa = XCSwiftPackageProductDependency;
 			package = RC001PKG2FA84BFA00FDDC59 /* XCRemoteSwiftPackageReference "purchases-ios" */;
 			productName = RevenueCat;
+		};
+		PH001PROD2FA84BFA00FDDC59 /* PostHog */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = PH001PKG2FA84BFA00FDDC59 /* XCRemoteSwiftPackageReference "posthog-ios" */;
+			productName = PostHog;
+		};
+		SE001PROD2FA84BFA00FDDC59 /* Sentry */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = SE001PKG2FA84BFA00FDDC59 /* XCRemoteSwiftPackageReference "sentry-cocoa" */;
+			productName = Sentry;
 		};
 /* End XCSwiftPackageProductDependency section */
 	};

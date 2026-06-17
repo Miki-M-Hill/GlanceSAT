@@ -1183,7 +1183,8 @@ struct DailyHubView: View {
                 GlanceHaptics.medium()
                 startDailyQuiz()
             } else {
-                paywallPresenter.presentPaywall()
+                AnalyticsManager.trackDailyLimitHit(source: "daily_quiz", limitType: "premium_gate")
+                paywallPresenter.presentPaywall(source: "daily_quiz")
             }
         } label: {
             Text(showPreQuizResumeCTA ? "Resume Daily Quiz" : "Start Daily Quiz")
