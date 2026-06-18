@@ -52,6 +52,9 @@ def main() -> None:
         old_def = entry.get("definition")
         if old_def != new_def:
             entry["definition"] = new_def
+            senses = entry.get("senses")
+            if isinstance(senses, list) and senses and isinstance(senses[0], dict):
+                senses[0]["definition"] = new_def
             updated += 1
 
     extra = sorted(set(definitions) - {entry["word"] for entry in words})

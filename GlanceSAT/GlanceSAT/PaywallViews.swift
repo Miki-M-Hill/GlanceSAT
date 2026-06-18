@@ -72,9 +72,18 @@ struct AppPaywallScreen: View {
                         ForEach(visiblePlans) { plan in
                             PaywallSelectablePlanRow(
                                 title: plan.inAppPaywallTitle,
-                                priceLabel: entitlementManager.localizedCompactPriceLabel(for: plan),
-                                strikethroughPriceLabel: entitlementManager.localizedStrikethroughPriceLabel(for: plan),
-                                dailyPriceLabel: entitlementManager.localizedDailyPriceLabel(for: plan),
+                                priceLabel: entitlementManager.localizedCompactPriceLabel(
+                                    for: plan,
+                                    context: .inApp
+                                ),
+                                strikethroughPriceLabel: entitlementManager.localizedStrikethroughPriceLabel(
+                                    for: plan,
+                                    context: .inApp
+                                ),
+                                dailyPriceLabel: entitlementManager.localizedDailyPriceLabel(
+                                    for: plan,
+                                    context: .inApp
+                                ),
                                 badgeLabel: plan.paywallBadgeLabel,
                                 isSelected: selectedPlan == plan,
                                 compactLayout: false
@@ -294,11 +303,13 @@ struct InsightsPremiumGateOverlay: View {
     }
 }
 
-// MARK: - Paywall chrome modifier (app root)
+// MARK: - In-app paywall full-screen cover
 
-struct AppPaywallChrome: ViewModifier {
+struct InAppPaywallFullScreenCover: View {
     @ObservedObject var paywallPresenter: PaywallPresenter
     @ObservedObject var entitlementManager: EntitlementManager
+    let isEligibleForTrial: Bool
+
     @State private var selectedPlan: SubscriptionPlan = .annual
     @State private var paywallErrorMessage: String?
     @State private var showsPaywallError = false
@@ -307,125 +318,115 @@ struct AppPaywallChrome: ViewModifier {
 
     private var primaryButtonTitle: String {
         if entitlementManager.isPurchasing {
-            return "Unlocking…"
+            return isEligibleForTrial ? "Starting trial…" : "Unlocking…"
         }
-        if let label = onboardingDreamScore.nilIfEmpty {
-            return "Unlock my \(label) plan"
+        if isEligibleForTrial {
+            return "Start 7-Day Free Trial"
         }
-        return "Unlock my plan"
+        return "Unlock full access"
     }
 
-    func body(content: Content) -> some View {
-        content
-            .fullScreenCover(isPresented: $paywallPresenter.showsFullPaywall) {
-                NavigationStack {
-                    VStack(spacing: 0) {
-                        AppPaywallScreen(
-                            dreamScoreLabel: onboardingDreamScore.nilIfEmpty,
-                            paywallSource: paywallPresenter.lastPresentedSource ?? "unknown",
-                            selectedPlan: $selectedPlan,
-                            entitlementManager: entitlementManager,
-                            onClose: { paywallPresenter.handlePaywallCloseAttempt() }
-                        )
-                        Spacer(minLength: 0)
-                        VStack(spacing: 12) {
-                            Button {
-                                Task { await startTrialPurchase() }
-                            } label: {
-                                Group {
-                                    if entitlementManager.isPurchasing {
-                                        HStack(spacing: 8) {
-                                            ProgressView()
-                                                .tint(.white)
-                                                .scaleEffect(0.85)
-                                            Text(primaryButtonTitle)
-                                                .lineLimit(1)
-                                                .minimumScaleFactor(0.85)
-                                        }
-                                    } else {
-                                        Text(primaryButtonTitle)
-                                            .lineLimit(1)
-                                            .minimumScaleFactor(0.85)
-                                    }
+    var body: some View {
+        NavigationStack {
+            VStack(spacing: 0) {
+                AppPaywallScreen(
+                    dreamScoreLabel: onboardingDreamScore.nilIfEmpty,
+                    paywallSource: paywallPresenter.lastPresentedSource ?? "unknown",
+                    selectedPlan: $selectedPlan,
+                    entitlementManager: entitlementManager,
+                    onClose: { paywallPresenter.handlePaywallCloseAttempt() }
+                )
+                Spacer(minLength: 0)
+                VStack(spacing: 12) {
+                    Button {
+                        Task { await startTrialPurchase() }
+                    } label: {
+                        Group {
+                            if entitlementManager.isPurchasing {
+                                HStack(spacing: 8) {
+                                    ProgressView()
+                                        .tint(.white)
+                                        .scaleEffect(0.85)
+                                    Text(primaryButtonTitle)
+                                        .lineLimit(1)
+                                        .minimumScaleFactor(0.85)
                                 }
-                                .font(.system(size: 17, weight: .semibold))
-                                .foregroundStyle(.white)
-                                .frame(maxWidth: .infinity)
-                                .frame(height: 56)
-                                .background(
-                                    OnboardingColors.hubOrange.opacity(
-                                        entitlementManager.isPurchasing || entitlementManager.isRestoring ? 0.38 : 1
-                                    ),
-                                    in: Capsule(style: .continuous)
-                                )
+                            } else {
+                                Text(primaryButtonTitle)
+                                    .lineLimit(1)
+                                    .minimumScaleFactor(0.85)
                             }
-                            .buttonStyle(.plain)
-                            .disabled(entitlementManager.isPurchasing || entitlementManager.isRestoring)
-
-                            Text("Cancel anytime")
-                                .font(.system(size: 11, weight: .regular))
-                                .foregroundStyle(OnboardingColors.secondaryText)
-                                .multilineTextAlignment(.center)
-                                .frame(maxWidth: .infinity)
-
-                            Button {
-                                Task { await restorePurchases() }
-                            } label: {
-                                Text("Restore Purchases")
-                                    .font(.system(size: 13, weight: .medium))
-                                    .foregroundStyle(OnboardingColors.secondaryText)
-                                    .redacted(reason: entitlementManager.isRestoring ? .placeholder : [])
-                                    .frame(maxWidth: .infinity)
-                                    .padding(.vertical, 2)
-                            }
-                            .buttonStyle(.plain)
-                            .disabled(entitlementManager.isPurchasing || entitlementManager.isRestoring)
-
-                            Button {
-                                showRedemptionSheet = true
-                            } label: {
-                                Text("Redeem Code")
-                                    .font(.system(size: 13, weight: .medium))
-                                    .foregroundStyle(OnboardingColors.secondaryText)
-                                    .frame(maxWidth: .infinity)
-                                    .padding(.vertical, 2)
-                            }
-                            .buttonStyle(.plain)
-                            .disabled(entitlementManager.isPurchasing || entitlementManager.isRestoring)
-
-                            PaywallLegalLinksRow()
                         }
-                        .padding(.horizontal, 24)
-                        .padding(.top, 12)
-                        .padding(.bottom, 24)
+                        .font(.system(size: 17, weight: .semibold))
+                        .foregroundStyle(.white)
+                        .frame(maxWidth: .infinity)
+                        .frame(height: 56)
+                        .background(
+                            OnboardingColors.hubOrange.opacity(
+                                entitlementManager.isPurchasing || entitlementManager.isRestoring ? 0.38 : 1
+                            ),
+                            in: Capsule(style: .continuous)
+                        )
                     }
-                    .background(OnboardingColors.linen.ignoresSafeArea())
-                    .environmentObject(entitlementManager)
-                    .offerCodeRedemption(isPresented: $showRedemptionSheet)
-                    .onChange(of: entitlementManager.hasPremiumAccess) { _, hasPremium in
-                        guard hasPremium, paywallPresenter.showsFullPaywall else { return }
-                        paywallPresenter.dismissPaywall()
+                    .buttonStyle(.plain)
+                    .disabled(entitlementManager.isPurchasing || entitlementManager.isRestoring)
+
+                    if isEligibleForTrial {
+                        PaywallTrialTimelineView()
+                            .padding(.vertical, 2)
                     }
-                    .task {
-                        await entitlementManager.loadOfferings()
-                        applyDefaultPlanSelection()
+
+                    Text("Cancel anytime")
+                        .font(.system(size: 11, weight: .regular))
+                        .foregroundStyle(OnboardingColors.secondaryText)
+                        .multilineTextAlignment(.center)
+                        .frame(maxWidth: .infinity)
+
+                    Button {
+                        Task { await restorePurchases() }
+                    } label: {
+                        Text("Restore Purchases")
+                            .font(.system(size: 13, weight: .medium))
+                            .foregroundStyle(OnboardingColors.secondaryText)
+                            .redacted(reason: entitlementManager.isRestoring ? .placeholder : [])
+                            .frame(maxWidth: .infinity)
+                            .padding(.vertical, 2)
                     }
-                    .alert("Subscription", isPresented: $showsPaywallError) {
-                        Button("OK", role: .cancel) {}
-                    } message: {
-                        Text(paywallErrorMessage ?? "")
+                    .buttonStyle(.plain)
+                    .disabled(entitlementManager.isPurchasing || entitlementManager.isRestoring)
+
+                    Button {
+                        showRedemptionSheet = true
+                    } label: {
+                        Text("Redeem Code")
+                            .font(.system(size: 13, weight: .medium))
+                            .foregroundStyle(OnboardingColors.secondaryText)
+                            .frame(maxWidth: .infinity)
+                            .padding(.vertical, 2)
                     }
+                    .buttonStyle(.plain)
+                    .disabled(entitlementManager.isPurchasing || entitlementManager.isRestoring)
+
+                    PaywallLegalLinksRow()
                 }
+                .padding(.horizontal, 24)
+                .padding(.top, 12)
+                .padding(.bottom, 24)
+                .animation(nil, value: isEligibleForTrial)
             }
-    }
-
-    init(paywallPresenter: PaywallPresenter, entitlementManager: EntitlementManager) {
-        self.paywallPresenter = paywallPresenter
-        self._entitlementManager = ObservedObject(wrappedValue: entitlementManager)
-    }
-
-    private func applyDefaultPlanSelection() {
-        selectedPlan = .annual
+            .background(OnboardingColors.linen.ignoresSafeArea())
+            .environmentObject(entitlementManager)
+            .offerCodeRedemption(isPresented: $showRedemptionSheet)
+            .onChange(of: entitlementManager.hasPremiumAccess) { _, hasPremium in
+                guard hasPremium, paywallPresenter.showsFullPaywall else { return }
+                paywallPresenter.dismissPaywall()
+            }
+            .alert("Subscription", isPresented: $showsPaywallError) {
+                Button("OK", role: .cancel) {}
+            } message: {
+                Text(paywallErrorMessage ?? "")
+            }
+        }
     }
 
     @MainActor
@@ -433,7 +434,7 @@ struct AppPaywallChrome: ViewModifier {
         let source = paywallPresenter.lastPresentedSource ?? "unknown"
         AnalyticsManager.trackCheckoutStarted(source: source, planID: selectedPlan.rawValue)
         do {
-            let result = try await entitlementManager.purchase(plan: selectedPlan)
+            let result = try await entitlementManager.purchase(plan: selectedPlan, context: .inApp)
             switch result {
             case .cancelled:
                 break
@@ -474,6 +475,52 @@ struct AppPaywallChrome: ViewModifier {
             paywallErrorMessage = error.localizedDescription
             showsPaywallError = true
         }
+    }
+}
+
+struct PaywallFullScreenCoverModifier: ViewModifier {
+    @ObservedObject var paywallPresenter: PaywallPresenter
+    @ObservedObject var entitlementManager: EntitlementManager
+
+    func body(content: Content) -> some View {
+        content.fullScreenCover(isPresented: $paywallPresenter.showsFullPaywall) {
+            InAppPaywallFullScreenCover(
+                paywallPresenter: paywallPresenter,
+                entitlementManager: entitlementManager,
+                isEligibleForTrial: paywallPresenter.presentedIsEligibleForTrial
+            )
+        }
+    }
+}
+
+extension View {
+    func inAppPaywallFullScreenCover(
+        paywallPresenter: PaywallPresenter,
+        entitlementManager: EntitlementManager
+    ) -> some View {
+        modifier(PaywallFullScreenCoverModifier(
+            paywallPresenter: paywallPresenter,
+            entitlementManager: entitlementManager
+        ))
+    }
+}
+
+// MARK: - Paywall chrome modifier (app root)
+
+struct AppPaywallChrome: ViewModifier {
+    @ObservedObject var paywallPresenter: PaywallPresenter
+    @ObservedObject var entitlementManager: EntitlementManager
+
+    func body(content: Content) -> some View {
+        content.inAppPaywallFullScreenCover(
+            paywallPresenter: paywallPresenter,
+            entitlementManager: entitlementManager
+        )
+    }
+
+    init(paywallPresenter: PaywallPresenter, entitlementManager: EntitlementManager) {
+        self.paywallPresenter = paywallPresenter
+        self._entitlementManager = ObservedObject(wrappedValue: entitlementManager)
     }
 }
 

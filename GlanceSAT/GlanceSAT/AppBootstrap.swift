@@ -26,6 +26,9 @@ enum AppBootstrap {
 
     private static func scheduleDeferredServices(container: ModelContainer) async {
         Task { @MainActor in
+            await EntitlementManager.shared.loadOfferingsIfNeeded()
+        }
+        Task { @MainActor in
             await NotificationManager.scheduleStandardDailyReminders()
         }
     }

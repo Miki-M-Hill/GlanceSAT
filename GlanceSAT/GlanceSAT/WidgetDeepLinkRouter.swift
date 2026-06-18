@@ -13,6 +13,8 @@ enum WidgetDeepLinkRouter {
     private static let navigateToTodayKey = "app.widgetNavigateToToday"
     private static let navigateToPaywallKey = "app.widgetNavigateToPaywall"
     private static let navigateToSettingsKey = "app.widgetNavigateToSettings"
+    private static let navigateToSATDateSettingsKey = "app.widgetNavigateToSATDateSettings"
+    private static let navigateToManageSubscriptionKey = "app.widgetNavigateToManageSubscription"
 
     static func libraryURL(wordID: UUID) -> URL {
         URL(string: "\(scheme)://library/word/\(wordID.uuidString.lowercased())")!
@@ -26,6 +28,17 @@ enum WidgetDeepLinkRouter {
         URL(string: "\(scheme)://paywall")!
     }
 
+    static func manageSubscriptionURL() -> URL {
+        URL(string: "\(scheme)://manage-subscription")!
+    }
+
+    /// Returns true once if a widget or link requested manage subscription (`glancesat://manage-subscription`).
+    static func consumeNavigateToManageSubscription() -> Bool {
+        guard UserDefaults.standard.bool(forKey: navigateToManageSubscriptionKey) else { return false }
+        UserDefaults.standard.removeObject(forKey: navigateToManageSubscriptionKey)
+        return true
+    }
+
     /// Returns true once if a widget requested Settings (`glancesat://settings`).
     static func consumeNavigateToSettingsFromWidget() -> Bool {
         guard UserDefaults.standard.bool(forKey: navigateToSettingsKey) else { return false }
@@ -35,6 +48,17 @@ enum WidgetDeepLinkRouter {
 
     static func settingsURL() -> URL {
         URL(string: "\(scheme)://settings")!
+    }
+
+    static func satDateSettingsURL() -> URL {
+        URL(string: "\(scheme)://settings/sat-date")!
+    }
+
+    /// Returns true once if a widget requested Settings with the SAT date picker (`glancesat://settings/sat-date`).
+    static func consumeNavigateToSATDateSettings() -> Bool {
+        guard UserDefaults.standard.bool(forKey: navigateToSATDateSettingsKey) else { return false }
+        UserDefaults.standard.removeObject(forKey: navigateToSATDateSettingsKey)
+        return true
     }
 
     /// Returns true once if a widget requested the paywall (`glancesat://paywall`).
@@ -61,6 +85,30 @@ enum WidgetDeepLinkRouter {
             UserDefaults.standard.removeObject(forKey: pendingWordIDKey)
             UserDefaults.standard.removeObject(forKey: navigateToPaywallKey)
             UserDefaults.standard.removeObject(forKey: navigateToSettingsKey)
+            UserDefaults.standard.removeObject(forKey: navigateToSATDateSettingsKey)
+            UserDefaults.standard.removeObject(forKey: navigateToManageSubscriptionKey)
+            return true
+        }
+
+        if isSATDateSettingsHostOrPath(url) {
+            AnalyticsManager.trackWidgetTapped(destination: "settings_sat_date")
+            UserDefaults.standard.set(true, forKey: navigateToSATDateSettingsKey)
+            UserDefaults.standard.removeObject(forKey: pendingWordIDKey)
+            UserDefaults.standard.removeObject(forKey: navigateToTodayKey)
+            UserDefaults.standard.removeObject(forKey: navigateToPaywallKey)
+            UserDefaults.standard.removeObject(forKey: navigateToSettingsKey)
+            UserDefaults.standard.removeObject(forKey: navigateToManageSubscriptionKey)
+            return true
+        }
+
+        if isManageSubscriptionHostOrPath(url) {
+            AnalyticsManager.trackWidgetTapped(destination: "manage_subscription")
+            UserDefaults.standard.set(true, forKey: navigateToManageSubscriptionKey)
+            UserDefaults.standard.removeObject(forKey: pendingWordIDKey)
+            UserDefaults.standard.removeObject(forKey: navigateToTodayKey)
+            UserDefaults.standard.removeObject(forKey: navigateToPaywallKey)
+            UserDefaults.standard.removeObject(forKey: navigateToSettingsKey)
+            UserDefaults.standard.removeObject(forKey: navigateToSATDateSettingsKey)
             return true
         }
 
@@ -70,6 +118,8 @@ enum WidgetDeepLinkRouter {
             UserDefaults.standard.removeObject(forKey: pendingWordIDKey)
             UserDefaults.standard.removeObject(forKey: navigateToTodayKey)
             UserDefaults.standard.removeObject(forKey: navigateToSettingsKey)
+            UserDefaults.standard.removeObject(forKey: navigateToManageSubscriptionKey)
+            UserDefaults.standard.removeObject(forKey: navigateToSATDateSettingsKey)
             return true
         }
 
@@ -79,14 +129,42 @@ enum WidgetDeepLinkRouter {
             UserDefaults.standard.removeObject(forKey: pendingWordIDKey)
             UserDefaults.standard.removeObject(forKey: navigateToTodayKey)
             UserDefaults.standard.removeObject(forKey: navigateToPaywallKey)
+            UserDefaults.standard.removeObject(forKey: navigateToManageSubscriptionKey)
+            UserDefaults.standard.removeObject(forKey: navigateToSATDateSettingsKey)
             return true
         }
 
         guard let wordID = wordID(from: url) else { return false }
         AnalyticsManager.trackWidgetTapped(destination: "library_word", wordID: wordID.uuidString)
         UserDefaults.standard.removeObject(forKey: navigateToTodayKey)
+        UserDefaults.standard.removeObject(forKey: navigateToManageSubscriptionKey)
+        UserDefaults.standard.removeObject(forKey: navigateToSATDateSettingsKey)
         UserDefaults.standard.set(wordID.uuidString, forKey: pendingWordIDKey)
         return true
+    }
+
+    private static func isSATDateSettingsHostOrPath(_ url: URL) -> Bool {
+        let host = url.host?.trimmingCharacters(in: .whitespacesAndNewlines).lowercased()
+        let trimmedPath = url.path.trimmingCharacters(in: CharacterSet(charactersIn: "/")).lowercased()
+        if host == "settings", trimmedPath == "sat-date" {
+            return true
+        }
+        if host == "sat-date", trimmedPath.isEmpty {
+            return true
+        }
+        return trimmedPath.split(separator: "/").contains(where: { $0.lowercased() == "sat-date" })
+    }
+
+    private static func isManageSubscriptionHostOrPath(_ url: URL) -> Bool {
+        let host = url.host?.trimmingCharacters(in: .whitespacesAndNewlines).lowercased()
+        if host == "manage-subscription" || host == "managesubscription" {
+            return true
+        }
+        let trimmed = url.path.trimmingCharacters(in: CharacterSet(charactersIn: "/"))
+        return trimmed.lowercased() == "manage-subscription"
+            || trimmed.split(separator: "/").contains(where: {
+                $0.lowercased() == "manage-subscription" || $0.lowercased() == "managesubscription"
+            })
     }
 
     private static func isPaywallHostOrPath(_ url: URL) -> Bool {
@@ -108,6 +186,9 @@ enum WidgetDeepLinkRouter {
     }
 
     private static func isSettingsHostOrPath(_ url: URL) -> Bool {
+        if isSATDateSettingsHostOrPath(url) {
+            return false
+        }
         if url.host?.trimmingCharacters(in: .whitespacesAndNewlines).lowercased() == "settings" {
             return true
         }

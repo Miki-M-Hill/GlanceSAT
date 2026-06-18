@@ -157,21 +157,36 @@ struct WordSenseBlock: Codable, Hashable, Sendable {
 
 extension Word {
     /// Senses from merged JSON import, or a single block from flat `Word` fields.
+    /// Flat lexical columns are authoritative for the primary sense — stale `sensesJSON` cannot override them.
     var displaySenseBlocks: [WordSenseBlock] {
-        if let sensesJSON,
-           let data = sensesJSON.data(using: .utf8),
-           let decoded = try? JSONDecoder().decode([WordSenseBlock].self, from: data),
-           !decoded.isEmpty {
-            return decoded
+        let flatPrimary = WordSenseBlock(
+            partOfSpeech: partOfSpeech,
+            definition: definition,
+            synonyms: synonyms,
+            exampleSentence: exampleSentence
+        )
+        guard let sensesJSON,
+              let data = sensesJSON.data(using: .utf8),
+              var decoded = try? JSONDecoder().decode([WordSenseBlock].self, from: data),
+              !decoded.isEmpty else {
+            return [flatPrimary]
         }
-        return [
-            WordSenseBlock(
-                partOfSpeech: partOfSpeech,
-                definition: definition,
-                synonyms: synonyms,
-                exampleSentence: exampleSentence
-            ),
-        ]
+        if decoded.count == 1 {
+            return [flatPrimary]
+        }
+
+        let flatDefinitionKey = Self.normalizedLexicalKey(definition)
+        if let index = decoded.firstIndex(where: { Self.normalizedLexicalKey($0.definition) == flatDefinitionKey }) {
+            decoded[index] = flatPrimary
+        } else {
+            let flatExampleKey = Self.normalizedLexicalKey(exampleSentence)
+            if let index = decoded.firstIndex(where: { Self.normalizedLexicalKey($0.exampleSentence) == flatExampleKey }) {
+                decoded[index] = flatPrimary
+            } else {
+                decoded[0] = flatPrimary
+            }
+        }
+        return decoded
     }
 
     /// Sense pinned for quizzes (matches bundled primary / flat definition when possible).

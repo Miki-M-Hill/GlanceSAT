@@ -13,7 +13,7 @@ enum WordJSONImportService {
 
     private static let hasSeededDatabaseKey = "hasSeededDatabase_v1"
     private static let randomSortBackfillKey = "hasBackfilledRandomSortHash_v1"
-    private static let bundledDatabaseSyncHashKey = "bundledDatabaseSyncHash_v2"
+    private static let bundledDatabaseSyncHashKey = "bundledDatabaseSyncHash_v5"
     private static let lexicalSyncRevisionKey = "bundledDatabaseLexicalSyncRevision_v1"
 
     /// Monotonic counter bumped after bundled lexical metadata is written to SwiftData.

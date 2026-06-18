@@ -185,7 +185,7 @@
     "difficultyLevel": 2,
     "frequencyTier": 4,
     "category": "emotional",
-    "definition": "To deeply hate or despise",
+    "definition": "To hate or despise",
     "synonyms": [
       "detest",
       "loathe",
@@ -234,14 +234,14 @@
     "senses": [
       {
         "partOfSpeech": "verb",
-        "definition": "To put up with",
+        "definition": "To tolerate or patiently wait",
         "synonyms": [
           "tolerate",
           "endure",
           "bear",
           "stand"
         ],
-        "exampleSentence": "Though he did not agree with the decision, Chuck decided to abide by it."
+        "exampleSentence": "Every student must abide by the strict rules outlined in the university handbook."
       },
       {
         "partOfSpeech": "verb",
@@ -280,7 +280,7 @@
     "difficultyLevel": 3,
     "frequencyTier": 5,
     "category": "emotional",
-    "definition": "miserable or pathetic",
+    "definition": "Miserable or pathetic",
     "synonyms": [
       "miserable",
       "wretched",
@@ -400,14 +400,14 @@
     "senses": [
       {
         "partOfSpeech": "verb",
-        "definition": "To cut down, shorten",
+        "definition": "To shorten without losing meaning",
         "synonyms": [
           "condense",
           "truncate",
           "abbreviate",
           "compress"
         ],
-        "exampleSentence": "The publisher thought the dictionary was too long and abridged it."
+        "exampleSentence": "The eager editor must abridge the lengthy manuscript to meet publication deadlines."
       },
       {
         "partOfSpeech": "adjective",
@@ -588,7 +588,7 @@
     "difficultyLevel": 4,
     "frequencyTier": 7,
     "category": "academic",
-    "definition": "difficult to understand",
+    "definition": "Difficult to understand",
     "synonyms": [
       "esoteric",
       "arcane",
@@ -796,7 +796,7 @@
     "difficultyLevel": 2,
     "frequencyTier": 3,
     "category": "social-behavior",
-    "definition": "willing to help others",
+    "definition": "Willing to help others",
     "synonyms": [
       "obliging",
       "cooperative",
@@ -1091,14 +1091,14 @@
     "senses": [
       {
         "partOfSpeech": "adjective",
-        "definition": "Sharp, severe",
+        "definition": "Sharp, intense, or perceptive",
         "synonyms": [
           "intense",
           "severe",
           "sharp",
           "piercing"
         ],
-        "exampleSentence": "Arnold could not walk because the pain in his foot was so acute."
+        "exampleSentence": "The patient arrived at the emergency room suffering from an acute asthma attack."
       },
       {
         "partOfSpeech": "adjective",
@@ -1172,7 +1172,7 @@
     "difficultyLevel": 2,
     "frequencyTier": 3,
     "category": "academic",
-    "definition": "skilled or proficient",
+    "definition": "Skilled or proficient",
     "synonyms": [
       "proficient",
       "skilled",
@@ -1221,14 +1221,14 @@
     "senses": [
       {
         "partOfSpeech": "verb",
-        "definition": "To stick to something",
+        "definition": "To stick firmly to something",
         "synonyms": [
           "cling",
           "stick",
           "bond",
           "attach"
         ],
-        "exampleSentence": "We adhered the poster to the wall with tape."
+        "exampleSentence": "The construction workers must strictly adhere to all safety regulations on the site."
       },
       {
         "partOfSpeech": "verb",
@@ -1491,14 +1491,14 @@
     "senses": [
       {
         "partOfSpeech": "verb",
-        "definition": "To argue in favor of something",
+        "definition": "To publicly support a cause",
         "synonyms": [
           "champion",
           "support",
           "promote",
           "endorse"
         ],
-        "exampleSentence": "Community leaders advocate for stricter safety standards near the highway."
+        "exampleSentence": "The passionate lawyer continues to loudly advocate for strict criminal justice reform laws."
       },
       {
         "partOfSpeech": "noun",
@@ -1601,7 +1601,7 @@
     "difficultyLevel": 3,
     "frequencyTier": 5,
     "category": "social-behavior",
-    "definition": "easy to talk to",
+    "definition": "Easy to talk to",
     "synonyms": [
       "genial",
       "amiable",
@@ -1792,14 +1792,14 @@
     "senses": [
       {
         "partOfSpeech": "noun",
-        "definition": "A whole or total",
+        "definition": "A whole formed by combining",
         "synonyms": [
           "total",
           "sum",
           "collection",
           "assemblage"
         ],
-        "exampleSentence": "The three branches form an aggregate more powerful than each part alone."
+        "exampleSentence": "The university released an aggregate score based on the entire semester of testing."
       },
       {
         "partOfSpeech": "verb",
@@ -1838,7 +1838,7 @@
     "difficultyLevel": 3,
     "frequencyTier": 5,
     "category": "emotional",
-    "definition": "Feeling deeply unjustly treated",
+    "definition": "Feeling unjustly treated",
     "synonyms": [
       "wronged",
       "resentful",
@@ -2588,7 +2588,7 @@
       "text": "\"am-\" (love) + \"-ous\" (full of) = full of romantic love."
     },
     "quizSentence": "He wrote an amorous poem to his girlfriend for Valentine's Day.",
-    "alternateExampleSentence": "The famous poet wrote a deeply amorous letter to his distant secret lover."
+    "alternateExampleSentence": "The famous poet wrote an amorous letter to his distant secret lover."
   },
   {
     "id": "df678fd1-5cd5-4dba-b8ee-9b964e99ca76",
@@ -2920,14 +2920,14 @@
     "senses": [
       {
         "partOfSpeech": "verb",
-        "definition": "To incorporate territory or space",
+        "definition": "To add or attach territory",
         "synonyms": [
           "seize",
           "acquire",
           "appropriate",
           "absorb"
         ],
-        "exampleSentence": "After defeating them in battle, the Russians annexed Poland."
+        "exampleSentence": "The aggressive empire launched a brutal military campaign to illegally annex the neighboring territory."
       },
       {
         "partOfSpeech": "noun",
@@ -3274,7 +3274,7 @@
     "difficultyLevel": 2,
     "frequencyTier": 3,
     "category": "science",
-    "definition": "free from contamination",
+    "definition": "Free from contamination",
     "synonyms": [
       "sterile",
       "disinfected",
@@ -3565,14 +3565,14 @@
     "senses": [
       {
         "partOfSpeech": "verb",
-        "definition": "To seize, arrest",
+        "definition": "To catch and arrest someone",
         "synonyms": [
           "arrest",
           "capture",
           "detain",
           "collar"
         ],
-        "exampleSentence": "The criminal was apprehended at the scene."
+        "exampleSentence": "The diligent detectives managed to apprehend the elusive thief before he fled the country."
       },
       {
         "partOfSpeech": "verb",
@@ -3889,7 +3889,7 @@
     "difficultyLevel": 3,
     "frequencyTier": 4,
     "category": "academic",
-    "definition": "old or old-fashioned",
+    "definition": "Old or old-fashioned",
     "synonyms": [
       "ancient",
       "antiquated",
@@ -4231,7 +4231,7 @@
     },
     "semanticChargeIntensity": 2,
     "quizSentence": "Do not cast an aspersion on her character without solid proof.",
-    "alternateExampleSentence": "He was deeply offended by the false aspersion regarding his personal financial integrity."
+    "alternateExampleSentence": "He was offended by the false aspersion regarding his personal financial integrity."
   },
   {
     "id": "853642a9-ef6b-4a7b-881b-7c1251374501",
@@ -4263,7 +4263,7 @@
     "semanticCharge": "neutral",
     "memoryHook": null,
     "quizSentence": "Many young athletes aspire to compete in the Olympic Games.",
-    "alternateExampleSentence": "Many young athletes deeply aspire to compete in the global Olympic games."
+    "alternateExampleSentence": "Many young athletes aspire to compete in the global Olympic games."
   },
   {
     "id": "624ad792-7da6-466b-b219-2713a263d77f",
@@ -4495,14 +4495,14 @@
     "senses": [
       {
         "partOfSpeech": "noun",
-        "definition": "A place of refuge, protection, a sanctuary",
+        "definition": "A safe place of refuge",
         "synonyms": [
           "sanctuary",
           "refuge",
           "haven",
           "shelter"
         ],
-        "exampleSentence": "For Thoreau, the forest served as an asylum from the pressures of urban life."
+        "exampleSentence": "The political refugee desperately sought immediate asylum in a neighboring democratic country."
       },
       {
         "partOfSpeech": "noun",
@@ -4690,14 +4690,14 @@
     "senses": [
       {
         "partOfSpeech": "verb",
-        "definition": "To credit, assign",
+        "definition": "To assign a cause to",
         "synonyms": [
           "ascribe",
           "credit",
           "assign",
           "chalk up"
         ],
-        "exampleSentence": "He attributes all of his success to his mother's undying encouragement."
+        "exampleSentence": "The arrogant manager tried to attribute the team's shared success to his leadership."
       },
       {
         "partOfSpeech": "noun",
@@ -4906,7 +4906,7 @@
     "difficultyLevel": 3,
     "frequencyTier": 4,
     "category": "arts",
-    "definition": "plain or strict",
+    "definition": "Plain or strict",
     "synonyms": [
       "spartan",
       "stark",
@@ -5654,14 +5654,14 @@
     "senses": [
       {
         "partOfSpeech": "noun",
-        "definition": "A plague, disease",
+        "definition": "A destructive force or disease",
         "synonyms": [
           "plague",
           "pestilence",
           "infestation",
           "scourge"
         ],
-        "exampleSentence": "The potato blight destroyed the harvest and bankrupted many families."
+        "exampleSentence": "The sudden economic blight caused numerous local businesses to close their doors forever."
       },
       {
         "partOfSpeech": "noun",
@@ -5962,14 +5962,14 @@
     "senses": [
       {
         "partOfSpeech": "verb",
-        "definition": "To strike with force",
+        "definition": "To strike repeatedly and violently",
         "synonyms": [
           "batter",
           "pound",
           "pummel",
           "lash"
         ],
-        "exampleSentence": "The strong winds buffeted the ships, threatening to capsize them."
+        "exampleSentence": "The powerful coastal winds continued to heavily buffet the small wooden cabin all night."
       },
       {
         "partOfSpeech": "noun",
@@ -6057,14 +6057,14 @@
     "senses": [
       {
         "partOfSpeech": "verb",
-        "definition": "To support, hold up",
+        "definition": "To provide defensive structural support",
         "synonyms": [
           "support",
           "reinforce",
           "bolster",
           "shore up"
         ],
-        "exampleSentence": "The column buttresses the roof above the statue."
+        "exampleSentence": "The defense attorney found a new witness to firmly buttress his client's shaky alibi."
       },
       {
         "partOfSpeech": "noun",
@@ -6472,14 +6472,14 @@
     "senses": [
       {
         "partOfSpeech": "verb",
-        "definition": "To seek opinions or support systematically",
+        "definition": "To solicit votes, opinions, or support; to survey systematically",
         "synonyms": [
           "survey",
           "poll",
           "solicit",
           "campaign"
         ],
-        "exampleSentence": "Volunteers canvassed the precinct door to door before the municipal election."
+        "exampleSentence": "The senator's team canvassed suburban districts for weeks ahead of the primary election."
       }
     ],
     "passageDomain": "power_culture",
@@ -6628,7 +6628,7 @@
     "semanticCharge": "neutral",
     "memoryHook": null,
     "quizSentence": "The magician's incredible illusions managed to captivate the entire audience.",
-    "alternateExampleSentence": "The beautiful classical symphony will captivate anyone who appreciates deeply emotional orchestral music."
+    "alternateExampleSentence": "The beautiful classical symphony will captivate anyone who appreciates emotional orchestral music."
   },
   {
     "id": "1bff02bf-ac9a-4977-bea5-0ccce1435644",
@@ -6721,14 +6721,14 @@
     "senses": [
       {
         "partOfSpeech": "verb",
-        "definition": "To list, enter into a list",
+        "definition": "To systematically list or classify",
         "synonyms": [
           "list",
           "classify",
           "categorize",
           "record"
         ],
-        "exampleSentence": "The judge cataloged the victim’s injuries before calculating how much money he would award."
+        "exampleSentence": "The librarian meticulously worked to catalog the thousands of newly donated historical manuscripts."
       },
       {
         "partOfSpeech": "noun",
@@ -6822,7 +6822,7 @@
       "text": "Cactus - politicians gathering around a spiky cactus to hold a closed political meeting."
     },
     "quizSentence": "Party leaders held a private caucus to select their presidential nominee.",
-    "alternateExampleSentence": "The senators formed a special caucus to deeply address the growing national environmental crisis."
+    "alternateExampleSentence": "The senators formed a special caucus to address the growing national environmental crisis."
   },
   {
     "id": "b7c66ff0-3f72-431a-8100-5669a5bf5fa5",
@@ -6915,14 +6915,14 @@
     "senses": [
       {
         "partOfSpeech": "noun",
-        "definition": "Harsh criticism",
+        "definition": "Formal and severe public disapproval",
         "synonyms": [
           "condemnation",
           "criticism",
           "reprimand",
           "reproof"
         ],
-        "exampleSentence": "The frustrated teenager could not put up with anymore of her critical mother’s censure."
+        "exampleSentence": "The ethics committee voted to formally censure the corrupt politician for his illegal actions."
       },
       {
         "partOfSpeech": "verb",
@@ -7066,7 +7066,7 @@
     "difficultyLevel": 2,
     "frequencyTier": 2,
     "category": "emotion",
-    "definition": "To care for deeply",
+    "definition": "To care for and value",
     "synonyms": [
       "treasure",
       "prize",
@@ -7179,14 +7179,14 @@
     "senses": [
       {
         "partOfSpeech": "noun",
-        "definition": "A written history",
+        "definition": "A factual written historical account",
         "synonyms": [
           "record",
           "history",
           "annals",
           "archive"
         ],
-        "exampleSentence": "The library featured the newly updated chronicle of World War II."
+        "exampleSentence": "The detailed journal serves to chronicle the daily hardships of early colonial settlers."
       },
       {
         "partOfSpeech": "verb",
@@ -7480,14 +7480,14 @@
     "senses": [
       {
         "partOfSpeech": "noun",
-        "definition": "Loud noise",
+        "definition": "A loud and confused noise",
         "synonyms": [
           "uproar",
           "tumult",
           "din",
           "racket"
         ],
-        "exampleSentence": "Each morning the birds outside my window make such a clamor that they wake me up."
+        "exampleSentence": "A sudden clamor arose from the angry protesters gathered outside the courthouse steps."
       },
       {
         "partOfSpeech": "verb",
@@ -7574,14 +7574,14 @@
     "senses": [
       {
         "partOfSpeech": "verb",
-        "definition": "To divide into parts",
+        "definition": "To split forcefully in two",
         "synonyms": [
           "split",
           "divide",
           "sever",
           "hew"
         ],
-        "exampleSentence": "Following the scandalous disgrace of their leader, the entire political party cleaved into warring factions."
+        "exampleSentence": "The skilled butcher used a heavy axe to cleave the frozen meat apart."
       },
       {
         "partOfSpeech": "verb",
@@ -7918,14 +7918,14 @@
     "senses": [
       {
         "partOfSpeech": "adjective",
-        "definition": "Secondary",
+        "definition": "Accompanying as a secondary result",
         "synonyms": [
           "secondary",
           "subordinate",
           "incidental",
           "ancillary"
         ],
-        "exampleSentence": "Divorcing cost him dearly; losing her income was a harsh collateral effect."
+        "exampleSentence": "The bank required the business owner to use his house as loan collateral."
       },
       {
         "partOfSpeech": "noun",
@@ -8454,14 +8454,14 @@
     "senses": [
       {
         "partOfSpeech": "verb",
-        "definition": "To combine parts",
+        "definition": "To mix or make worse",
         "synonyms": [
           "combine",
           "mix",
           "blend",
           "amalgamate"
         ],
-        "exampleSentence": "Smoke and panic compounded the difficulty of reaching the fire escape."
+        "exampleSentence": "Repeated shipping delays will compound the financial losses for the struggling retailer."
       },
       {
         "partOfSpeech": "noun",
@@ -8949,7 +8949,7 @@
       "text": "Can do it - the pipe is the channel that can do the job of moving the water."
     },
     "quizSentence": "A large copper pipe acts as the main conduit for the building's water supply.",
-    "alternateExampleSentence": "The ambassador acted as a crucial conduit between the two deeply hostile nations."
+    "alternateExampleSentence": "The ambassador acted as a crucial conduit between the two hostile nations."
   },
   {
     "id": "b63cfe45-272a-476d-8340-b3c5c9a30779",
@@ -9321,14 +9321,14 @@
     "senses": [
       {
         "partOfSpeech": "noun",
-        "definition": "An inference formed without complete evidence",
+        "definition": "An unproven, educated guess",
         "synonyms": [
           "guess",
           "speculation",
           "hypothesis",
           "supposition"
         ],
-        "exampleSentence": "The article treats the link between diet and mood as conjecture, not certainty."
+        "exampleSentence": "Without physical evidence, the theory remains nothing more than pure conjecture."
       },
       {
         "partOfSpeech": "verb",
@@ -9349,7 +9349,14 @@
     "quizSentence": "What looks like proof may still be conjecture until it survives repeated testing.",
     "exampleSentence": "Without physical evidence, the theory remains nothing more than pure conjecture.",
     "alternateExampleSentence": "The reporter based his sensational article on unproven conjecture and wild rumors.",
-    "definition": "An unproven, educated guess"
+    "definition": "An unproven, educated guess",
+    "partOfSpeech": "noun",
+    "synonyms": [
+      "guess",
+      "speculation",
+      "hypothesis",
+      "supposition"
+    ]
   },
   {
     "id": "71a029a9-6a96-4568-91b9-4fbfb2a15c10",
@@ -9879,7 +9886,7 @@
     "difficultyLevel": 3,
     "frequencyTier": 4,
     "category": "emotion",
-    "definition": "Feeling deeply sorry for wrongdoing",
+    "definition": "Feeling sorry for wrongdoing",
     "synonyms": [
       "remorseful",
       "repentant",
@@ -9998,14 +10005,14 @@
     "senses": [
       {
         "partOfSpeech": "noun",
-        "definition": "An assembly of people",
+        "definition": "A widely accepted social standard",
         "synonyms": [
           "conference",
           "meeting",
           "gathering",
           "congress"
         ],
-        "exampleSentence": "The hotel was full because of the cattleranchers’ convention."
+        "exampleSentence": "The software designer decided to break with UI convention and build something unique."
       },
       {
         "partOfSpeech": "noun",
@@ -10112,7 +10119,7 @@
     "difficultyLevel": 3,
     "frequencyTier": 2,
     "category": "logic-reasoning",
-    "definition": "complex and hard to follow",
+    "definition": "Complex and hard to follow",
     "synonyms": [
       "complicated",
       "complex",
@@ -10439,14 +10446,14 @@
     "senses": [
       {
         "partOfSpeech": "noun",
-        "definition": "A brilliant, unexpected act",
+        "definition": "A sudden, violent seizure of power",
         "synonyms": [
           "success",
           "triumph",
           "feat",
           "stroke of genius"
         ],
-        "exampleSentence": "Pulling off the merger on such short notice was a remarkable coup for the firm."
+        "exampleSentence": "Landing the sought-after executive was considered a major corporate coup for the startup."
       },
       {
         "partOfSpeech": "noun",
@@ -11381,7 +11388,7 @@
       "kind": "sound_spelling",
       "text": "Reference - treating someone with such deep respect that you always use them as a reference."
     },
-    "quizSentence": "The young apprentice was deeply deferential to the master craftsman.",
+    "quizSentence": "The young apprentice was deferential to the master craftsman.",
     "alternateExampleSentence": "The hotel staff maintained a deferential attitude toward the visiting foreign dignitaries."
   },
   {
@@ -11391,7 +11398,7 @@
     "difficultyLevel": 3,
     "frequencyTier": 4,
     "category": "religion-philosophy",
-    "definition": "To deeply ruin or spoil",
+    "definition": "To ruin or spoil",
     "synonyms": [
       "pollute",
       "corrupt",
@@ -12093,7 +12100,7 @@
     "difficultyLevel": 4,
     "frequencyTier": 3,
     "category": "science-engineering",
-    "definition": "dried out",
+    "definition": "Dried out",
     "synonyms": [
       "dried",
       "dehydrated",
@@ -12165,7 +12172,7 @@
     "difficultyLevel": 3,
     "frequencyTier": 3,
     "category": "emotion",
-    "definition": "Deeply discouraged and hopeless",
+    "definition": "Discouraged and hopeless",
     "synonyms": [
       "disheartened",
       "discouraged",
@@ -12237,7 +12244,7 @@
     "difficultyLevel": 3,
     "frequencyTier": 3,
     "category": "business-economy",
-    "definition": "lacking basic life necessities",
+    "definition": "Lacking basic life necessities",
     "synonyms": [
       "poor",
       "impoverished",
@@ -12389,14 +12396,14 @@
     "senses": [
       {
         "partOfSpeech": "adjective",
-        "definition": "Intended to instruct",
+        "definition": "Intended to teach a moral lesson",
         "synonyms": [
           "instructive",
           "pedagogical",
           "educational",
           "informative"
         ],
-        "exampleSentence": "She wrote up a didactic document showing new employees how to handle the company’s customers."
+        "exampleSentence": "The children's television show is didactic, teaching basic math and reading skills daily."
       },
       {
         "partOfSpeech": "adjective",
@@ -12483,14 +12490,14 @@
     "senses": [
       {
         "partOfSpeech": "verb",
-        "definition": "To scatter, thin out, break up",
+        "definition": "To spread over a wide area",
         "synonyms": [
           "scatter",
           "spread",
           "disperse",
           "dissipate"
         ],
-        "exampleSentence": "He diffused the tension in the room by making a joke."
+        "exampleSentence": "The frosted glass was designed to soften and diffuse the harsh sunlight entering."
       },
       {
         "partOfSpeech": "adjective",
@@ -12633,7 +12640,7 @@
     "difficultyLevel": 4,
     "frequencyTier": 7,
     "category": "perception-quality",
-    "definition": "or unusually small",
+    "definition": "Or unusually small",
     "synonyms": [
       "tiny",
       "petite",
@@ -12866,7 +12873,7 @@
     "semanticCharge": "negative",
     "memoryHook": {
       "kind": "sound_spelling",
-      "text": "Discomfort - to make someone feel deeply embarrassed and in a state of discomfort."
+      "text": "Discomfort - to make someone feel embarrassed and in a state of discomfort."
     },
     "semanticChargeIntensity": 2,
     "quizSentence": "The reporter's aggressive personal questions managed to discomfit the evasive mayor.",
@@ -13028,14 +13035,14 @@
     "senses": [
       {
         "partOfSpeech": "verb",
-        "definition": "To scorn, hold in low esteem",
+        "definition": "To consider unworthy of respect",
         "synonyms": [
           "scorn",
           "despise",
           "belittle",
           "look down on"
         ],
-        "exampleSentence": "Older staff disdained the new hires, who were young and highly capable."
+        "exampleSentence": "The aristocratic lady looked at the poorly dressed peasant with disdain."
       },
       {
         "partOfSpeech": "noun",
@@ -13075,7 +13082,7 @@
     "difficultyLevel": 5,
     "frequencyTier": 4,
     "category": "emotion-character",
-    "definition": "Angry or deeply dissatisfied",
+    "definition": "Angry or dissatisfied",
     "synonyms": [
       "resentful",
       "peeved",
@@ -13440,14 +13447,14 @@
     "senses": [
       {
         "partOfSpeech": "verb",
-        "definition": "To disagree",
+        "definition": "To disagree with official views",
         "synonyms": [
           "disagree",
           "object",
           "nonconformity",
           "opposition"
         ],
-        "exampleSentence": "The principal argued that the child should repeat the fourth grade, but the unhappy parents dissented."
+        "exampleSentence": "The oppressive government violently crushed any public displays of political dissent."
       },
       {
         "partOfSpeech": "noun",
@@ -13498,14 +13505,14 @@
     "senses": [
       {
         "partOfSpeech": "verb",
-        "definition": "To disappear, cause to disappear",
+        "definition": "To scatter or vanish",
         "synonyms": [
           "scatter",
           "vanish",
           "dispel",
           "clear away"
         ],
-        "exampleSentence": "The sun finally came out and dissipated the haze."
+        "exampleSentence": "The intense anger she felt began to dissipate after a genuine apology."
       },
       {
         "partOfSpeech": "verb",
@@ -13650,7 +13657,7 @@
     "difficultyLevel": 5,
     "frequencyTier": 7,
     "category": "emotion-character",
-    "definition": "To be deeply indecisive",
+    "definition": "To be indecisive",
     "synonyms": [
       "hesitate",
       "vacillate",
@@ -14352,7 +14359,7 @@
     "difficultyLevel": 6,
     "frequencyTier": 10,
     "category": "perception-quality",
-    "definition": "Shining brightly; deeply radiant",
+    "definition": "Shining brightly; radiant",
     "synonyms": [
       "radiant",
       "brilliant",
@@ -14712,14 +14719,14 @@
     "senses": [
       {
         "partOfSpeech": "verb",
-        "definition": "To decorate, adorn",
+        "definition": "To make more attractive",
         "synonyms": [
           "decorate",
           "adorn",
           "ornament",
           "gild"
         ],
-        "exampleSentence": "My mom embellished the living room by adding lace curtains."
+        "exampleSentence": "The fisherman would always embellish the actual size of the fish he caught."
       },
       {
         "partOfSpeech": "verb",
@@ -14842,14 +14849,14 @@
     "senses": [
       {
         "partOfSpeech": "adjective",
-        "definition": "Distinguished, prominent, famous",
+        "definition": "Famous and respected within a profession",
         "synonyms": [
           "famous",
           "distinguished",
           "renowned",
           "notable"
         ],
-        "exampleSentence": "The eminent scholar's lecture drew professors from across the campus."
+        "exampleSentence": "The eminent scientist won a prestigious award for her groundbreaking work in biology."
       },
       {
         "partOfSpeech": "adjective",
@@ -15010,7 +15017,7 @@
           "experimental",
           "a posteriori"
         ],
-        "exampleSentence": "The study rests on empirical data gathered from controlled field trials."
+        "exampleSentence": "The researcher gathered empirical data to definitively prove his controversial scientific theory."
       },
       {
         "partOfSpeech": "adjective",
@@ -15349,7 +15356,7 @@
     "semanticCharge": "negative",
     "memoryHook": {
       "kind": "sound_spelling",
-      "text": "Enemy - the intense, deeply rooted hatred you feel toward a bitter enemy."
+      "text": "Enemy - the intense, rooted hatred you feel toward a bitter enemy."
     },
     "semanticChargeIntensity": 2,
     "quizSentence": "There is a bitter, centuries-old enmity between the two rival warring clans.",
@@ -15779,7 +15786,7 @@
     "id": "d484b69e-b571-416d-bb07-e1c0c8695ea0",
     "word": "Ethereal",
     "partOfSpeech": "adjective",
-    "definition": "delicate and light",
+    "definition": "Delicate and light",
     "exampleSentence": "The delicate dancer moved across the stage with a beautiful, ethereal grace.",
     "difficultyLevel": 4,
     "frequencyTier": 6,
@@ -16163,7 +16170,7 @@
     "id": "c665f94d-6fd5-41c1-83d7-e25bf1d905e0",
     "word": "Execrable",
     "partOfSpeech": "adjective",
-    "definition": "bad or unpleasant",
+    "definition": "Bad or unpleasant",
     "exampleSentence": "The restaurant was closed down after health inspectors discovered execrable conditions in the kitchen.",
     "difficultyLevel": 5,
     "frequencyTier": 6,
@@ -16516,7 +16523,7 @@
     "id": "89228ca1-8695-4a1f-8940-5041743d7894",
     "word": "Expurgate",
     "partOfSpeech": "verb",
-    "definition": "To remove deeply offensive matter",
+    "definition": "To remove offensive matter",
     "exampleSentence": "The school board decided to expurgate the controversial novel before assigning it to students.",
     "difficultyLevel": 6,
     "frequencyTier": 6,
@@ -16812,14 +16819,14 @@
     "senses": [
       {
         "partOfSpeech": "adjective",
-        "definition": "Easy, requiring little effort",
+        "definition": "Ignoring complexities for easy answers",
         "synonyms": [
           "superficial",
           "glib",
           "oversimple",
           "pat"
         ],
-        "exampleSentence": "This game is so facile that even a four-yearold can master it."
+        "exampleSentence": "Her facile piano performance lacked the emotional depth required for the classical masterpiece."
       },
       {
         "partOfSpeech": "adjective",
@@ -16927,7 +16934,7 @@
     "id": "51c2e96a-41fd-4303-86a6-6fa750ee3f8d",
     "word": "Fastidious",
     "partOfSpeech": "adjective",
-    "definition": "attentive to accuracy and detail",
+    "definition": "Attentive to accuracy and detail",
     "exampleSentence": "The fastidious editor demanded flawless grammar and perfect punctuation in every submitted manuscript.",
     "difficultyLevel": 4,
     "frequencyTier": 3,
@@ -16998,7 +17005,7 @@
     "word": "Fatuous",
     "partOfSpeech": "adjective",
     "definition": "Silly and pointless",
-    "exampleSentence": "The foolish prince made a fatuous remark that deeply offended the visiting ambassadors.",
+    "exampleSentence": "The foolish prince made a fatuous remark that offended the visiting ambassadors.",
     "difficultyLevel": 5,
     "frequencyTier": 7,
     "category": "emotion-character",
@@ -17068,7 +17075,7 @@
     "id": "87d8e7d2-afa9-422c-bf6d-60071c8bff56",
     "word": "Fecund",
     "partOfSpeech": "adjective",
-    "definition": "fertile or productive",
+    "definition": "Fertile or productive",
     "exampleSentence": "The fecund soil of the river valley produces abundant crops year after year.",
     "difficultyLevel": 5,
     "frequencyTier": 7,
@@ -17119,14 +17126,14 @@
     "senses": [
       {
         "partOfSpeech": "adjective",
-        "definition": "Well suited, apt",
+        "definition": "Well chosen or suited",
         "synonyms": [
           "apt",
           "well-chosen",
           "fitting",
           "happy"
         ],
-        "exampleSentence": "While his comments were idiotic and rambling, mine were felicitous and helpful."
+        "exampleSentence": "The speaker used a felicitous analogy that explained the complex scientific concept."
       },
       {
         "partOfSpeech": "adjective",
@@ -17228,7 +17235,7 @@
       "text": "Fever - having a burning, passionate fever for a political cause."
     },
     "quizSentence": "Fervent supporters stood in freezing rain just to glimpse the visiting president.",
-    "alternateExampleSentence": "The civil rights leader delivered a fervent speech that deeply inspired the crowd."
+    "alternateExampleSentence": "The civil rights leader delivered a fervent speech that inspired the crowd."
   },
   {
     "id": "98e71164-df55-4606-bac1-7e633ab508fc",
@@ -17270,7 +17277,7 @@
     "id": "4fe3d7bf-c152-46c0-9656-5120f07721a9",
     "word": "Fetter",
     "partOfSpeech": "verb",
-    "definition": "To restrict or deeply confine",
+    "definition": "To restrict or confine",
     "exampleSentence": "The prison guards placed a heavy iron fetter on the dangerous inmate's ankle.",
     "difficultyLevel": 4,
     "frequencyTier": 7,
@@ -17410,7 +17417,7 @@
     "id": "81ad043b-ce9e-4f97-b036-e34c565b9f89",
     "word": "Flabbergasted",
     "partOfSpeech": "adjective",
-    "definition": "Deeply surprised",
+    "definition": "Surprised",
     "exampleSentence": "The parents were flabbergasted when their lazy son brought home a perfect report card.",
     "difficultyLevel": 4,
     "frequencyTier": 7,
@@ -18550,7 +18557,7 @@
     "id": "0a4fa68c-897f-45f9-8434-429d650bc2d1",
     "word": "Grievous",
     "partOfSpeech": "adjective",
-    "definition": "severe or serious",
+    "definition": "Severe or serious",
     "exampleSentence": "The reckless driver caused a grievous injury to the pedestrian crossing the street.",
     "difficultyLevel": 3,
     "frequencyTier": 1,
@@ -18658,7 +18665,7 @@
     "id": "869b7a2b-e868-428e-bd56-70dfddd9c98d",
     "word": "Hallowed",
     "partOfSpeech": "adjective",
-    "definition": "respected or deeply sacred",
+    "definition": "Respected or sacred",
     "exampleSentence": "The soldiers stood in silence to honor the hallowed grounds of the battlefield.",
     "difficultyLevel": 3,
     "frequencyTier": 3,
@@ -18684,7 +18691,7 @@
     "semanticCharge": "neutral",
     "memoryHook": {
       "kind": "sound_spelling",
-      "text": "Halloween (All Hallows' Eve) - referring to the most holy, deeply respected evening."
+      "text": "Halloween (All Hallows' Eve) - referring to the most holy, respected evening."
     },
     "quizSentence": "The diplomatic corps treated the conference hall as hallowed ground for negotiation and protocol.",
     "alternateExampleSentence": "The ancient university is considered a hallowed institution of higher academic learning."
@@ -18745,14 +18752,14 @@
     "senses": [
       {
         "partOfSpeech": "noun",
-        "definition": "A ranting speech",
+        "definition": "A lengthy and aggressive speech",
         "synonyms": [
           "tirade",
           "diatribe",
           "lecture",
           "rant"
         ],
-        "exampleSentence": "Everyone had heard the teacher’s harangue about gum chewing in class before."
+        "exampleSentence": "The angry coach delivered a bitter harangue after the team lost the championship game."
       },
       {
         "partOfSpeech": "verb",
@@ -18824,7 +18831,7 @@
     "id": "46b9cf59-727c-41e8-9742-90dc1baa006d",
     "word": "Harrowing",
     "partOfSpeech": "adjective",
-    "definition": "Acutely distressing or deeply upsetting",
+    "definition": "Acutely distressing or upsetting",
     "exampleSentence": "The weary soldiers survived a harrowing journey through the dense, enemy-infested jungle.",
     "difficultyLevel": 3,
     "frequencyTier": 3,
@@ -18966,7 +18973,7 @@
     "id": "63f60632-a41c-403d-8197-b2c3909e5a5a",
     "word": "Heinous",
     "partOfSpeech": "adjective",
-    "definition": "odious or wicked",
+    "definition": "Odious or wicked",
     "exampleSentence": "The jury quickly convicted the criminal for his heinous acts against the community.",
     "difficultyLevel": 4,
     "frequencyTier": 4,
@@ -19448,7 +19455,7 @@
     "id": "d52e84ae-156e-49da-8705-d73b3a56c250",
     "word": "Impeccable",
     "partOfSpeech": "adjective",
-    "definition": "faultless or flawless",
+    "definition": "Faultless or flawless",
     "exampleSentence": "The butler maintained the wealthy estate with an impeccable attention to minor details.",
     "difficultyLevel": 3,
     "frequencyTier": 5,
@@ -19571,14 +19578,14 @@
     "senses": [
       {
         "partOfSpeech": "adjective",
-        "definition": "Necessary, pressing",
+        "definition": "Of vital and crucial importance",
         "synonyms": [
           "crucial",
           "urgent",
           "mandatory",
           "pressing"
         ],
-        "exampleSentence": "It is imperative that you have these folders organized by midday."
+        "exampleSentence": "It is imperative that you finish this crucial assignment before the deadline tomorrow."
       },
       {
         "partOfSpeech": "noun",
@@ -19770,14 +19777,14 @@
     "senses": [
       {
         "partOfSpeech": "verb",
-        "definition": "To impact, affect, make an impression",
+        "definition": "To have a negative effect",
         "synonyms": [
           "encroach",
           "trespass",
           "infringe",
           "touch"
         ],
-        "exampleSentence": "The hail impinged the roof, leaving large dents."
+        "exampleSentence": "The noisy construction outside began to impinge upon the quiet atmosphere of the library."
       },
       {
         "partOfSpeech": "verb",
@@ -19865,14 +19872,14 @@
     "senses": [
       {
         "partOfSpeech": "noun",
-        "definition": "An instrument, utensil, tool",
+        "definition": "A tool or practical utensil",
         "synonyms": [
           "execute",
           "carry out",
           "enforce",
           "apply"
         ],
-        "exampleSentence": "She used a metal implement to pry the stubborn lid off the jar."
+        "exampleSentence": "The school board decided to implement a strict dress code for all students."
       },
       {
         "partOfSpeech": "verb",
@@ -20075,7 +20082,7 @@
     "id": "d137bc82-d9c1-4f3c-9f40-a2af720d169e",
     "word": "Inane",
     "partOfSpeech": "adjective",
-    "definition": "foolish or terribly silly",
+    "definition": "Foolish or terribly silly",
     "exampleSentence": "The bored teenager scrolled mindlessly through inane social media videos for several hours.",
     "difficultyLevel": 4,
     "frequencyTier": 8,
@@ -20163,14 +20170,14 @@
     "senses": [
       {
         "partOfSpeech": "adjective",
-        "definition": "Existing in the flesh, embodied",
+        "definition": "Embodied in human physical form",
         "synonyms": [
           "embodied",
           "personified",
           "typified",
           "manifest"
         ],
-        "exampleSentence": "In the church pageant, I play the role of greed incarnate."
+        "exampleSentence": "The cruel dictator was viewed by his oppressed citizens as evil incarnate."
       },
       {
         "partOfSpeech": "verb",
@@ -20222,14 +20229,14 @@
     "senses": [
       {
         "partOfSpeech": "noun",
-        "definition": "A person who agitates",
+        "definition": "A person starting intense conflict",
         "synonyms": [
           "inflammatory",
           "fire-raising",
           "combustible",
           "igniting"
         ],
-        "exampleSentence": "The incendiary remark during the match nearly caused a riot in the stands."
+        "exampleSentence": "The rebel leader delivered an incendiary speech that sparked a violent city riot."
       },
       {
         "partOfSpeech": "adjective",
@@ -20464,7 +20471,7 @@
     "semanticCharge": "negative",
     "memoryHook": {
       "kind": "morphology",
-      "text": "\"in-\" (not) + \"corrigere\" (correct) = a criminal so deeply bad they are completely beyond correction."
+      "text": "\"in-\" (not) + \"corrigere\" (correct) = a criminal so bad they are completely beyond correction."
     },
     "semanticChargeIntensity": 2,
     "quizSentence": "The incorrigible prankster glued the teacher's coffee mug to the desk.",
@@ -20522,14 +20529,14 @@
     "senses": [
       {
         "partOfSpeech": "noun",
-        "definition": "One who holds an office",
+        "definition": "The current holder of office",
         "synonyms": [
           "obligatory",
           "binding",
           "mandatory",
           "necessary"
         ],
-        "exampleSentence": "The incumbent senator is already serving his fifth term."
+        "exampleSentence": "The incumbent mayor easily won reelection after a successful four years in office."
       },
       {
         "partOfSpeech": "adjective",
@@ -20874,7 +20881,7 @@
     },
     "semanticChargeIntensity": 3,
     "quizSentence": "The inept plumber accidentally flooded the entire basement while fixing the sink.",
-    "alternateExampleSentence": "His socially inept comments made everyone at the formal dinner party deeply uncomfortable."
+    "alternateExampleSentence": "His socially inept comments made everyone at the formal dinner party uncomfortable."
   },
   {
     "id": "b6df6933-1f56-4847-af7b-40ccc3b1179c",
@@ -21179,7 +21186,7 @@
     "semanticCharge": "negative",
     "memoryHook": {
       "kind": "morphology",
-      "text": "\"in-\" (not) + \"amicus\" (friend) = deeply unfriendly, hostile, and actively harmful."
+      "text": "\"in-\" (not) + \"amicus\" (friend) = unfriendly, hostile, and actively harmful."
     },
     "semanticChargeIntensity": 2,
     "quizSentence": "Heavy frost is entirely inimical to the survival of a fragile citrus crop.",
@@ -21215,7 +21222,7 @@
     "semanticCharge": "negative",
     "memoryHook": {
       "kind": "morphology",
-      "text": "\"in-\" (not) + \"equ\" (fair/equal) = a situation of gross injustice or deeply wicked behavior."
+      "text": "\"in-\" (not) + \"equ\" (fair/equal) = a situation of gross injustice or wicked behavior."
     },
     "semanticChargeIntensity": 3,
     "quizSentence": "The crusading journalist sought to expose the dark iniquity of the corrupt prison system.",
@@ -21257,7 +21264,7 @@
     "id": "35c875f1-ba60-4c4a-95e7-a8cd43e772a7",
     "word": "Innate",
     "partOfSpeech": "adjective",
-    "definition": "Deeply inborn or natural",
+    "definition": "Inborn or natural",
     "exampleSentence": "The talented artist possesses an innate ability to capture human emotion on canvas.",
     "difficultyLevel": 3,
     "frequencyTier": 1,
@@ -21908,7 +21915,7 @@
     "id": "9bfda01e-78fc-4995-adfd-317e6f8bbba1",
     "word": "Intractable",
     "partOfSpeech": "adjective",
-    "definition": "hard to effectively control",
+    "definition": "Hard to effectively control",
     "exampleSentence": "The long-standing border dispute remains an intractable problem for the United Nations diplomats.",
     "difficultyLevel": 5,
     "frequencyTier": 10,
@@ -22148,7 +22155,7 @@
     "semanticCharge": "neutral",
     "memoryHook": {
       "kind": "morphology",
-      "text": "\"in-\" (in) + \"veter\" (old) = an extremely old, deeply established habit you cannot break."
+      "text": "\"in-\" (in) + \"veter\" (old) = an extremely old, established habit you cannot break."
     },
     "quizSentence": "As an inveterate liar, he lied even about what he ate for breakfast.",
     "alternateExampleSentence": "The inveterate smoker found it nearly impossible to finally quit the habit."
@@ -22697,14 +22704,14 @@
     "senses": [
       {
         "partOfSpeech": "adjective",
-        "definition": "Given without limits",
+        "definition": "Sumptuously rich or elaborate",
         "synonyms": [
           "opulent",
           "sumptuous",
           "extravagant",
           "lush"
         ],
-        "exampleSentence": "Because they had worked very hard, the performers appreciated the critic’s lavish praise."
+        "exampleSentence": "The couple hosted a lavish party to celebrate their twentieth wedding anniversary."
       },
       {
         "partOfSpeech": "verb",
@@ -22854,14 +22861,14 @@
     "senses": [
       {
         "partOfSpeech": "noun",
-        "definition": "Something for which one is legally responsible, usually involving a disadvantage or risk",
+        "definition": "Being legally responsible for something",
         "synonyms": [
           "debt",
           "legal-duty",
           "financial-burden",
           "accountability"
         ],
-        "exampleSentence": "The bungee-jumping tower was a great liability for the owners of the carnival."
+        "exampleSentence": "His constant lateness is a major liability for the busy catering team."
       },
       {
         "partOfSpeech": "noun",
@@ -22963,7 +22970,7 @@
     "id": "1de72196-2805-4123-8625-a509197db33b",
     "word": "Limpid",
     "partOfSpeech": "adjective",
-    "definition": "clear and unclouded",
+    "definition": "Clear and unclouded",
     "exampleSentence": "The limpid water of the mountain lake revealed every colorful stone below.",
     "difficultyLevel": 5,
     "frequencyTier": 4,
@@ -23166,7 +23173,7 @@
     "id": "0f0c2908-eb0f-4da2-bec1-3d93ec065fb4",
     "word": "Lurid",
     "partOfSpeech": "adjective",
-    "definition": "vivid in striking color",
+    "definition": "Vivid in striking color",
     "exampleSentence": "The lurid tabloid cover featured scandalous photos of the famous rock star.",
     "difficultyLevel": 5,
     "frequencyTier": 4,
@@ -23426,14 +23433,14 @@
     "senses": [
       {
         "partOfSpeech": "adjective",
-        "definition": "Easily understandable, obvious",
+        "definition": "Clear or obvious to minds",
         "synonyms": [
           "obvious",
           "patent",
           "unmistakable",
           "self-evident"
         ],
-        "exampleSentence": "The wrong sum on the board was so manifest the class laughed aloud."
+        "exampleSentence": "The stress of the job began to manifest in his physical health."
       },
       {
         "partOfSpeech": "verb",
@@ -23929,14 +23936,14 @@
     "senses": [
       {
         "partOfSpeech": "adjective",
-        "definition": "Not extreme",
+        "definition": "Average in amount or degree",
         "synonyms": [
           "medium",
           "measured",
           "centrist",
           "temperate"
         ],
-        "exampleSentence": "Luckily, the restaurant we chose had moderate prices; none of us have any money."
+        "exampleSentence": "The chef suggests using a moderate amount of salt in the soup."
       },
       {
         "partOfSpeech": "noun",
@@ -24320,7 +24327,7 @@
     "id": "d5a088cb-0d60-49e3-8d1c-8e6dab2d2184",
     "word": "Myriad",
     "partOfSpeech": "adjective",
-    "definition": "great or countless numbers",
+    "definition": "Great or countless numbers",
     "exampleSentence": "The forest is home to a myriad of different birds and insects.",
     "difficultyLevel": 4,
     "frequencyTier": 2,
@@ -24461,7 +24468,7 @@
     "id": "6d859323-745e-4bcf-847e-c52180b54717",
     "word": "Nefarious",
     "partOfSpeech": "adjective",
-    "definition": "Deeply wicked or criminal",
+    "definition": "Wicked or criminal",
     "exampleSentence": "The villain hatched a nefarious plot to steal the gold from vaults.",
     "difficultyLevel": 5,
     "frequencyTier": 5,
@@ -24735,7 +24742,7 @@
     "id": "2694e06d-3a82-46be-bbd7-c8b46688ec61",
     "word": "Nondescript",
     "partOfSpeech": "adjective",
-    "definition": "Lacking deeply interesting features",
+    "definition": "Lacking interesting features",
     "exampleSentence": "The nondescript building blended in with the other houses on the street.",
     "difficultyLevel": 6,
     "frequencyTier": 9,
@@ -24818,14 +24825,14 @@
     "senses": [
       {
         "partOfSpeech": "preposition",
-        "definition": "In spite of",
+        "definition": "Without being prevented by",
         "synonyms": [
           "despite",
           "regardless of",
           "even with",
           "in defiance of"
         ],
-        "exampleSentence": "Notwithstanding the rain, the march continued through downtown."
+        "exampleSentence": "Notwithstanding the rain, the team continued to practice on the soccer field."
       },
       {
         "partOfSpeech": "adverb",
@@ -24846,7 +24853,14 @@
     "quizSentence": "The policy remained popular, notwithstanding fierce criticism from experts.",
     "exampleSentence": "Notwithstanding the rain, the team continued to practice on the soccer field.",
     "alternateExampleSentence": "Notwithstanding her age, she is the fastest runner on the track team.",
-    "definition": "Without being prevented by"
+    "definition": "Without being prevented by",
+    "partOfSpeech": "preposition",
+    "synonyms": [
+      "despite",
+      "regardless of",
+      "even with",
+      "in defiance of"
+    ]
   },
   {
     "id": "471fbc61-f724-455a-b406-9d1c0ce3d8ac",
@@ -24884,7 +24898,7 @@
     "id": "e4efa855-809d-47ba-a312-96ddc646804c",
     "word": "Noxious",
     "partOfSpeech": "adjective",
-    "definition": "Harmful, poisonous, or deeply unpleasant",
+    "definition": "Harmful, poisonous, or unpleasant",
     "exampleSentence": "The noxious fumes from the factory forced the nearby residents to evacuate.",
     "difficultyLevel": 4,
     "frequencyTier": 2,
@@ -25020,7 +25034,7 @@
     "id": "bbb7cd63-4715-4c14-891f-459057c9981b",
     "word": "Obfuscate",
     "partOfSpeech": "verb",
-    "definition": "To deliberately make deeply unclear",
+    "definition": "To deliberately make unclear",
     "exampleSentence": "The witness tried to obfuscate the truth by telling many confusing lies.",
     "difficultyLevel": 5,
     "frequencyTier": 5,
@@ -25362,7 +25376,7 @@
     "id": "84c8e352-a349-4de9-a94b-baa5d44e5ea1",
     "word": "Odious",
     "partOfSpeech": "adjective",
-    "definition": "unpleasant or repulsive",
+    "definition": "Unpleasant or repulsive",
     "exampleSentence": "The odious criminal was sent to prison for his terrible violent acts.",
     "difficultyLevel": 5,
     "frequencyTier": 5,
@@ -25388,7 +25402,7 @@
     "semanticCharge": "negative",
     "memoryHook": {
       "kind": "sound_spelling",
-      "text": "Odor - a personality or crime so deeply repulsive it hits you like a foul, sickening odor."
+      "text": "Odor - a personality or crime so repulsive it hits you like a foul, sickening odor."
     },
     "semanticChargeIntensity": 3,
     "quizSentence": "Cleaning out the moldy refrigerator is an odious household chore.",
@@ -25506,7 +25520,7 @@
     "id": "32c8b2f3-933e-4222-958d-7cc477a102cf",
     "word": "Opulent",
     "partOfSpeech": "adjective",
-    "definition": "Ostentatiously rich and deeply luxurious",
+    "definition": "Ostentatiously rich and luxurious",
     "exampleSentence": "The opulent mansion featured gold statues and rare art in every room.",
     "difficultyLevel": 4,
     "frequencyTier": 2,
@@ -25805,7 +25819,7 @@
     "semanticCharge": "positive",
     "memoryHook": {
       "kind": "morphology",
-      "text": "\"pac\" (peace) = a demeanor that is deeply calm, tranquil, and peaceful (like the Pacific Ocean)."
+      "text": "\"pac\" (peace) = a demeanor that is calm, tranquil, and peaceful (like the Pacific Ocean)."
     },
     "semanticChargeIntensity": 1,
     "quizSentence": "The pacific islanders greeted the exhausted sailors with fresh fruit and water.",
@@ -25815,7 +25829,7 @@
     "id": "7126ea9b-86a9-4440-8c00-4f25f2b8a225",
     "word": "Palatable",
     "partOfSpeech": "adjective",
-    "definition": "pleasant to the taste",
+    "definition": "Pleasant to the taste",
     "exampleSentence": "The chef made the plain vegetables palatable by adding fresh herbs today.",
     "difficultyLevel": 4,
     "frequencyTier": 2,
@@ -26218,7 +26232,7 @@
     "passageDomain": "power_culture",
     "semanticCharge": "neutral",
     "memoryHook": null,
-    "quizSentence": "The deeply partisan news network refuses to broadcast any opposing political viewpoints.",
+    "quizSentence": "The partisan news network refuses to broadcast any opposing political viewpoints.",
     "alternateExampleSentence": "He refused to engage in partisan debates during the family dinner party."
   },
   {
@@ -26324,7 +26338,7 @@
     "id": "d4756c6f-5da2-4ec5-91c3-7a912e75a757",
     "word": "Paucity",
     "partOfSpeech": "adjective",
-    "definition": "small in overall quantity",
+    "definition": "Small in overall quantity",
     "exampleSentence": "There is a paucity of data regarding the effects of the drug.",
     "difficultyLevel": 5,
     "frequencyTier": 6,
@@ -26536,7 +26550,7 @@
     "id": "6ad2280e-840f-40f3-8609-ff80a52d6139",
     "word": "Penurious",
     "partOfSpeech": "adjective",
-    "definition": "poor or poverty-stricken",
+    "definition": "Poor or poverty-stricken",
     "exampleSentence": "The penurious artist lived in a tiny room with no heating system.",
     "difficultyLevel": 5,
     "frequencyTier": 6,
@@ -26679,7 +26693,7 @@
     "id": "1d943268-9dae-4dd3-bfa1-1cea80a464a6",
     "word": "Pernicious",
     "partOfSpeech": "adjective",
-    "definition": "Having a deeply harmful effect",
+    "definition": "Having a harmful effect",
     "exampleSentence": "The pernicious influence of the media can harm the growth of children.",
     "difficultyLevel": 6,
     "frequencyTier": 9,
@@ -27123,7 +27137,7 @@
     "id": "e7619772-d8d3-48ab-b339-041591f43697",
     "word": "Pithy",
     "partOfSpeech": "adjective",
-    "definition": "Concise and deeply forcefully expressive",
+    "definition": "Concise and forcefully expressive",
     "exampleSentence": "The author is known for writing pithy sentences that pack great meaning.",
     "difficultyLevel": 5,
     "frequencyTier": 6,
@@ -27263,7 +27277,7 @@
     "id": "c19596f9-d35b-48c8-9a26-4736d386126e",
     "word": "Platitude",
     "partOfSpeech": "noun",
-    "definition": "A deeply overused, unoriginal remark",
+    "definition": "An overused, unoriginal remark",
     "exampleSentence": "The politician filled his speech with platitude after platitude about national unity.",
     "difficultyLevel": 5,
     "frequencyTier": 6,
@@ -27598,14 +27612,14 @@
     "senses": [
       {
         "partOfSpeech": "verb",
-        "definition": "To assume as true for the sake of argument or theory",
+        "definition": "To suggest as a given fact",
         "synonyms": [
           "hypothesize",
           "propose",
           "posit",
           "presume"
         ],
-        "exampleSentence": "The essay postulates that readers already accept the author's definition of fairness."
+        "exampleSentence": "Scientists postulate that the universe began with a sudden and grand explosion."
       },
       {
         "partOfSpeech": "noun",
@@ -27626,13 +27640,20 @@
     "quizSentence": "Economists postulate a link between trust and investment, then test it empirically.",
     "exampleSentence": "Scientists postulate that the universe began with a sudden and grand explosion.",
     "alternateExampleSentence": "He started his logic proof by asking us to postulate that the lines are parallel.",
-    "definition": "To suggest as a given fact"
+    "definition": "To suggest as a given fact",
+    "partOfSpeech": "verb",
+    "synonyms": [
+      "hypothesize",
+      "propose",
+      "posit",
+      "presume"
+    ]
   },
   {
     "id": "3d4aedb7-f0b1-406a-8880-9dcde211ecb2",
     "word": "Potable",
     "partOfSpeech": "adjective",
-    "definition": "safe for human drinking",
+    "definition": "Safe for human drinking",
     "exampleSentence": "The hikers carried only potable water to stay healthy on the trail.",
     "difficultyLevel": 3,
     "frequencyTier": 1,
@@ -27788,14 +27809,14 @@
     "senses": [
       {
         "partOfSpeech": "verb",
-        "definition": "To cause something to happen suddenly",
+        "definition": "To cause to happen prematurely",
         "synonyms": [
           "trigger",
           "hasten",
           "bring about",
           "spark"
         ],
-        "exampleSentence": "Trade disputes precipitated a sharp drop in consumer confidence."
+        "exampleSentence": "The sudden increase in oil prices will precipitate a rise in inflation."
       },
       {
         "partOfSpeech": "verb",
@@ -27816,7 +27837,14 @@
     "quizSentence": "A single miscalculation can precipitate a chain of failures in complex systems.",
     "exampleSentence": "The sudden increase in oil prices will precipitate a rise in inflation.",
     "alternateExampleSentence": "Her decision to quit will precipitate a change in company leadership today.",
-    "definition": "To cause to happen prematurely"
+    "definition": "To cause to happen prematurely",
+    "partOfSpeech": "verb",
+    "synonyms": [
+      "trigger",
+      "hasten",
+      "bring about",
+      "spark"
+    ]
   },
   {
     "id": "1cc0fcd7-7e44-41fe-8952-b460e0bdfcf2",
@@ -27962,7 +27990,7 @@
     "id": "15235322-efbd-4774-8936-c99355561eb2",
     "word": "Prepossessing",
     "partOfSpeech": "adjective",
-    "definition": "attractive or appealing",
+    "definition": "Attractive or appealing",
     "exampleSentence": "He made a prepossessing appearance during his first day at the company.",
     "difficultyLevel": 6,
     "frequencyTier": 10,
@@ -28337,7 +28365,7 @@
     "id": "e0443c1a-2941-4c6d-a957-212d0f76923d",
     "word": "Profane",
     "partOfSpeech": "adjective",
-    "definition": "disrespectful of sacred things",
+    "definition": "Disrespectful of sacred things",
     "exampleSentence": "The comedian was fined for using profane language during his live show.",
     "difficultyLevel": 5,
     "frequencyTier": 7,
@@ -28510,7 +28538,7 @@
     "id": "5d65e274-df72-4103-8b16-e06b59e92461",
     "word": "Propensity",
     "partOfSpeech": "noun",
-    "definition": "A deeply natural behavioral tendency",
+    "definition": "A natural behavioral tendency",
     "exampleSentence": "He has a propensity for forgetting his keys when leaving the house.",
     "difficultyLevel": 5,
     "frequencyTier": 7,
@@ -28755,7 +28783,7 @@
     "id": "3da7c18c-e0ee-4587-8f19-4787df111c2a",
     "word": "Prudence",
     "partOfSpeech": "noun",
-    "definition": "cautious and careful management",
+    "definition": "Cautious and careful management",
     "exampleSentence": "He showed great prudence by saving most of his income for retirement.",
     "difficultyLevel": 4,
     "frequencyTier": 3,
@@ -28859,7 +28887,7 @@
     "id": "9fc23314-daf7-419c-afe4-557e69348443",
     "word": "Pugnacious",
     "partOfSpeech": "adjective",
-    "definition": "eager to argue quickly",
+    "definition": "Eager to argue quickly",
     "exampleSentence": "The pugnacious boxer started a fight at the weigh-in before the match.",
     "difficultyLevel": 6,
     "frequencyTier": 10,
@@ -29036,7 +29064,7 @@
     "id": "aa9e0060-e145-4231-b10c-2ab2dfd24d58",
     "word": "Quagmire",
     "partOfSpeech": "noun",
-    "definition": "A deeply awkward, complex situation",
+    "definition": "An awkward, complex situation",
     "exampleSentence": "The hikers got stuck in a muddy quagmire after the heavy rains.",
     "difficultyLevel": 6,
     "frequencyTier": 10,
@@ -29122,14 +29150,14 @@
     "senses": [
       {
         "partOfSpeech": "verb",
-        "definition": "To limit or modify a claim",
+        "definition": "To make an assertion limited",
         "synonyms": [
           "moderate",
           "restrict",
           "nuance",
           "temper"
         ],
-        "exampleSentence": "The author qualifies the headline by adding important exceptions in the next sentence."
+        "exampleSentence": "You must qualify your statement by providing more evidence for the claim."
       },
       {
         "partOfSpeech": "verb",
@@ -29150,7 +29178,14 @@
     "quizSentence": "A good thesis qualifies broad claims so they match the evidence presented.",
     "exampleSentence": "You must qualify your statement by providing more evidence for the claim.",
     "alternateExampleSentence": "She failed to qualify for the final round of the Olympic race.",
-    "definition": "To make an assertion limited"
+    "definition": "To make an assertion limited",
+    "partOfSpeech": "verb",
+    "synonyms": [
+      "moderate",
+      "restrict",
+      "nuance",
+      "temper"
+    ]
   },
   {
     "id": "2c11b227-346e-4a6d-891d-8a467b84d52e",
@@ -29263,7 +29298,7 @@
     "id": "cdba4e16-3a61-4274-8d94-a818bbd84bac",
     "word": "Quixotic",
     "partOfSpeech": "adjective",
-    "definition": "idealistic, impractical",
+    "definition": "Idealistic, impractical",
     "exampleSentence": "He had a quixotic dream of building a city on the moon.",
     "difficultyLevel": 5,
     "frequencyTier": 7,
@@ -29763,14 +29798,14 @@
     "senses": [
       {
         "partOfSpeech": "verb",
-        "definition": "To return to harmony",
+        "definition": "To restore to friendly relations",
         "synonyms": [
           "conciliate",
           "appease",
           "unify",
           "mediate"
         ],
-        "exampleSentence": "The feuding neighbors finally reconciled when one brought the other a delicious tuna noodle casserole."
+        "exampleSentence": "They finally managed to reconcile their differences after a very long talk."
       },
       {
         "partOfSpeech": "verb",
@@ -29855,14 +29890,14 @@
     "senses": [
       {
         "partOfSpeech": "adjective",
-        "definition": "Formidable",
+        "definition": "Formidable as an opponent",
         "synonyms": [
           "formidable",
           "fearsome",
           "intimidating",
           "awe-inspiring"
         ],
-        "exampleSentence": "The fortress looked redoubtable set against a stormy sky."
+        "exampleSentence": "She was a redoubtable opponent on the tennis court during the finals."
       },
       {
         "partOfSpeech": "adjective",
@@ -29882,7 +29917,7 @@
       "kind": "sound_spelling",
       "text": "Doubt - an opponent so intimidating you doubt you can win."
     },
-    "definition": "formidable as an opponent",
+    "definition": "Formidable as an opponent",
     "exampleSentence": "She was a redoubtable opponent on the tennis court during the finals.",
     "partOfSpeech": "adjective",
     "synonyms": [
@@ -30010,14 +30045,14 @@
     "senses": [
       {
         "partOfSpeech": "verb",
-        "definition": "To vomit",
+        "definition": "To casually throw up swallowed food",
         "synonyms": [
           "disgorge",
           "vomit",
           "heave",
           "retch"
         ],
-        "exampleSentence": "Feeling sick, Chuck regurgitated his dinner."
+        "exampleSentence": "The bird will regurgitate food to feed its chicks in the nest."
       },
       {
         "partOfSpeech": "verb",
@@ -30101,14 +30136,14 @@
     "senses": [
       {
         "partOfSpeech": "verb",
-        "definition": "To assign to the proper place",
+        "definition": "To strictly assign lower status",
         "synonyms": [
           "demote",
           "downgrade",
           "marginalize",
           "ostracize"
         ],
-        "exampleSentence": "At the astrology conference, Simon was relegated to the Scorpio room."
+        "exampleSentence": "The team was relegated to a lower division after a poor season."
       },
       {
         "partOfSpeech": "verb",
@@ -30211,7 +30246,7 @@
     "id": "d2f9cfac-3a78-4f43-89fd-9ce7e7b312ff",
     "word": "Remiss",
     "partOfSpeech": "adjective",
-    "definition": "lacking in required care",
+    "definition": "Lacking in required care",
     "exampleSentence": "The security guard was remiss in his duty to lock the gates.",
     "difficultyLevel": 5,
     "frequencyTier": 8,
@@ -30263,14 +30298,14 @@
     "senses": [
       {
         "partOfSpeech": "verb",
-        "definition": "Restore, return to original state",
+        "definition": "To restore to repair",
         "synonyms": [
           "restore-structure",
           "rehabilitate",
           "rebuild",
           "overhaul"
         ],
-        "exampleSentence": "The renovated antique candelabra looked as good as new."
+        "exampleSentence": "They spent all summer trying to renovate the kitchen in their house."
       },
       {
         "partOfSpeech": "verb",
@@ -30402,7 +30437,7 @@
     "id": "5ee770a9-ea50-4495-ba98-39914f6e3b6b",
     "word": "Replete",
     "partOfSpeech": "adjective",
-    "definition": "filled or fully supplied",
+    "definition": "Filled or fully supplied",
     "exampleSentence": "The book is replete with stories about the hero's many great adventures.",
     "difficultyLevel": 4,
     "frequencyTier": 4,
@@ -30472,7 +30507,7 @@
     "id": "5879c24b-8100-44ba-89d5-85f1c6ab97e5",
     "word": "Reprehensible",
     "partOfSpeech": "adjective",
-    "definition": "deserving severe moral condemnation",
+    "definition": "Deserving severe moral condemnation",
     "exampleSentence": "His reprehensible conduct toward his employees led to his immediate firing today.",
     "difficultyLevel": 5,
     "frequencyTier": 8,
@@ -30576,7 +30611,7 @@
     "id": "ad4d1d62-e111-49ab-b39b-63d812bbabd1",
     "word": "Reprobate",
     "partOfSpeech": "adjective",
-    "definition": "unprincipled or wicked",
+    "definition": "Unprincipled or wicked",
     "exampleSentence": "The village reprobate spent his days drinking and causing trouble for neighbors.",
     "difficultyLevel": 5,
     "frequencyTier": 8,
@@ -30699,14 +30734,14 @@
     "senses": [
       {
         "partOfSpeech": "verb",
-        "definition": "To disgust",
+        "definition": "To cause intense distaste completely",
         "synonyms": [
           "repel",
           "drive back",
           "fend off",
           "beat back"
         ],
-        "exampleSentence": "Antisocial Annie tried to repulse people by neglecting to brush her teeth."
+        "exampleSentence": "The army managed to repulse the enemy attack at the castle wall."
       },
       {
         "partOfSpeech": "verb",
@@ -30877,7 +30912,7 @@
     "id": "3cb64085-3e28-462d-90fe-a5e2301db8a4",
     "word": "Resolute",
     "partOfSpeech": "adjective",
-    "definition": "Admirably deeply purposeful and determined",
+    "definition": "Admirably purposeful and determined",
     "exampleSentence": "He remained resolute in his decision to finish the degree this year.",
     "difficultyLevel": 4,
     "frequencyTier": 3,
@@ -30929,14 +30964,14 @@
     "senses": [
       {
         "partOfSpeech": "verb",
-        "definition": "To find a solution",
+        "definition": "To firmly and successfully decide",
         "synonyms": [
           "determination",
           "grit",
           "steadfastness",
           "backbone"
         ],
-        "exampleSentence": "Sarah and Emma resolved their differences and shook hands."
+        "exampleSentence": "They managed to resolve their legal dispute through a formal mediation process."
       },
       {
         "partOfSpeech": "verb",
@@ -31004,7 +31039,7 @@
     "id": "c483b896-269f-4e54-99d1-aadf5efefb54",
     "word": "Resplendent",
     "partOfSpeech": "adjective",
-    "definition": "attractive through rich colors",
+    "definition": "Attractive through rich colors",
     "exampleSentence": "The palace was resplendent with gold decorations and many bright crystal lights.",
     "difficultyLevel": 4,
     "frequencyTier": 3,
@@ -31181,7 +31216,7 @@
     "id": "acff0076-dd74-465b-8394-27332542154e",
     "word": "Revere",
     "partOfSpeech": "verb",
-    "definition": "To deeply respect and admire",
+    "definition": "To respect and admire",
     "exampleSentence": "The students revere the professor for his many contributions to the science.",
     "difficultyLevel": 4,
     "frequencyTier": 3,
@@ -31209,7 +31244,7 @@
       "kind": "sound_spelling",
       "text": "Reverend - deep respectful awe, like toward a reverend."
     },
-    "quizSentence": "In many cultures, children are taught to deeply revere and respect their elders.",
+    "quizSentence": "In many cultures, children are taught to revere and respect their elders.",
     "alternateExampleSentence": "Many people revere the memory of the leader who changed the nation."
   },
   {
@@ -31672,7 +31707,7 @@
     "id": "b7230ecf-4949-4259-be1c-aa1744a620bb",
     "word": "Sanguine",
     "partOfSpeech": "adjective",
-    "definition": "optimistic in tough situations",
+    "definition": "Optimistic in tough situations",
     "exampleSentence": "He remains sanguine about the company's chances of success this coming year.",
     "difficultyLevel": 4,
     "frequencyTier": 3,
@@ -31813,7 +31848,7 @@
     "id": "5e290bb7-d619-46f1-bd52-433a853b7940",
     "word": "Scrupulous",
     "partOfSpeech": "adjective",
-    "definition": "and morally careful",
+    "definition": "And morally careful",
     "exampleSentence": "The accountant is scrupulous about tracking every single penny of the budget.",
     "difficultyLevel": 4,
     "frequencyTier": 4,
@@ -32047,14 +32082,14 @@
     "passageDomain": "self_character",
     "semanticCharge": "neutral",
     "memoryHook": null,
-    "quizSentence": "The massage therapist used warm, scented oils to create a deeply sensual experience.",
+    "quizSentence": "The massage therapist used warm, scented oils to create a sensual experience.",
     "alternateExampleSentence": "She enjoys the sensual pleasure of listening to live jazz music nightly."
   },
   {
     "id": "8401c7df-2aa2-4f37-b77e-e078262b2653",
     "word": "Sensuous",
     "partOfSpeech": "adjective",
-    "definition": "attractive to human senses",
+    "definition": "Attractive to human senses",
     "exampleSentence": "The sculptor creates sensuous forms that feel smooth to the human touch.",
     "difficultyLevel": 5,
     "frequencyTier": 9,
@@ -32121,7 +32156,7 @@
     "id": "42caee99-e257-4d54-b8e7-61d1a93357a1",
     "word": "Serene",
     "partOfSpeech": "adjective",
-    "definition": "calm, peaceful, and untroubled",
+    "definition": "Calm, peaceful, and untroubled",
     "exampleSentence": "The lake was serene during the early hours of the morning.",
     "difficultyLevel": 3,
     "frequencyTier": 1,
@@ -32376,14 +32411,14 @@
     "senses": [
       {
         "partOfSpeech": "noun",
-        "definition": "A substance that can dissolve other substances",
+        "definition": "A liquid dissolving other substances",
         "synonyms": [
           "dissolving agent",
           "chemical solvent",
           "thinner",
           "dissolvent"
         ],
-        "exampleSentence": "Water is sometimes called the universal solvent because almost all other substances can dissolve into it."
+        "exampleSentence": "The business is finally solvent after a very long and difficult year."
       },
       {
         "partOfSpeech": "adjective",
@@ -32419,8 +32454,8 @@
     "id": "dc65dc47-1bba-4557-a371-5e78e3959bdb",
     "word": "Somnolent",
     "partOfSpeech": "adjective",
-    "definition": "Causing a deeply heavy sleep",
-    "exampleSentence": "The hot afternoon sun made the entire class feel deeply somnolent today.",
+    "definition": "Causing a heavy sleep",
+    "exampleSentence": "The hot afternoon sun made the entire class feel somnolent today.",
     "difficultyLevel": 4,
     "frequencyTier": 4,
     "category": "emotion-character",
@@ -32548,13 +32583,13 @@
     "semanticCharge": "neutral",
     "memoryHook": null,
     "quizSentence": "His theory about ancient aliens building the pyramids is entirely speculative and unproven.",
-    "alternateExampleSentence": "Investing your life savings in unproven cryptocurrency remains a deeply speculative financial strategy."
+    "alternateExampleSentence": "Investing your life savings in unproven cryptocurrency remains a speculative financial strategy."
   },
   {
     "id": "3dbe91fd-9e3f-4c8e-8a7f-fb33e533bafa",
     "word": "Spurious",
     "partOfSpeech": "adjective",
-    "definition": "false but seemingly real",
+    "definition": "False but seemingly real",
     "exampleSentence": "The witness provided a spurious account of what happened at the scene.",
     "difficultyLevel": 5,
     "frequencyTier": 9,
@@ -32623,7 +32658,7 @@
     "id": "db3f2ecc-2208-4e88-bf3d-1f57d1e6e966",
     "word": "Staid",
     "partOfSpeech": "adjective",
-    "definition": "respectable and unadventurous",
+    "definition": "Respectable and unadventurous",
     "exampleSentence": "The company has a staid reputation that appeals to very conservative investors.",
     "difficultyLevel": 4,
     "frequencyTier": 4,
@@ -33072,7 +33107,7 @@
     "id": "47798e65-fc84-439d-b578-941c149b65d1",
     "word": "Superfluous",
     "partOfSpeech": "adjective",
-    "definition": "unnecessary, being extra",
+    "definition": "Unnecessary, being extra",
     "exampleSentence": "The essay contained many superfluous words that made it hard to read.",
     "difficultyLevel": 4,
     "frequencyTier": 5,
@@ -33594,7 +33629,7 @@
     "id": "9975b663-d531-4515-a287-4954afc85a98",
     "word": "Tenuous",
     "partOfSpeech": "adjective",
-    "definition": "flimsy, weak, or slight",
+    "definition": "Flimsy, weak, or slight",
     "exampleSentence": "The company's financial future is tenuous after the sudden market crash today.",
     "difficultyLevel": 4,
     "frequencyTier": 5,
@@ -33841,7 +33876,7 @@
     "id": "255a03e7-0de1-4cef-bc69-02d07c9f99e7",
     "word": "Torrid",
     "partOfSpeech": "adjective",
-    "definition": "dry and fiercely hot",
+    "definition": "Dry and fiercely hot",
     "exampleSentence": "The torrid sun made it hard to work in the field today.",
     "difficultyLevel": 4,
     "frequencyTier": 6,
@@ -33948,7 +33983,7 @@
     "id": "38943949-7fba-4f6c-9ec1-2aa0724c2f56",
     "word": "Tranquil",
     "partOfSpeech": "adjective",
-    "definition": "free from any disturbance",
+    "definition": "Free from any disturbance",
     "exampleSentence": "The garden is a tranquil place to escape the noise of city.",
     "difficultyLevel": 3,
     "frequencyTier": 1,
@@ -35039,7 +35074,7 @@
     "frequencyTier": 7,
     "category": "emotion-character",
     "synonyms": [
-      "honor deeply",
+      "honor",
       "revere",
       "worship",
       "respect"
@@ -35059,7 +35094,7 @@
     "semanticCharge": "positive",
     "memoryHook": {
       "kind": "sound_spelling",
-      "text": "Revere-plus - honor deeply as if before something sacred (same family as reverent)."
+      "text": "Revere-plus - honor as if before something sacred (same family as reverent)."
     },
     "semanticChargeIntensity": 3,
     "quizSentence": "Many ancient cultures used to venerate the sun as a powerful and life-giving deity.",
@@ -35592,7 +35627,7 @@
     "id": "7abfb071-2663-4ffe-9062-c089dbe59fbd",
     "word": "Vivacious",
     "partOfSpeech": "adjective",
-    "definition": "Attractively lively and deeply animated",
+    "definition": "Attractively lively and animated",
     "exampleSentence": "She is a vivacious person who brings energy to every social gathering.",
     "difficultyLevel": 3,
     "frequencyTier": 2,

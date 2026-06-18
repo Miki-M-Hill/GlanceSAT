@@ -58,9 +58,14 @@ final class EntitlementManager: ObservableObject {
     @Published private(set) var isPurchasing = false
     @Published private(set) var isRestoring = false
 
+    /// Active App Store subscription via RevenueCat (excludes the local 3-day preview pass).
+    var hasActiveRevenueCatSubscription: Bool {
+        revenueCatPremiumActive
+    }
+
     private var customerInfoTask: Task<Void, Never>?
     private var revenueCatPremiumActive = false
-    private var packagesByPlan: [SubscriptionPlan: Package] = [:]
+    private var packagesByContext: [PaywallPurchaseContext: [SubscriptionPlan: Package]] = [:]
 
     private init() {}
 
@@ -123,6 +128,19 @@ final class EntitlementManager: ObservableObject {
         Date().timeIntervalSince1970 < activeThreeDayPassExpiration
     }
 
+    /// Premium from the local no-card 3-day pass only — excludes RevenueCat subscribers (including 7-day trial).
+    var hasActiveThreeDayPassOnly: Bool {
+        hasActiveThreeDayPass && !hasActiveRevenueCatSubscription
+    }
+
+    /// Whole days remaining on the 3-day pass, rounded up. Nil when the pass is inactive.
+    var threeDayPassDaysRemaining: Int? {
+        guard hasActiveThreeDayPass else { return nil }
+        let remaining = activeThreeDayPassExpiration - Date().timeIntervalSince1970
+        guard remaining > 0 else { return nil }
+        return max(1, Int(ceil(remaining / 86_400)))
+    }
+
     var canOfferPaywallDownsell: Bool {
         !hasPremiumAccess && !hasActiveThreeDayPass && !hasClaimedNoCardDownsellPass
     }
@@ -167,6 +185,39 @@ final class EntitlementManager: ObservableObject {
 
     // MARK: - Offerings & purchases
 
+    /// Whether the user can start a free trial or intro offer for the given plan.
+    /// Defaults to `true` when RevenueCat is unavailable or eligibility is unknown.
+    func isEligibleForTrial(plan: SubscriptionPlan, context: PaywallPurchaseContext) async -> Bool {
+        #if DEBUG
+        if DebugSubscriptionControls.forcesTrialEligible {
+            return true
+        }
+        #endif
+
+        guard Purchases.isConfigured else { return true }
+        guard let package = package(for: plan, context: context) else { return true }
+
+        let status = await Purchases.shared.checkTrialOrIntroDiscountEligibility(product: package.storeProduct)
+        switch status {
+        case .eligible:
+            return true
+        case .ineligible:
+            return false
+        case .unknown:
+            return true
+        @unknown default:
+            return true
+        }
+    }
+
+    func loadOfferingsIfNeeded(forceRefresh: Bool = false) async {
+        guard Purchases.isConfigured else { return }
+        if !forceRefresh, package(for: .annual, context: .inApp) != nil {
+            return
+        }
+        await loadOfferings()
+    }
+
     func loadOfferings() async {
         guard Purchases.isConfigured else { return }
         isLoadingOfferings = true
@@ -175,43 +226,67 @@ final class EntitlementManager: ObservableObject {
         do {
             let offerings = try await Purchases.shared.offerings()
             guard let current = offerings.current else {
-                packagesByPlan = [:]
+                packagesByContext = [:]
                 return
             }
-            var lookup: [SubscriptionPlan: Package] = [:]
-            for plan in SubscriptionPlan.allCases {
-                if let package = current.availablePackages.first(where: {
-                    $0.identifier == plan.revenueCatPackageIdentifier
-                }) {
-                    lookup[plan] = package
-                }
+
+            var byContext: [PaywallPurchaseContext: [SubscriptionPlan: Package]] = [:]
+            byContext[.onboarding] = Self.mapPackages(from: current)
+
+            if let inAppOffering = offerings.offering(identifier: PaywallPurchaseContext.inAppOfferingIdentifier) {
+                byContext[.inApp] = Self.mapPackages(from: inAppOffering)
+            } else {
+                #if DEBUG
+                print("RevenueCat: missing `in_app` offering — in-app paywall will fall back to default (may include trial).")
+                #endif
+                byContext[.inApp] = Self.mapPackages(from: current)
             }
-            packagesByPlan = lookup
+
+            packagesByContext = byContext
         } catch {
             #if DEBUG
             print("RevenueCat offerings fetch failed: \(error)")
             #endif
-            packagesByPlan = [:]
+            packagesByContext = [:]
         }
     }
 
-    func localizedPriceLabel(for plan: SubscriptionPlan) -> String {
-        guard let package = packagesByPlan[plan] else {
+    private static func mapPackages(from offering: Offering) -> [SubscriptionPlan: Package] {
+        var lookup: [SubscriptionPlan: Package] = [:]
+        for plan in SubscriptionPlan.allCases {
+            if let package = offering.availablePackages.first(where: {
+                $0.identifier == plan.revenueCatPackageIdentifier
+            }) {
+                lookup[plan] = package
+            }
+        }
+        return lookup
+    }
+
+    private func package(for plan: SubscriptionPlan, context: PaywallPurchaseContext) -> Package? {
+        packagesByContext[context]?[plan]
+    }
+
+    func localizedPriceLabel(for plan: SubscriptionPlan, context: PaywallPurchaseContext = .onboarding) -> String {
+        guard let package = package(for: plan, context: context) else {
             return plan.fallbackPriceLabel
         }
         return package.localizedPriceString
     }
 
-    func localizedCompactPriceLabel(for plan: SubscriptionPlan) -> String {
-        guard let package = packagesByPlan[plan] else {
+    func localizedCompactPriceLabel(for plan: SubscriptionPlan, context: PaywallPurchaseContext = .onboarding) -> String {
+        guard let package = package(for: plan, context: context) else {
             return plan.fallbackCompactPriceLabel
         }
         return package.storeProduct.localizedPriceString
     }
 
-    func localizedStrikethroughPriceLabel(for plan: SubscriptionPlan) -> String? {
+    func localizedStrikethroughPriceLabel(
+        for plan: SubscriptionPlan,
+        context: PaywallPurchaseContext = .onboarding
+    ) -> String? {
         guard plan == .annual else { return nil }
-        if let monthly = packagesByPlan[.oneMonth] {
+        if let monthly = package(for: .oneMonth, context: context) {
             let monthlyPrice = monthly.storeProduct.price as NSDecimalNumber
             let annualized = monthlyPrice.multiplying(by: NSDecimalNumber(value: 12))
             return Self.formatCurrency(annualized, locale: Locale.current)
@@ -220,9 +295,12 @@ final class EntitlementManager: ObservableObject {
     }
 
     /// Approximate daily cost for annual / 3-month plans (monthly omits this line).
-    func localizedDailyPriceLabel(for plan: SubscriptionPlan) -> String? {
+    func localizedDailyPriceLabel(
+        for plan: SubscriptionPlan,
+        context: PaywallPurchaseContext = .onboarding
+    ) -> String? {
         guard plan != .oneMonth else { return nil }
-        if let package = packagesByPlan[plan] {
+        if let package = package(for: plan, context: context) {
             let total = package.storeProduct.price as NSDecimalNumber
             return Self.formatDailyPriceLabel(
                 total: total,
@@ -233,10 +311,14 @@ final class EntitlementManager: ObservableObject {
         return plan.fallbackDailyPriceLabel
     }
 
-    func savingsPercent(for plan: SubscriptionPlan, visiblePlans: [SubscriptionPlan]) -> Int? {
+    func savingsPercent(
+        for plan: SubscriptionPlan,
+        visiblePlans: [SubscriptionPlan],
+        context: PaywallPurchaseContext = .onboarding
+    ) -> Int? {
         guard plan != .oneMonth,
-              let monthly = packagesByPlan[.oneMonth],
-              let selected = packagesByPlan[plan],
+              let monthly = package(for: .oneMonth, context: context),
+              let selected = package(for: plan, context: context),
               visiblePlans.contains(plan) else {
             return nil
         }
@@ -291,11 +373,14 @@ final class EntitlementManager: ObservableObject {
         return formatter.string(from: amount) ?? amount.stringValue
     }
 
-  func purchase(plan: SubscriptionPlan) async throws -> PaywallTransactionResult {
+  func purchase(
+        plan: SubscriptionPlan,
+        context: PaywallPurchaseContext = .onboarding
+    ) async throws -> PaywallTransactionResult {
         guard Purchases.isConfigured else {
             throw SubscriptionStoreError.notConfigured
         }
-        guard let package = packagesByPlan[plan] else {
+        guard let package = package(for: plan, context: context) else {
             throw SubscriptionStoreError.packageUnavailable(plan)
         }
 
@@ -313,7 +398,9 @@ final class EntitlementManager: ObservableObject {
             adoptLiveSubscriptionStateAfterRealPurchase()
             if isPremiumEntitlementActive(customerInfo: result.customerInfo) {
                 AnalyticsManager.trackSubscriptionCompleted(planID: plan.rawValue)
-                Task { await NotificationManager.recordTrialStartAndScheduleDay5Reminder() }
+                if context == .onboarding {
+                    Task { await NotificationManager.recordTrialStartAndScheduleDay5Reminder() }
+                }
             }
             return .completed(entitlementActive: isPremiumEntitlementActive(customerInfo: result.customerInfo))
         } catch {
@@ -451,6 +538,51 @@ final class EntitlementManager: ObservableObject {
         guard lastRecordedPremiumExpiration > 0 else { return nil }
         return Date(timeIntervalSince1970: lastRecordedPremiumExpiration)
     }
+
+    #if DEBUG
+    /// DEBUG: Clears local trial state, logs out of RevenueCat, and forces trial-eligible paywall UI.
+    func debugForgetConsumedSevenDayTrial() async {
+        DebugSubscriptionControls.forgetConsumedSevenDayTrial()
+        consumePostTrialWinBackOffer()
+        showsPostTrialWinBack = false
+
+        guard Purchases.isConfigured else {
+            reapplyAccess()
+            return
+        }
+
+        do {
+            _ = try await Purchases.shared.logOut()
+            print(
+                "DEBUG: Forgot consumed 7-day trial — new anonymous RevenueCat customer. " +
+                "If the App Store sheet still omits the trial, reset sandbox eligibility in Settings → App Store."
+            )
+        } catch {
+            print("DEBUG: RevenueCat logOut failed while forgetting trial: \(error)")
+        }
+
+        reapplyAccess()
+    }
+
+    /// DEBUG: Premium via local 3-day pass (no RevenueCat subscription) — mirrors onboarding downsell.
+    func debugSimulateThreeDayNoCardTrial() async {
+        DebugSubscriptionControls.simulateThreeDayNoCardTrial()
+        consumePostTrialWinBackOffer()
+        showsPostTrialWinBack = false
+
+        if Purchases.isConfigured {
+            do {
+                _ = try await Purchases.shared.logOut()
+            } catch {
+                print("DEBUG: RevenueCat logOut failed while simulating 3-day pass: \(error)")
+            }
+        }
+
+        reapplyAccess()
+        syncWidgetSubscriptionState()
+        WidgetCenter.shared.reloadAllTimelines()
+    }
+    #endif
 }
 
 enum WidgetSubscriptionPrefs {

@@ -391,14 +391,24 @@ struct WordJSONRecord: Decodable, Sendable {
     func bundledPrimaryLexical() throws -> BundledPrimaryLexical {
         if let senses, !senses.isEmpty {
             let first = senses[0]
-            let encoder = JSONEncoder()
-            let sensesEncoded = try String(data: encoder.encode(senses), encoding: .utf8)
+            let resolvedPOS = partOfSpeech ?? first.partOfSpeech
+            let resolvedDef = definition ?? first.definition
             let resolvedExample = Self.normalizedOptionalQuizSentence(exampleSentence) ?? first.exampleSentence
-            return BundledPrimaryLexical(
-                partOfSpeech: partOfSpeech ?? first.partOfSpeech,
-                definition: definition ?? first.definition,
+            let resolvedSynonyms = synonyms ?? first.synonyms
+            var patchedSenses = senses
+            patchedSenses[0] = SenseDTO(
+                partOfSpeech: resolvedPOS,
+                definition: resolvedDef,
                 exampleSentence: resolvedExample,
-                synonyms: synonyms ?? first.synonyms,
+                synonyms: resolvedSynonyms
+            )
+            let encoder = JSONEncoder()
+            let sensesEncoded = try String(data: encoder.encode(patchedSenses), encoding: .utf8)
+            return BundledPrimaryLexical(
+                partOfSpeech: resolvedPOS,
+                definition: resolvedDef,
+                exampleSentence: resolvedExample,
+                synonyms: resolvedSynonyms,
                 sensesJSON: sensesEncoded
             )
         }

@@ -5,6 +5,23 @@
 
 import Foundation
 
+/// Which paywall initiated a purchase — onboarding uses trial-eligible App Store products;
+/// in-app uses the separate RevenueCat `in_app` offering (no introductory offer).
+enum PaywallPurchaseContext: Sendable {
+    case onboarding
+    case inApp
+
+    static let inAppOfferingIdentifier = "in_app"
+
+    /// RevenueCat offering identifier. `nil` uses `offerings.current` (default / onboarding).
+    var revenueCatOfferingIdentifier: String? {
+        switch self {
+        case .onboarding: return nil
+        case .inApp: return Self.inAppOfferingIdentifier
+        }
+    }
+}
+
 /// Maps paywall UI plans to RevenueCat package identifiers on the default offering.
 enum SubscriptionPlan: String, CaseIterable, Identifiable, Sendable {
     case oneMonth

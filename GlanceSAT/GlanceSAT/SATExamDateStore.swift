@@ -45,8 +45,8 @@ enum SATExamDateStore {
 
     static func countdownLabel(from referenceDate: Date = Date(), calendar: Calendar = .current) -> String? {
         guard let days = daysUntilExam(from: referenceDate, calendar: calendar) else { return nil }
-        if days < 0 { return "SAT date passed" }
-        if days == 0 { return "SAT day" }
+        if days < 0 { return "Retaking? Update your SAT date." }
+        if days == 0 { return "Today is the day - you've got this!" }
         if days == 1 { return "1 day to go" }
         return "\(days) days to go"
     }

@@ -39,6 +39,9 @@ struct OnboardingView: View {
     @State private var calibrationContentOpacity: Double = 1
     @State private var showsThreeDayDownsellSheet = false
     @State private var showRedemptionSheet = false
+    @State private var isEligibleForTrial: Bool = true
+    @State private var hasResolvedPaywallTrialEligibility = false
+    @State private var isAdvancingToPaywall = false
     @State private var tabContentMetrics = OnboardingLayoutMetrics.resolve(
         height: max(UIScreen.main.bounds.height - 180, 500)
     )
@@ -127,6 +130,9 @@ struct OnboardingView: View {
         .onChange(of: page) { oldPage, newPage in
             if oldPage == 4 && newPage != 4 {
                 cancelCalibrationAdvanceTask()
+            }
+            if newPage == 6 {
+                Task { await prefetchPaywallTrialEligibility() }
             }
             if newPage == OnboardingFlowPage.paywall {
                 AnalyticsManager.trackPaywallViewed(source: "onboarding")
@@ -533,8 +539,8 @@ struct OnboardingView: View {
             showsThreeDayDownsellSheet: $showsThreeDayDownsellSheet
         )
         .task(id: page) {
-            guard page == OnboardingFlowPage.paywall else { return }
-            await entitlementManager.loadOfferings()
+            guard page == 6 else { return }
+            await prefetchPaywallTrialEligibility()
         }
     }
 
@@ -632,8 +638,10 @@ struct OnboardingView: View {
                 action: handlePrimaryCTA
             )
 
-            PaywallTrialTimelineView()
-                .padding(.vertical, 2)
+            if isEligibleForTrial {
+                PaywallTrialTimelineView()
+                    .padding(.vertical, 2)
+            }
 
             Button {
                 AnalyticsManager.trackRestorePurchasesTapped(source: "onboarding")
@@ -688,6 +696,7 @@ struct OnboardingView: View {
             OnboardingPrimaryButton(
                 title: paywallPrimaryButtonTitle,
                 isEnabled: isPrimaryCTAEnabled && !entitlementManager.isPurchasing && !entitlementManager.isRestoring,
+                isLoading: page == 6 && isAdvancingToPaywall,
                 action: handlePrimaryCTA
             )
 
@@ -730,7 +739,8 @@ struct OnboardingView: View {
         case 4: return "Save my starting point"
         case 5: return "Set my habit"
         case 6: return "Unlock my plan"
-        case 7: return "Start my 7-day free trial"
+        case 7:
+            return isEligibleForTrial ? "Start 7-Day Free Trial" : "Unlock full access"
         default: return "Continue"
         }
     }
@@ -740,13 +750,14 @@ struct OnboardingView: View {
         case 2: return isTimelineCTAEnabled
         case 3: return isGoalsCTAEnabled
         case 4: return isCalibrationCTAEnabled
+        case 6: return !isAdvancingToPaywall
         default: return true
         }
     }
 
     private var paywallPrimaryButtonTitle: String {
         if page == OnboardingFlowPage.paywall, entitlementManager.isPurchasing {
-            return "Starting trial…"
+            return isEligibleForTrial ? "Starting trial…" : "Unlocking…"
         }
         return primaryCTATitle
     }
@@ -788,6 +799,12 @@ struct OnboardingView: View {
             Task {
                 await NotificationManager.requestAuthorizationAndScheduleReminders()
             }
+        case 6:
+            if let stepName = onboardingStepName(for: page) {
+                AnalyticsManager.trackOnboardingStepCompleted(stepName: stepName)
+            }
+            Task { await advanceToPaywallWhenReady() }
+            return
         case OnboardingFlowPage.paywall:
             AnalyticsManager.trackCheckoutStarted(
                 source: "onboarding",
@@ -905,6 +922,35 @@ struct OnboardingView: View {
         } else {
             selectedPaywallPlan = .annual
         }
+    }
+
+    @MainActor
+    private func prefetchPaywallTrialEligibility() async {
+        applyDefaultPaywallSelection()
+        await entitlementManager.loadOfferings()
+        isEligibleForTrial = await entitlementManager.isEligibleForTrial(
+            plan: selectedPaywallPlan,
+            context: .onboarding
+        )
+        hasResolvedPaywallTrialEligibility = true
+    }
+
+    @MainActor
+    private func advanceToPaywallWhenReady() async {
+        isAdvancingToPaywall = true
+        defer { isAdvancingToPaywall = false }
+
+        if hasResolvedPaywallTrialEligibility {
+            await entitlementManager.loadOfferings()
+            isEligibleForTrial = await entitlementManager.isEligibleForTrial(
+                plan: selectedPaywallPlan,
+                context: .onboarding
+            )
+        } else {
+            await prefetchPaywallTrialEligibility()
+        }
+
+        navigateToPage(OnboardingFlowPage.paywall, direction: .forward)
     }
 
     private func finishOnboarding(widgetDeferred: Bool? = nil) {
@@ -2096,7 +2142,7 @@ private struct OnboardingPaywallScreen: View {
         paywallErrorMessage: Binding<String?>
     ) async {
         do {
-            let result = try await entitlementManager.purchase(plan: plan)
+            let result = try await entitlementManager.purchase(plan: plan, context: .onboarding)
             switch result {
             case .cancelled:
                 break

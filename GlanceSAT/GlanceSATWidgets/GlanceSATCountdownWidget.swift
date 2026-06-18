@@ -67,7 +67,11 @@ private struct GlanceSATCountdownWidgetView: View {
     var body: some View {
         ZStack {
             Color.clear
-                .widgetURL(WidgetDeepLink.settingsURL())
+                .widgetURL(
+                    entry.hasExamDate
+                        ? WidgetDeepLink.todayURL()
+                        : WidgetDeepLink.satDateSettingsURL()
+                )
 
             VStack(spacing: contentSpacing) {
                 Spacer(minLength: 0)
@@ -89,15 +93,20 @@ private struct GlanceSATCountdownWidgetView: View {
     private func activeCountdown(days: Int) -> some View {
         VStack(spacing: numberSpacing) {
             if days < 0 {
-                Text("Past")
+                Text("Retaking? Update your SAT date.")
                     .font(.system(size: headlineSize, weight: .semibold, design: .rounded))
-                    .foregroundStyle(palette.secondary)
-                Text("Update your SAT date in settings")
-                    .font(.system(size: bodySize, weight: .regular, design: .rounded))
-                    .foregroundStyle(palette.secondary)
+                    .foregroundStyle(palette.primary)
                     .multilineTextAlignment(.center)
                     .lineLimit(3)
-                    .minimumScaleFactor(0.8)
+                    .minimumScaleFactor(0.75)
+            } else if days == 0 {
+                Text("Today is the day!")
+                    .font(.system(size: headlineSize, weight: .bold, design: .rounded))
+                    .foregroundStyle(palette.primary)
+                    .multilineTextAlignment(.center)
+                    .lineLimit(2)
+                    .minimumScaleFactor(0.75)
+                    .widgetAccentable()
             } else {
                 Text("\(max(0, days))")
                     .font(.system(size: numberSize, weight: .bold, design: .rounded))

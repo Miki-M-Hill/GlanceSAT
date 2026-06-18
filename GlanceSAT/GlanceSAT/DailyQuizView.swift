@@ -21,6 +21,10 @@ struct DailyQuizView: View {
     @Environment(\.modelContext) private var modelContext
     @Environment(\.dismiss) private var dismiss
     @Environment(\.colorScheme) private var colorScheme
+    @EnvironmentObject private var entitlementManager: EntitlementManager
+    @EnvironmentObject private var paywallPresenter: PaywallPresenter
+
+    @AppStorage("onboardingDreamScore") private var onboardingDreamScore = ""
 
     let questions: [QuizQuestion]
     /// When true, shows a redacted quiz layout while questions are still being prepared.
@@ -135,6 +139,10 @@ struct DailyQuizView: View {
             guard !isLoading else { return }
             shouldAnimateBetweenQuestions = false
         }
+        .inAppPaywallFullScreenCover(
+            paywallPresenter: paywallPresenter,
+            entitlementManager: entitlementManager
+        )
     }
 
     private func resetQuestionTimer() {
@@ -499,15 +507,25 @@ struct DailyQuizView: View {
 
             Spacer()
 
-            Button(action: handleReturnToToday) {
-                Text("Return to Today's Words")
-                    .font(.headline.bold())
-                    .foregroundStyle(HubPalette.oatmeal)
-                    .frame(maxWidth: .infinity)
-                    .padding(.vertical, 16)
+            VStack(spacing: 8) {
+                if showsThreeDayPassSummaryUpsell,
+                   let daysRemaining = entitlementManager.threeDayPassDaysRemaining {
+                    Text(threeDayPassDaysRemainingLabel(daysRemaining))
+                        .font(.subheadline)
+                        .foregroundStyle(.secondary)
+                        .multilineTextAlignment(.center)
+                }
+
+                Button(action: summaryPrimaryAction) {
+                    Text(summaryPrimaryButtonTitle)
+                        .font(.headline.bold())
+                        .foregroundStyle(HubPalette.oatmeal)
+                        .frame(maxWidth: .infinity)
+                        .padding(.vertical, 16)
+                }
+                .buttonStyle(.borderedProminent)
+                .tint(quizReturnButtonTint)
             }
-            .buttonStyle(.borderedProminent)
-            .tint(quizReturnButtonTint)
             .padding(.horizontal, 20)
             .padding(.bottom, 24)
         }
@@ -517,7 +535,49 @@ struct DailyQuizView: View {
             guard !summaryAppeared else { return }
             summaryAppeared = true
             UINotificationFeedbackGenerator().notificationOccurred(.success)
+            if showsThreeDayPassSummaryUpsell {
+                Task { await paywallPresenter.prefetchPaywallContent() }
+            }
         }
+    }
+
+    private var summaryPrimaryButtonTitle: String {
+        if showsThreeDayPassSummaryUpsell {
+            return threeDayPassUnlockButtonTitle
+        }
+        return "Return to Today's Words"
+    }
+
+    private func threeDayPassDaysRemainingLabel(_ days: Int) -> String {
+        if days == 1 {
+            return "1 day left of your free trial"
+        }
+        return "\(days) days left of your free trial"
+    }
+
+    private func summaryPrimaryAction() {
+        if showsThreeDayPassSummaryUpsell {
+            handleThreeDayPassUnlockTap()
+        } else {
+            handleReturnToToday()
+        }
+    }
+
+    private var showsThreeDayPassSummaryUpsell: Bool {
+        entitlementManager.hasActiveThreeDayPassOnly
+    }
+
+    private var threeDayPassUnlockButtonTitle: String {
+        let trimmed = onboardingDreamScore.trimmingCharacters(in: .whitespacesAndNewlines)
+        if trimmed.isEmpty {
+            return "Unlock your plan"
+        }
+        return "Unlock your \(trimmed) plan"
+    }
+
+    private func handleThreeDayPassUnlockTap() {
+        GlanceHaptics.medium()
+        paywallPresenter.presentPaywall(source: "daily_quiz_three_day_pass")
     }
 
     // MARK: - Actions
@@ -827,5 +887,7 @@ struct DailyQuizView: View {
                 }
             }
             .modelContainer(container)
+            .environmentObject(EntitlementManager.shared)
+            .environmentObject(PaywallPresenter())
     }
 }

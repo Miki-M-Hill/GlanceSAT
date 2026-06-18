@@ -375,15 +375,19 @@ struct GlanceSATProgressScreen: View {
     @ViewBuilder
     private func insightsSATCountdown(metrics: TodayHubLayoutMetrics) -> some View {
         if SATExamDateStore.hasExamDate, let countdown = SATExamDateStore.countdownLabel() {
-            let emphasisFontSize = metrics.scaled(15 * 2.5)
+            let daysUntil = SATExamDateStore.daysUntilExam() ?? 0
+            let isNumericCountdown = daysUntil > 0
+            let emphasisFontSize = isNumericCountdown
+                ? metrics.scaled(15 * 2.5)
+                : metrics.scaled(17)
 
             Text(insightsPlainText(countdown))
                 .font(GlanceHubFont.bold(emphasisFontSize))
                 .foregroundStyle(HubPalette.espresso)
                 .multilineTextAlignment(.center)
-                .lineLimit(1)
-                .minimumScaleFactor(0.72)
-                .scaleEffect(0.85)
+                .lineLimit(isNumericCountdown ? 1 : 2)
+                .minimumScaleFactor(isNumericCountdown ? 0.72 : 0.55)
+                .scaleEffect(isNumericCountdown ? 0.85 : 1)
                 .frame(maxWidth: .infinity)
         } else {
             insightsSATCountdownPlaceholder()

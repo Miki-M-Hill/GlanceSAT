@@ -23,4 +23,12 @@ enum WidgetDeepLink {
     static func settingsURL() -> URL {
         URL(string: "\(scheme)://settings")!
     }
+
+    static func satDateSettingsURL() -> URL {
+        URL(string: "\(scheme)://settings/sat-date")!
+    }
+
+    static func manageSubscriptionURL() -> URL {
+        URL(string: "\(scheme)://manage-subscription")!
+    }
 }

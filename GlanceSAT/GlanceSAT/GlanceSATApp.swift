@@ -88,6 +88,7 @@ private struct AppRootView: View {
     @Environment(\.modelContext) private var modelContext
     @Environment(\.scenePhase) private var scenePhase
     @Environment(\.requestReview) private var requestReview
+    @Environment(\.openURL) private var openURL
     @StateObject private var entitlementManager = EntitlementManager.shared
     @StateObject private var paywallPresenter = PaywallPresenter()
     @StateObject private var libraryFreemiumSession = LibraryFreemiumSession.shared
@@ -104,6 +105,7 @@ private struct AppRootView: View {
     @State private var mountedTabs: Set<RootTab> = [.today]
     @State private var pendingLibraryWordID: UUID?
     @State private var showGlobalSettings = false
+    @State private var openSATDatePickerOnSettingsPresent = false
     @State private var quizPreparationManager = QuizPreparationManager()
     @State private var insightsCoordinator = InsightsRefreshCoordinator()
 
@@ -168,6 +170,9 @@ private struct AppRootView: View {
                 await refreshWidgetDataFromHost()
             }
         }
+        .onReceive(NotificationCenter.default.publisher(for: .debugTrialEligibilityDidChange)) { _ in
+            Task { await paywallPresenter.refreshTrialEligibilityFromStore() }
+        }
         #endif
         .onReceive(NotificationCenter.default.publisher(for: NSNotification.Name.NSSystemTimeZoneDidChange)) { _ in
             Task(priority: .userInitiated) {
@@ -177,6 +182,14 @@ private struct AppRootView: View {
         .onOpenURL { url in
             guard WidgetDeepLinkRouter.handleIncomingURL(url) else { return }
             AppLaunchState.markDataLoaded()
+            if WidgetDeepLinkRouter.consumeNavigateToManageSubscription() {
+                applyManageSubscriptionDeepLinkRouting()
+                return
+            }
+            if WidgetDeepLinkRouter.consumeNavigateToSATDateSettings() {
+                applySATDateSettingsDeepLinkRouting()
+                return
+            }
             if WidgetDeepLinkRouter.consumeNavigateToPaywallFromWidget() {
                 AnalyticsManager.trackDailyLimitHit(source: "widget", limitType: "widget_daily_limit")
                 paywallPresenter.presentPaywall(source: "widget")
@@ -190,11 +203,17 @@ private struct AppRootView: View {
         }
         .onAppear {
             SATExamDateStore.migrateToAppGroupIfNeeded()
-            if WidgetDeepLinkRouter.consumeNavigateToPaywallFromWidget() {
+            if WidgetDeepLinkRouter.consumeNavigateToManageSubscription() {
+                applyManageSubscriptionDeepLinkRouting()
+            } else if WidgetDeepLinkRouter.consumeNavigateToSATDateSettings() {
+                applySATDateSettingsDeepLinkRouting()
+            } else if WidgetDeepLinkRouter.consumeNavigateToPaywallFromWidget() {
                 AnalyticsManager.trackDailyLimitHit(source: "widget", limitType: "widget_daily_limit")
                 paywallPresenter.presentPaywall(source: "widget")
             } else if WidgetDeepLinkRouter.consumeNavigateToSettingsFromWidget() {
                 applyWidgetSettingsDeepLinkRouting()
+            } else {
+                applyWidgetDeepLinkRouting()
             }
         }
         .environmentObject(entitlementManager)
@@ -204,8 +223,12 @@ private struct AppRootView: View {
         .onReceive(NotificationCenter.default.publisher(for: .openGlanceSettingsFromWidget)) { _ in
             presentInAppSettings()
         }
-        .sheet(isPresented: $showGlobalSettings) {
-            SettingsView()
+        .sheet(isPresented: $showGlobalSettings, onDismiss: {
+            openSATDatePickerOnSettingsPresent = false
+        }) {
+            SettingsView(openSATDatePickerOnAppear: openSATDatePickerOnSettingsPresent)
+                .environmentObject(entitlementManager)
+                .environmentObject(paywallPresenter)
         }
     }
 
@@ -236,7 +259,7 @@ private struct AppRootView: View {
         }
     }
 
-    private func presentInAppSettings() {
+    private func presentInAppSettings(openSATDatePicker: Bool = false) {
         mountedTabs.insert(.library)
         var transaction = Transaction()
         transaction.disablesAnimations = true
@@ -244,11 +267,25 @@ private struct AppRootView: View {
             selectedTab = .library
             pendingLibraryWordID = nil
         }
+        openSATDatePickerOnSettingsPresent = openSATDatePicker
         showGlobalSettings = true
+    }
+
+    private func applyManageSubscriptionDeepLinkRouting() {
+        SubscriptionManagementRouter.handleManageSubscription(
+            entitlementManager: entitlementManager,
+            paywallPresenter: paywallPresenter,
+            openURL: openURL,
+            paywallSource: "manage_subscription_deeplink"
+        )
     }
 
     private func applyWidgetSettingsDeepLinkRouting() {
         presentInAppSettings()
+    }
+
+    private func applySATDateSettingsDeepLinkRouting() {
+        presentInAppSettings(openSATDatePicker: true)
     }
 
     private func refreshWidgetDataFromHost() async {
@@ -531,6 +568,19 @@ private struct AppRootView: View {
                 }
 
                 Button {
+                    Task {
+                        libraryFreemiumSession.resetBrowseSession()
+                        await entitlementManager.debugSimulateThreeDayNoCardTrial()
+                        await refreshWidgetDataFromHost()
+                    }
+                } label: {
+                    Label(
+                        "Simulate 3-day no-card trial",
+                        systemImage: entitlementManager.hasActiveThreeDayPassOnly ? "checkmark.circle.fill" : "ticket"
+                    )
+                }
+
+                Button {
                     applyDebugSubscriptionPreview(.live)
                 } label: {
                     Label(
@@ -544,6 +594,17 @@ private struct AppRootView: View {
                     entitlementManager.consumePostTrialWinBackOffer()
                 } label: {
                     Label("Reset paywall promo flags", systemImage: "arrow.counterclockwise.circle")
+                }
+
+                Button {
+                    Task {
+                        await entitlementManager.debugForgetConsumedSevenDayTrial()
+                    }
+                } label: {
+                    Label(
+                        "Forget 7-day trial",
+                        systemImage: DebugSubscriptionControls.forcesTrialEligible ? "checkmark.circle.fill" : "gift"
+                    )
                 }
 
                 Button {

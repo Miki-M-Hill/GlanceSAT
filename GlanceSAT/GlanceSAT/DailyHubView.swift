@@ -270,7 +270,9 @@ struct DailyHubView: View {
                     sessions: quizSessions,
                     force: true
                 )
-                applyBootstrapTodayWords()
+                Task {
+                    await syncDailyWords()
+                }
             }
             .onAppear {
                 Task {

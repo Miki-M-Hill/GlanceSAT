@@ -377,6 +377,8 @@ struct ExploreView: View {
         }
         .sheet(isPresented: $showSettings) {
             SettingsView()
+                .environmentObject(entitlementManager)
+                .environmentObject(paywallPresenter)
         }
     }
 

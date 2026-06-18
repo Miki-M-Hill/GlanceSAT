@@ -6,14 +6,17 @@
 import SwiftUI
 
 struct SettingsView: View {
+    var openSATDatePickerOnAppear: Bool = false
+
     @Environment(\.dismiss) private var dismiss
     @Environment(\.openURL) private var openURL
     @Environment(\.colorScheme) private var colorScheme
+    @EnvironmentObject private var entitlementManager: EntitlementManager
+    @EnvironmentObject private var paywallPresenter: PaywallPresenter
 
     @AppStorage("satExamDateSeconds") private var satExamDateSeconds: Double = 0
 
     @State private var showSATDateSheet = false
-    @State private var satDraftDate = Date()
     @State private var inAppWebPage: PresentableWebURL?
 
     private var resolvedSATDate: Date {
@@ -51,12 +54,9 @@ struct SettingsView: View {
                 VStack(alignment: .leading, spacing: 26) {
                     settingsSectionHeader("Subscription & goals")
                     settingsCard {
-                        settingsButton(icon: "creditcard", title: "Manage subscription") {
-                            Task { await AppExternalLinks.openManageSubscriptions(using: openURL) }
-                        }
+                        manageSubscriptionRow
                         rowDivider
                         settingsButton(icon: "calendar", title: "SAT Date", subtitle: satDateSubtitle) {
-                            satDraftDate = resolvedSATDate
                             showSATDateSheet = true
                         }
                         rowDivider
@@ -160,53 +160,66 @@ struct SettingsView: View {
             }
         }
         .sheet(isPresented: $showSATDateSheet) {
-            satDateSheet
+            SATDatePickerSheet()
         }
         .sheet(item: $inAppWebPage) { page in
             SafariSheet(url: page.url)
                 .ignoresSafeArea()
         }
+        .inAppPaywallFullScreenCover(
+            paywallPresenter: paywallPresenter,
+            entitlementManager: entitlementManager
+        )
+        .task {
+            await paywallPresenter.prefetchPaywallContent()
+        }
+        .onAppear {
+            guard openSATDatePickerOnAppear, !showSATDateSheet else { return }
+            showSATDateSheet = true
+        }
     }
 
-    private var satDateSheet: some View {
-        NavigationStack {
-            VStack(spacing: 0) {
-                DatePicker(
-                    "SAT test date",
-                    selection: $satDraftDate,
-                    in: Date() ... Calendar.current.date(byAdding: .year, value: 3, to: Date())!,
-                    displayedComponents: .date
-                )
-                .datePickerStyle(.graphical)
-                .tint(HubPalette.espresso)
-                .padding(.horizontal, 8)
-                .padding(.top, 12)
-
-                Spacer(minLength: 0)
-            }
-            .background(HubPalette.linen)
-            .navigationTitle("Glance")
-            .glanceNavigationBarChrome(colorScheme: colorScheme)
-            .toolbar {
-                ToolbarItem(placement: .cancellationAction) {
-                    Button("Cancel") {
-                        showSATDateSheet = false
-                    }
-                    .foregroundStyle(HubPalette.espressoMuted)
-                }
-                ToolbarItem(placement: .confirmationAction) {
-                    Button("Save") {
-                        SATExamDateStore.save(satDraftDate)
-                        satExamDateSeconds = satDraftDate.timeIntervalSince1970
-                        showSATDateSheet = false
-                    }
-                    .fontWeight(.semibold)
+    private var manageSubscriptionRow: some View {
+        Button {
+            SubscriptionManagementRouter.handleManageSubscription(
+                entitlementManager: entitlementManager,
+                paywallPresenter: paywallPresenter,
+                openURL: openURL,
+                paywallSource: "settings"
+            )
+        } label: {
+            HStack(alignment: .center, spacing: 14) {
+                Image(systemName: "creditcard")
+                    .font(.system(size: 18, weight: .regular))
                     .foregroundStyle(HubPalette.espresso)
+                    .symbolRenderingMode(.monochrome)
+                    .frame(width: 26, alignment: .center)
+
+                Text("Manage subscription")
+                    .font(.system(size: 16, weight: .regular, design: .rounded))
+                    .foregroundStyle(HubPalette.espresso)
+
+                Spacer(minLength: 8)
+
+                if paywallPresenter.isPreparingPaywall,
+                   !entitlementManager.hasActiveRevenueCatSubscription {
+                    ProgressView()
+                        .controlSize(.small)
+                } else {
+                    Image(systemName: "chevron.right")
+                        .font(.system(size: 12, weight: .semibold))
+                        .foregroundStyle(HubPalette.espressoFaint)
                 }
             }
+            .padding(.horizontal, 16)
+            .padding(.vertical, 14)
+            .contentShape(Rectangle())
         }
-        .presentationDetents([.medium, .large])
-        .presentationDragIndicator(.visible)
+        .buttonStyle(.plain)
+        .disabled(
+            paywallPresenter.isPreparingPaywall
+                && !entitlementManager.hasActiveRevenueCatSubscription
+        )
     }
 
     private func settingsSectionHeader(_ title: String) -> some View {
@@ -358,4 +371,6 @@ struct SettingsView: View {
 
 #Preview {
     SettingsView()
+        .environmentObject(EntitlementManager.shared)
+        .environmentObject(PaywallPresenter())
 }
