@@ -48,6 +48,9 @@ enum AnalyticsManager {
         static let tabSelected = "tab_selected"
 
         static let dailyLimitHit = "daily_limit_hit"
+
+        static let weeklyRecallStarted = "weekly_recall_started"
+        static let weeklyRecallCompleted = "weekly_recall_completed"
     }
 
     private enum DefaultsKey {
@@ -270,6 +273,19 @@ enum AnalyticsManager {
         capture(Event.dailyLimitHit, properties: [
             "source": source,
             "limit_type": limitType,
+        ])
+    }
+
+    // MARK: - Weekly recall
+
+    static func trackWeeklyRecallStarted(questionCount: Int) {
+        capture(Event.weeklyRecallStarted, properties: ["question_count": questionCount])
+    }
+
+    static func trackWeeklyRecallCompleted(correctCount: Int, totalQuestions: Int) {
+        capture(Event.weeklyRecallCompleted, properties: [
+            "correct_count": correctCount,
+            "total_questions": totalQuestions,
         ])
     }
 

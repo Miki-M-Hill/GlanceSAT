@@ -12,6 +12,13 @@ struct QuizSessionData: Sendable, Equatable {
     let calendarDayKey: String
 }
 
+/// Sendable weekly-recall payload produced off the main thread; hydrate on the main `ModelContext` before presentation.
+struct WeeklyRecallSessionData: Sendable, Equatable {
+    let persistedQuestions: [PersistedQuizQuestion]
+    let targetWordIDs: [UUID]
+    let preQuizConsecutiveCorrect: [UUID: Int]
+}
+
 enum QuizPreparationError: Error, LocalizedError, Equatable {
     case noWords
     case emptyQuiz

@@ -17,6 +17,12 @@ private enum PostQuizResumeQuizButton {
     static let stroke = Color.white.opacity(0.42)
 }
 
+private enum QuizCoverPhase {
+    case daily
+    case weeklyUnlock
+    case weeklyRecall
+}
+
 private enum TodayFeedbackPalette {
     static let rememberedBackground = HubPalette.rememberedBackground
     static let rememberedForeground = HubPalette.rememberedForeground
@@ -61,6 +67,7 @@ struct DailyHubView: View {
     #if DEBUG
     @AppStorage("debug.forcePreQuizToday") private var debugForcePreQuizToday = false
     @State private var debugShowsMasteryCelebration = false
+    @State private var debugWeeklyRecallPreviewActive = false
     #endif
     /// DEBUG: -1 = follow real state, 0 = force healthy, 1 = force wilted.
     @AppStorage("debugPlantWiltPreview") private var debugPlantWiltPreview = -1
@@ -113,6 +120,13 @@ struct DailyHubView: View {
     @State private var hasPersistedDailyQuizProgress = false
     @State private var hasPersistedSupplementalQuizProgress = false
     @State private var pendingPresentQuizAsSupplemental = false
+    @State private var pendingWeeklyRecall: WeeklyRecallPresentation?
+    @State private var quizCoverPhase: QuizCoverPhase = .daily
+    @State private var weeklyRecallResume: PersistedWeeklyRecall?
+    @State private var hasPersistedWeeklyRecallProgress = false
+    @State private var weeklyRecallShowsRecap = false
+    /// Set when the daily quiz completes on a weekly-recall day so the post-quiz CTA is ready before the hub appears.
+    @State private var postQuizOffersWeeklyRecall = false
     /// Shown after a new daily quiz is presented so "Resume" appears only once the cover is up.
     @State private var optimisticDailyResumeCTA = false
     /// Shown after "Take another quiz" presents the cover so "Resume quiz" is delayed the same way.
@@ -293,10 +307,16 @@ struct DailyHubView: View {
                 }
             }
             .onChange(of: showDailyQuiz) { _, isPresented in
-                if !isPresented {
+                if isPresented, !presentationUsesSupplementalPersistence {
+                    scheduleWeeklyRecallPreloadIfEligible()
+                } else if !isPresented {
                     clearAllOptimisticQuizCTAState()
                     refreshPersistedQuizFlagsDeferred()
+                    quizPreparation.cancelWeeklyRecallPreload()
                 }
+            }
+            .onChange(of: quizPreparation.weeklyRecallPreloadRevision) { _, _ in
+                applyPreloadedWeeklyRecallIfEligible()
             }
             .onChange(of: dailyWords.map(\.id)) { _, _ in
                 triggerQuizPrefetchIfNeeded()
@@ -314,6 +334,7 @@ struct DailyHubView: View {
                 } else {
                     postQuizCardModels = []
                     maxPostQuizCardHeight = 0
+                    postQuizOffersWeeklyRecall = false
                     quizPreparation.reset()
                     triggerQuizPrefetchIfNeeded()
                 }
@@ -328,6 +349,7 @@ struct DailyHubView: View {
                 onWiltPreview: triggerWiltFall,
                 onResetTodayQuiz: handleDebugResetTodayQuiz,
                 onPreviewMasteryCelebration: { debugShowsMasteryCelebration = true },
+                onPreviewWeeklyRecall: previewWeeklyRecallFlow,
                 onPreviewMilestoneCelebration: presentMilestoneCelebrationPreview
             ))
             #endif
@@ -363,8 +385,15 @@ struct DailyHubView: View {
         resumePayloadForQuiz = nil
         pendingPresentQuizAsSupplemental = false
         isDailyQuizContentLoading = false
+        quizCoverPhase = .daily
+        weeklyRecallResume = nil
+        weeklyRecallShowsRecap = false
         clearAllOptimisticQuizCTAState()
         refreshPersistedQuizFlagsDeferred()
+        refreshPersistedWeeklyRecallFlagsDeferred()
+        #if DEBUG
+        debugWeeklyRecallPreviewActive = false
+        #endif
         handleDailyQuizDismissed()
         presentPendingMilestoneCelebrationIfNeeded()
     }
@@ -537,54 +566,41 @@ struct DailyHubView: View {
         resumePayloadForQuiz?.isSupplementalRound ?? pendingPresentQuizAsSupplemental
     }
 
+    #if DEBUG
+    private var debugWeeklyRecallPreviewEnabled: Bool { debugWeeklyRecallPreviewActive }
+    #else
+    private var debugWeeklyRecallPreviewEnabled: Bool { false }
+    #endif
+
+    private var weeklyUnlockWeekNumber: Int {
+        WeeklyRecallEligibility.displayWeekNumber
+    }
+
     private var dailyQuizCover: some View {
         NavigationStack {
-            DailyQuizView(
-                questions: dailyQuizQuestions,
-                isContentLoading: isDailyQuizContentLoading,
-                resume: resumePayloadForQuiz,
-                isSupplementalPersistence: presentationUsesSupplementalPersistence
-            ) { completion in
-                usedQuestionSlots.formUnion(completion.questionSlotKeys)
-                if completion.isSupplementalRound {
-                    supplementalRememberedWordIDs.formUnion(completion.rememberedWordIDs)
-                    let dailyIDs = Set(dailyWords.map(\.id))
-                    supplementalMissedWordIDs = completion.missedWordIDs.intersection(dailyIDs)
-                    scheduleSupplementalPreload()
-                    return
-                }
-                rememberedWordIDs = completion.rememberedWordIDs
-                missedWordIDs = completion.missedWordIDs
-                supplementalRememberedWordIDs = completion.rememberedWordIDs
-                let dailyIDs = Set(dailyWords.map(\.id))
-                supplementalMissedWordIDs = completion.missedWordIDs.intersection(dailyIDs)
-                syncFrozenPostQuizOutcomes()
-                quizCompletedToday = true
-                quizPreparation.clearPrimaryPreparation()
-                #if DEBUG
-                debugForcePreQuizToday = false
-                debugShowsPostQuizToday = false
-                #endif
-                WidgetDailyState.markPrimaryQuizCompleted(streakDays: quizStreakDays)
-                entitlementManager.syncWidgetSubscriptionState(quizCompletedToday: true)
-                StreakPlantState.markPrimaryQuizCompleted(streakDays: quizStreakDays)
-                Task {
-                    await DailyWordBatchService.flushFutureQueueAndRefresh(modelContext: modelContext)
-                }
-                Task {
-                    await NotificationManager.handleQuizCompletedEarly()
-                }
-                triggerSupplementalPreloadIfNeeded()
-                pendingStreakUpgradeReveal = true
-                insightsCoordinator.scheduleRefresh(
-                    container: modelContext.container,
-                    sessions: quizSessions,
-                    force: true
-                )
-                Task {
-                    if let milestone = await MilestoneManager.evaluateAfterQuiz(container: modelContext.container) {
-                        await MainActor.run {
-                            pendingMilestoneCelebration = milestone
+            Group {
+                if quizCoverPhase == .weeklyRecall {
+                    weeklyRecallQuizCoverContent
+                } else {
+                    ZStack {
+                        if dailyQuizQuestions.isEmpty, quizCoverPhase == .weeklyUnlock {
+                            HubPalette.linen
+                                .ignoresSafeArea()
+                        } else {
+                            dailyQuizViewContent
+                                .allowsHitTesting(quizCoverPhase != .weeklyUnlock)
+                        }
+
+                        if quizCoverPhase == .weeklyUnlock {
+                            WeeklyRecallUnlockTransition(
+                                weekNumber: weeklyUnlockWeekNumber,
+                                questionCount: pendingWeeklyRecall?.questions.count
+                                    ?? QuizGenerator.weeklyQuestionCount,
+                                onBegin: beginWeeklyRecallQuizFromTransition,
+                                onDismiss: dismissWeeklyRecallTransitionToPostQuiz
+                            )
+                            .transition(.opacity)
+                            .zIndex(1)
                         }
                     }
                 }
@@ -592,22 +608,230 @@ struct DailyHubView: View {
             .navigationTitle("")
             .navigationBarTitleDisplayMode(.inline)
             .glanceNavigationBarChrome(colorScheme: colorScheme)
+            .toolbar(quizCoverPhase == .weeklyUnlock ? .hidden : .automatic, for: .navigationBar)
             .toolbar {
-                ToolbarItem(placement: .cancellationAction) {
-                    DailyQuizBackButton {
-                        showDailyQuiz = false
+                if quizCoverPhase == .daily {
+                    ToolbarItem(placement: .cancellationAction) {
+                        DailyQuizBackButton {
+                            showDailyQuiz = false
+                        }
+                    }
+                } else if quizCoverPhase == .weeklyRecall, !weeklyRecallShowsRecap {
+                    ToolbarItem(placement: .cancellationAction) {
+                        DailyQuizBackButton {
+                            exitWeeklyRecallFromCover()
+                        }
                     }
                 }
 
-                ToolbarItem(placement: .principal) {
-                    GlanceScreenTitle()
-                        .frame(height: 44)
+                if quizCoverPhase != .weeklyUnlock {
+                    ToolbarItem(placement: .principal) {
+                        GlanceScreenTitle()
+                            .frame(height: 44)
+                    }
                 }
             }
             .onAppear {
                 scheduleSupplementalPreload()
+                if !presentationUsesSupplementalPersistence {
+                    scheduleWeeklyRecallPreloadIfEligible()
+                }
             }
         }
+    }
+
+    private var weeklyRecallPresentationForDailyQuiz: WeeklyRecallPresentation? {
+        guard WeeklyRecallEligibility.isDue(), let pendingWeeklyRecall else { return nil }
+        return pendingWeeklyRecall
+    }
+
+    private var weeklyRecallIsDueForPresentation: Bool {
+        weeklyRecallPresentationForDailyQuiz != nil
+    }
+
+    private var dailyQuizViewContent: some View {
+        DailyQuizView(
+            questions: dailyQuizQuestions,
+            isContentLoading: isDailyQuizContentLoading,
+            resume: resumePayloadForQuiz,
+            isSupplementalPersistence: presentationUsesSupplementalPersistence,
+            weeklyRecallPresentation: weeklyRecallPresentationForDailyQuiz,
+            weeklyRecallIsDue: weeklyRecallIsDueForPresentation,
+            onBeginWeeklyRecall: beginWeeklyRecallFromDailySummary,
+            debugOpensOnCompleteSummary: debugWeeklyRecallPreviewEnabled,
+            debugSummaryCorrectCount: min(8, max(dailyQuizQuestions.count, 1))
+        ) { completion in
+            usedQuestionSlots.formUnion(completion.questionSlotKeys)
+            if completion.isSupplementalRound {
+                supplementalRememberedWordIDs.formUnion(completion.rememberedWordIDs)
+                let dailyIDs = Set(dailyWords.map(\.id))
+                supplementalMissedWordIDs = completion.missedWordIDs.intersection(dailyIDs)
+                scheduleSupplementalPreload()
+                return
+            }
+            rememberedWordIDs = completion.rememberedWordIDs
+            missedWordIDs = completion.missedWordIDs
+            supplementalRememberedWordIDs = completion.rememberedWordIDs
+            let dailyIDs = Set(dailyWords.map(\.id))
+            supplementalMissedWordIDs = completion.missedWordIDs.intersection(dailyIDs)
+            syncFrozenPostQuizOutcomes()
+            quizCompletedToday = true
+            WeeklyRecallEligibility.recordFirstDailyQuizCompleted()
+            quizPreparation.clearPrimaryPreparation()
+            #if DEBUG
+            debugForcePreQuizToday = false
+            debugShowsPostQuizToday = false
+            #endif
+            WidgetDailyState.markPrimaryQuizCompleted(streakDays: quizStreakDays)
+            entitlementManager.syncWidgetSubscriptionState(quizCompletedToday: true)
+            StreakPlantState.markPrimaryQuizCompleted(streakDays: quizStreakDays)
+            Task {
+                await DailyWordBatchService.flushFutureQueueAndRefresh(modelContext: modelContext)
+            }
+            Task {
+                await NotificationManager.handleQuizCompletedEarly()
+            }
+            triggerSupplementalPreloadIfNeeded()
+            pendingStreakUpgradeReveal = true
+            insightsCoordinator.scheduleRefresh(
+                container: modelContext.container,
+                sessions: quizSessions,
+                force: true
+            )
+            Task {
+                if let milestone = await MilestoneManager.evaluateAfterQuiz(container: modelContext.container) {
+                    await MainActor.run {
+                        pendingMilestoneCelebration = milestone
+                    }
+                }
+            }
+            prepareWeeklyRecallIfEligible()
+            scheduleWeeklyRecallPreloadIfEligible(forceRefresh: true)
+            if !WeeklyRecallEligibility.isDue() {
+                pendingWeeklyRecall = nil
+            }
+            postQuizOffersWeeklyRecall = weeklyRecallIsDueForPresentation
+        }
+    }
+
+    @ViewBuilder
+    private var weeklyRecallQuizCoverContent: some View {
+        if let presentation = pendingWeeklyRecall {
+            WeeklyRecallQuizView(
+                questions: presentation.questions,
+                preQuizConsecutiveCorrect: presentation.preQuizConsecutiveCorrect,
+                resume: weeklyRecallResume,
+                isDebugPreview: presentation.isDebugPreview,
+                onFinished: finishWeeklyRecallFromCover,
+                onExit: exitWeeklyRecallFromCover,
+                onShowingRecapChanged: { weeklyRecallShowsRecap = $0 }
+            )
+        } else {
+            ContentUnavailableView("Weekly quiz unavailable", systemImage: "exclamationmark.triangle")
+        }
+    }
+
+    private func beginWeeklyRecallFromDailySummary() {
+        guard weeklyRecallIsDueForPresentation else { return }
+        weeklyRecallResume = nil
+        weeklyRecallShowsRecap = false
+        quizCoverPhase = .weeklyUnlock
+    }
+
+    private func beginWeeklyRecallQuizFromTransition() {
+        guard pendingWeeklyRecall != nil else { return }
+        weeklyRecallResume = nil
+        weeklyRecallShowsRecap = false
+        withAnimation(.spring(response: 0.52, dampingFraction: 0.84)) {
+            quizCoverPhase = .weeklyRecall
+        }
+    }
+
+    private func dismissWeeklyRecallTransitionToPostQuiz() {
+        weeklyRecallResume = nil
+        weeklyRecallShowsRecap = false
+        quizCoverPhase = .daily
+        showDailyQuiz = false
+    }
+
+    private func startWeeklyRecallFromPostQuiz() {
+        prepareWeeklyRecallIfEligible()
+        guard pendingWeeklyRecall != nil else { return }
+        weeklyRecallResume = nil
+        weeklyRecallShowsRecap = false
+        quizCoverPhase = .weeklyRecall
+        showDailyQuiz = true
+    }
+
+    private func finishWeeklyRecallFromCover() {
+        pendingWeeklyRecall = nil
+        weeklyRecallResume = nil
+        weeklyRecallShowsRecap = false
+        postQuizOffersWeeklyRecall = false
+        quizCoverPhase = .daily
+        hasPersistedWeeklyRecallProgress = false
+        showDailyQuiz = false
+        #if DEBUG
+        debugWeeklyRecallPreviewActive = false
+        #endif
+    }
+
+    private func exitWeeklyRecallFromCover() {
+        weeklyRecallResume = nil
+        weeklyRecallShowsRecap = false
+        quizCoverPhase = .daily
+        showDailyQuiz = false
+        hasPersistedWeeklyRecallProgress = WeeklyRecallQuizPersistence.hasPausedSession
+    }
+
+    private func resumeWeeklyRecall() {
+        guard let saved = WeeklyRecallQuizPersistence.load(),
+              let questions = WeeklyRecallQuizPersistence.rebuildQuestions(from: saved, modelContext: modelContext),
+              !questions.isEmpty else {
+            refreshPersistedWeeklyRecallFlags()
+            return
+        }
+        pendingWeeklyRecall = WeeklyRecallPresentation(
+            questions: questions,
+            preQuizConsecutiveCorrect: saved.preQuizConsecutiveCorrect,
+            isDebugPreview: saved.isDebugPreview
+        )
+        weeklyRecallResume = saved
+        weeklyRecallShowsRecap = false
+        quizCoverPhase = .weeklyRecall
+        showDailyQuiz = true
+    }
+
+    private func refreshPersistedWeeklyRecallFlags() {
+        hasPersistedWeeklyRecallProgress = WeeklyRecallQuizPersistence.hasPausedSession
+        if hasPersistedWeeklyRecallProgress {
+            restorePendingWeeklyRecallFromPersistence()
+        }
+    }
+
+    private func refreshPersistedWeeklyRecallFlagsDeferred() {
+        DispatchQueue.main.async {
+            refreshPersistedWeeklyRecallFlags()
+        }
+    }
+
+    private func restorePendingWeeklyRecallFromPersistence() {
+        guard let saved = WeeklyRecallQuizPersistence.load(),
+              let questions = WeeklyRecallQuizPersistence.rebuildQuestions(from: saved, modelContext: modelContext),
+              !questions.isEmpty else {
+            return
+        }
+        pendingWeeklyRecall = WeeklyRecallPresentation(
+            questions: questions,
+            preQuizConsecutiveCorrect: saved.preQuizConsecutiveCorrect,
+            isDebugPreview: saved.isDebugPreview
+        )
+    }
+
+    private func resetQuizCoverForDailyPresentation() {
+        quizCoverPhase = .daily
+        weeklyRecallResume = nil
+        weeklyRecallShowsRecap = false
     }
 
     private var plantPotPivot: UnitPoint {
@@ -874,9 +1098,17 @@ struct DailyHubView: View {
 
                 completionSummary
 
-                if showPostQuizResumeCTA || canOfferSupplementalQuiz {
+                if showPostQuizWeeklyRecallCTA || showPostQuizStartWeeklyRecallCTA || showPostQuizResumeCTA || canOfferSupplementalQuiz {
                     VStack(spacing: heroSpacing) {
-                        if showPostQuizResumeCTA {
+                        if showPostQuizWeeklyRecallCTA {
+                            postQuizSecondaryQuizButton(title: "Resume Weekly Quiz") {
+                                resumeWeeklyRecall()
+                            }
+                        } else if showPostQuizStartWeeklyRecallCTA {
+                            postQuizSecondaryQuizButton(title: "Start Weekly Recap") {
+                                startWeeklyRecallFromPostQuiz()
+                            }
+                        } else if showPostQuizResumeCTA {
                             postQuizSecondaryQuizButton(title: "Resume quiz") {
                                 startDailyQuiz()
                             }
@@ -923,7 +1155,7 @@ struct DailyHubView: View {
         let shape = RoundedRectangle(cornerRadius: 16, style: .continuous)
 
         return Button {
-            if title == "Take another quiz" || title == "Resume quiz" {
+            if title == "Take another quiz" || title == "Resume quiz" || title == "Resume Weekly Quiz" || title == "Start Weekly Recap" {
                 GlanceHaptics.medium()
             }
             action()
@@ -1169,6 +1401,14 @@ struct DailyHubView: View {
         }
     }
 
+    private var showPostQuizWeeklyRecallCTA: Bool {
+        hasPersistedWeeklyRecallProgress
+    }
+
+    private var showPostQuizStartWeeklyRecallCTA: Bool {
+        postQuizOffersWeeklyRecall && !hasPersistedWeeklyRecallProgress
+    }
+
     private var showPostQuizResumeCTA: Bool {
         hasPersistedSupplementalQuizProgress || optimisticSupplementalResumeCTA
     }
@@ -1274,6 +1514,7 @@ struct DailyHubView: View {
     private func applyBootstrapTodayWords() {
         dailyWords = DailyWordBatchService.loadPersistedTodayWords(modelContext: modelContext)
         refreshPersistedQuizFlags()
+        refreshPersistedWeeklyRecallFlags()
         restoreTodayQuizCompletionFromWidgetState()
         triggerQuizPrefetchIfNeeded()
     }
@@ -1281,6 +1522,7 @@ struct DailyHubView: View {
     private func syncDailyWords() async {
         dailyWords = await DailyWordBatchService.refresh(modelContext: modelContext)
         refreshPersistedQuizFlags()
+        refreshPersistedWeeklyRecallFlags()
         restoreTodayQuizCompletionFromWidgetState()
         triggerQuizPrefetchIfNeeded()
     }
@@ -1309,6 +1551,130 @@ struct DailyHubView: View {
         guard canOfferSupplementalQuiz else { return }
         scheduleSupplementalPreload()
     }
+
+    private func prepareWeeklyRecallIfEligible() {
+        if WeeklyRecallQuizPersistence.hasPausedSession {
+            restorePendingWeeklyRecallFromPersistence()
+            return
+        }
+        guard WeeklyRecallEligibility.isDue() else {
+            pendingWeeklyRecall = nil
+            return
+        }
+
+        if let presentation = quizPreparation.makeWeeklyRecallPresentation(isDebugPreview: false) {
+            pendingWeeklyRecall = presentation
+            return
+        }
+
+        guard let plan = try? WeeklyRecallQuizPlanner.plan(modelContext: modelContext) else {
+            pendingWeeklyRecall = nil
+            return
+        }
+        pendingWeeklyRecall = makeWeeklyRecallPresentation(from: plan, isDebugPreview: false)
+    }
+
+    private func weeklyRecallPreloadEligible() -> Bool {
+        guard !WeeklyRecallQuizPersistence.hasPausedSession else { return false }
+        return WeeklyRecallEligibility.isDue()
+    }
+
+    private func scheduleWeeklyRecallPreloadIfEligible(forceRefresh: Bool = false) {
+        guard weeklyRecallPreloadEligible() else {
+            quizPreparation.cancelWeeklyRecallPreload()
+            return
+        }
+        quizPreparation.scheduleWeeklyRecallPreload(
+            modelContainer: modelContext.container,
+            modelContext: modelContext,
+            forceRefresh: forceRefresh
+        )
+    }
+
+    /// Attaches a finished background weekly preload while the daily cover is still up (summary or in-quiz).
+    private func applyPreloadedWeeklyRecallIfEligible() {
+        guard weeklyRecallPreloadEligible() else { return }
+        guard showDailyQuiz else { return }
+        guard quizCoverPhase == .daily || quizCoverPhase == .weeklyUnlock else { return }
+        guard let presentation = quizPreparation.makeWeeklyRecallPresentation(isDebugPreview: false) else { return }
+        pendingWeeklyRecall = presentation
+        if hasCompletedQuizForDisplay, WeeklyRecallEligibility.isDue() {
+            postQuizOffersWeeklyRecall = true
+        }
+    }
+
+    private func makeWeeklyRecallPresentation(from plan: WeeklyRecallQuizPlan, isDebugPreview: Bool) -> WeeklyRecallPresentation {
+        let preQuiz = Dictionary(uniqueKeysWithValues: plan.targetWords.map { ($0.id, $0.consecutiveCorrect) })
+        return WeeklyRecallPresentation(
+            questions: plan.questions,
+            preQuizConsecutiveCorrect: preQuiz,
+            isDebugPreview: isDebugPreview
+        )
+    }
+
+    #if DEBUG
+    private func previewWeeklyRecallFlow() {
+        guard let plan = try? WeeklyRecallQuizPlanner.planMockPreview(modelContext: modelContext) else {
+            quizAlertTitle = "Weekly recall preview"
+            quizAlertMessage = "Import vocabulary into the catalog first to preview the mock weekly quiz."
+            showQuizAlert = true
+            return
+        }
+
+        simulatePostQuizStateForWeeklyRecallPreview()
+        WeeklyRecallQuizPersistence.clear()
+        hasPersistedWeeklyRecallProgress = false
+        postQuizOffersWeeklyRecall = true
+        pendingWeeklyRecall = makeWeeklyRecallPresentation(from: plan, isDebugPreview: true)
+        resumePayloadForQuiz = nil
+        pendingPresentQuizAsSupplemental = false
+        dailyQuizQuestions = []
+        weeklyRecallResume = nil
+        weeklyRecallShowsRecap = false
+        isDailyQuizContentLoading = false
+        debugWeeklyRecallPreviewActive = true
+        quizCoverPhase = .weeklyUnlock
+        showDailyQuiz = true
+    }
+
+    /// Puts the hub in the same post-quiz state as after a real daily check-in so backing out of the weekly preview lands on Today's post-quiz screen.
+    private func simulatePostQuizStateForWeeklyRecallPreview() {
+        guard !hasCompletedQuizForDisplay else {
+            syncFrozenPostQuizOutcomes()
+            triggerSupplementalPreloadIfNeeded()
+            return
+        }
+
+        quizCompletedToday = true
+        debugForcePreQuizToday = false
+        debugShowsPostQuizToday = false
+
+        if dailyWords.isEmpty {
+            dailyWords = DailyWordBatchService.loadPersistedTodayWords(modelContext: modelContext)
+        }
+
+        if !dailyWords.isEmpty {
+            let rememberedCount = min(6, dailyWords.count)
+            rememberedWordIDs = Set(dailyWords.prefix(rememberedCount).map(\.id))
+            missedWordIDs = Set(dailyWords.dropFirst(rememberedCount).prefix(2).map(\.id))
+        } else {
+            var descriptor = FetchDescriptor<Word>(sortBy: [SortDescriptor(\.lastReviewDate, order: .reverse)])
+            descriptor.fetchLimit = 8
+            if let pool = try? modelContext.fetch(descriptor), !pool.isEmpty {
+                rememberedWordIDs = Set(pool.prefix(min(6, pool.count)).map(\.id))
+                missedWordIDs = Set(pool.dropFirst(min(6, pool.count)).prefix(2).map(\.id))
+            } else {
+                rememberedWordIDs = []
+                missedWordIDs = []
+            }
+        }
+
+        supplementalRememberedWordIDs = rememberedWordIDs
+        supplementalMissedWordIDs = missedWordIDs.intersection(Set(dailyWords.map(\.id)))
+        syncFrozenPostQuizOutcomes()
+        triggerSupplementalPreloadIfNeeded()
+    }
+    #endif
 
     /// Builds and hydrates the next supplemental quiz in the background for instant "Take another quiz".
     private func scheduleSupplementalPreload() {
@@ -1356,6 +1722,8 @@ struct DailyHubView: View {
         freezeStreakPresentation()
         resumePayloadForQuiz = nil
         pendingPresentQuizAsSupplemental = false
+        quizCoverPhase = .daily
+        weeklyRecallResume = nil
         showDailyQuiz = true
         scheduleOptimisticResumeCTA(after: .daily)
         scheduleSupplementalPreload()
@@ -1370,6 +1738,7 @@ struct DailyHubView: View {
             for: DailyWordBatchService.calendarDayKey()
         ) else { return }
         quizCompletedToday = true
+        WeeklyRecallEligibility.recordFirstDailyQuizCompleted()
         if StreakPlantState.lastPrimaryQuizDayKey == nil {
             StreakPlantState.markPrimaryQuizCompleted(streakDays: quizStreakDays)
         }
@@ -1450,6 +1819,7 @@ struct DailyHubView: View {
         Task { @MainActor in
             cancelOptimisticResumeCTADelay()
             showQuizAlert = false
+            resetQuizCoverForDailyPresentation()
 
             if dailyWords.isEmpty {
                 await syncDailyWords()
@@ -1573,6 +1943,7 @@ struct DailyHubView: View {
             cancelOptimisticResumeCTADelay()
             dailyQuizQuestions = []
             showQuizAlert = false
+            resetQuizCoverForDailyPresentation()
             DailyQuizPersistence.clear()
             refreshPersistedQuizFlags()
 
@@ -2442,6 +2813,7 @@ private struct DailyHubDebugLifecycleModifier: ViewModifier {
     let onWiltPreview: () -> Void
     let onResetTodayQuiz: () -> Void
     let onPreviewMasteryCelebration: () -> Void
+    let onPreviewWeeklyRecall: () -> Void
     let onPreviewMilestoneCelebration: (Int) -> Void
 
     func body(content: Content) -> some View {
@@ -2456,6 +2828,9 @@ private struct DailyHubDebugLifecycleModifier: ViewModifier {
             }
             .onReceive(NotificationCenter.default.publisher(for: .debugPreviewMasteryCelebration)) { _ in
                 onPreviewMasteryCelebration()
+            }
+            .onReceive(NotificationCenter.default.publisher(for: .debugPreviewWeeklyRecall)) { _ in
+                onPreviewWeeklyRecall()
             }
             .onReceive(NotificationCenter.default.publisher(for: DebugMilestoneControls.previewMilestoneCelebration)) { notification in
                 guard let milestone = notification.userInfo?["milestone"] as? Int else { return }

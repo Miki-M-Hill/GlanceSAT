@@ -847,4 +847,146 @@ enum QuizGenerator {
     private static func normalizedKey(_ s: String) -> String {
         s.trimmingCharacters(in: .whitespacesAndNewlines).lowercased()
     }
+
+    // MARK: - Weekly recall (6 sentence + 14 synonym)
+
+    static let weeklySentenceQuestionCount = 6
+    static let weeklySynonymQuestionCount = 14
+    static let weeklyQuestionCount = weeklySentenceQuestionCount + weeklySynonymQuestionCount
+
+    static func generateWeeklyRecallQuiz(
+        for words: [Word],
+        context: ModelContext,
+        weeklyExposureIDs: Set<UUID>
+    ) throws -> [QuizQuestion] {
+        guard words.count >= weeklyQuestionCount else { return [] }
+
+        let sentenceEligible = words
+            .filter {
+                canUseSentenceCompletion(sentence: $0.quizCompletionSentence, word: $0.word)
+            }
+            .sorted { sentenceScore(for: $0) > sentenceScore(for: $1) }
+
+        var sentenceWords = Array(sentenceEligible.prefix(weeklySentenceQuestionCount))
+        let sentenceIDs = Set(sentenceWords.map(\.id))
+        var synonymWords = words.filter { !sentenceIDs.contains($0.id) }
+
+        if sentenceWords.count < weeklySentenceQuestionCount {
+            let fillers = words.filter { word in
+                !sentenceIDs.contains(word.id)
+                    && canUseSentenceCompletion(sentence: word.quizCompletionSentence, word: word.word)
+            }
+            for word in fillers where sentenceWords.count < weeklySentenceQuestionCount {
+                sentenceWords.append(word)
+            }
+        }
+
+        let updatedSentenceIDs = Set(sentenceWords.map(\.id))
+        synonymWords = words.filter { !updatedSentenceIDs.contains($0.id) }
+        synonymWords = Array(synonymWords.prefix(weeklySynonymQuestionCount))
+
+        var questions: [QuizQuestion] = []
+        questions.reserveCapacity(weeklyQuestionCount)
+        var usedDistractorIDs = Set<UUID>()
+
+        for word in sentenceWords {
+            var localUsed = usedDistractorIDs
+            let question = try makeSentenceCompletionQuestion(
+                for: word,
+                context: context,
+                usedDistractorIDs: &localUsed
+            )
+            usedDistractorIDs = localUsed
+            questions.append(question)
+        }
+
+        for word in synonymWords {
+            let question = try makeWeeklySynonymQuestion(
+                for: word,
+                weeklyExposureIDs: weeklyExposureIDs,
+                context: context,
+                usedDistractorIDs: &usedDistractorIDs
+            )
+            questions.append(question)
+        }
+
+        guard questions.count == weeklyQuestionCount else { return [] }
+        questions.shuffle()
+        return questions
+    }
+
+    private static func makeWeeklySynonymQuestion(
+        for target: Word,
+        weeklyExposureIDs: Set<UUID>,
+        context: ModelContext,
+        usedDistractorIDs: inout Set<UUID>
+    ) throws -> QuizQuestion {
+        let correct: String
+        if let pick = target.quizSynonyms.randomElement(),
+           !pick.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty {
+            correct = pick.trimmingCharacters(in: .whitespacesAndNewlines)
+        } else {
+            let primary = target.quizPrimaryDefinition
+            correct = primary.isEmpty
+                ? target.definition.trimmingCharacters(in: .whitespacesAndNewlines)
+                : primary
+        }
+
+        var distractors: [String] = []
+        let charge = target.semanticCharge.trimmingCharacters(in: .whitespacesAndNewlines)
+
+        func absorb(_ candidates: [Word]) {
+            for word in candidates where distractors.count < 3 {
+                if word.id == target.id || usedDistractorIDs.contains(word.id) { continue }
+                let option = synonymLikeAnswer(from: word)
+                guard isDistinctOption(option, correct: correct, targetWord: target.word, existing: distractors) else { continue }
+                distractors.append(option)
+                usedDistractorIDs.insert(word.id)
+            }
+        }
+
+        if !charge.isEmpty {
+            let lookup = charge
+            let predicate = #Predicate<Word> { word in
+                word.semanticCharge == lookup
+            }
+            var descriptor = FetchDescriptor<Word>(
+                predicate: predicate,
+                sortBy: distractorRecencySort
+            )
+            descriptor.fetchLimit = 48
+            let semanticPool = try context.fetch(descriptor)
+            absorb(semanticPool.filter { $0.partOfSpeech == target.partOfSpeech })
+            absorb(semanticPool)
+        }
+
+        if !weeklyExposureIDs.isEmpty {
+            var descriptor = FetchDescriptor<Word>(sortBy: distractorRecencySort)
+            descriptor.fetchLimit = 256
+            let batch = try context.fetch(descriptor)
+            absorb(batch.filter { weeklyExposureIDs.contains($0.id) && $0.id != target.id })
+        }
+
+        absorb(try fetchWordsByDistractorTier(resolvedDistractorTier(for: target), context: context))
+        absorb(try fetchWordsByPartOfSpeech(target.partOfSpeech, context: context))
+        absorb(try fetchDistractorCatalogPool(context: context))
+
+        while distractors.count < 3 {
+            let filler = "\(correct) (\(distractors.count))"
+            guard isDistinctOption(filler, correct: correct, targetWord: target.word, existing: distractors) else { break }
+            distractors.append(filler)
+        }
+
+        return QuizQuestion(
+            id: UUID(),
+            targetWord: target,
+            questionType: .synonym,
+            promptText: target.word,
+            correctAnswer: correct,
+            allOptions: shuffledFourOptions(correct: correct, wrong: distractors),
+            foilWord: nil,
+            sentenceDistractorHeadwords: [],
+            appliesSRS: true
+        )
+    }
 }

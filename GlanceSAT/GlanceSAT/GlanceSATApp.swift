@@ -593,6 +593,12 @@ private struct AppRootView: View {
                     Label("Preview mastery celebration", systemImage: "checkmark.seal.fill")
                 }
 
+                Button {
+                    DebugWeeklyRecallControls.previewWeeklyRecallFlow()
+                } label: {
+                    Label("Preview weekly recall quiz", systemImage: "calendar.badge.clock")
+                }
+
                 Menu {
                     ForEach(MilestoneManager.milestones, id: \.self) { milestone in
                         Button {

@@ -29,7 +29,15 @@ struct DailyQuizView: View {
     var resume: PersistedDailyQuiz? = nil
     /// Written into saved progress and completion payload so the hub can treat practice rounds separately.
     var isSupplementalPersistence: Bool = false
+    var weeklyRecallPresentation: WeeklyRecallPresentation? = nil
+    var weeklyRecallIsDue: Bool = false
+    var onBeginWeeklyRecall: (() -> Void)? = nil
+    /// DEBUG: opens directly on the daily quiz completion summary.
+    var debugOpensOnCompleteSummary: Bool = false
+    var debugSummaryCorrectCount: Int = 8
     var onComplete: ((DailyQuizCompletion) -> Void)? = nil
+
+    @State private var didApplyDebugPresentation = false
 
     @State private var currentQuestionIndex = 0
     @State private var selectedAnswer: String?
@@ -88,7 +96,7 @@ struct DailyQuizView: View {
             } else if quizComplete, showsMasteryCelebration {
                 DailyQuizMasteryCelebrationView(
                     words: newlyMasteredWords,
-                    onContinue: { dismiss() }
+                    onContinue: attemptWeeklyRecallOrDismiss
                 )
             } else if quizComplete {
                 quizCompleteSummary
@@ -113,6 +121,7 @@ struct DailyQuizView: View {
             resetQuestionTimer()
             capturePreQuizStreakSnapshotIfNeeded()
             trackDailyQuizStartedIfNeeded()
+            applyDebugPresentationIfNeeded()
         }
         .onChange(of: activeQuestionID, initial: true) { _, _ in
             resetQuestionTimer()
@@ -490,15 +499,7 @@ struct DailyQuizView: View {
 
             Spacer()
 
-            Button {
-                if shouldShowMasteryCelebration {
-                    withAnimation(.spring(response: 0.45, dampingFraction: 0.88)) {
-                        showsMasteryCelebration = true
-                    }
-                } else {
-                    dismiss()
-                }
-            } label: {
+            Button(action: handleReturnToToday) {
                 Text("Return to Today's Words")
                     .font(.headline.bold())
                     .foregroundStyle(HubPalette.oatmeal)
@@ -520,6 +521,41 @@ struct DailyQuizView: View {
     }
 
     // MARK: - Actions
+
+    private func handleReturnToToday() {
+        if shouldShowMasteryCelebration {
+            withAnimation(.spring(response: 0.45, dampingFraction: 0.88)) {
+                showsMasteryCelebration = true
+            }
+            return
+        }
+        attemptWeeklyRecallOrDismiss()
+    }
+
+    private func attemptWeeklyRecallOrDismiss() {
+        if !isSupplementalPersistence,
+           weeklyRecallIsDue,
+           let presentation = weeklyRecallPresentation,
+           !presentation.questions.isEmpty {
+            GlanceHaptics.medium()
+            onBeginWeeklyRecall?()
+            return
+        }
+        dismiss()
+    }
+
+    #if DEBUG
+    private func applyDebugPresentationIfNeeded() {
+        guard !didApplyDebugPresentation, debugOpensOnCompleteSummary else { return }
+        didApplyDebugPresentation = true
+
+        correctCount = min(max(debugSummaryCorrectCount, 0), questions.count)
+        quizComplete = true
+        summaryAppeared = false
+    }
+    #else
+    private func applyDebugPresentationIfNeeded() {}
+    #endif
 
     private var shouldShowMasteryCelebration: Bool {
         !isSupplementalPersistence && !newlyMasteredWords.isEmpty

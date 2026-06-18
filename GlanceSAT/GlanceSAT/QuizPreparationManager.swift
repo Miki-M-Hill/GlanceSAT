@@ -26,10 +26,17 @@ final class QuizPreparationManager {
     /// Pre-built supplemental quiz shown instantly from the post-quiz "Take another quiz" CTA.
     private(set) var preloadedQuiz: QuizSessionData?
     private(set) var preloadedHydratedQuestions: [QuizQuestion]?
+    /// Pre-built weekly recall quiz, hydrated on main for instant post-daily transition.
+    private(set) var preloadedWeeklyRecall: WeeklyRecallSessionData?
+    private(set) var hydratedWeeklyRecallQuestions: [QuizQuestion]?
+    /// Bumps when a weekly preload finishes so the hub can attach it to `pendingWeeklyRecall`.
+    private(set) var weeklyRecallPreloadRevision = 0
 
     private var preparationTask: Task<Void, Never>?
     private var hydrationTask: Task<Void, Never>?
     private var preloadTask: Task<Void, Never>?
+    private var weeklyRecallPreloadTask: Task<Void, Never>?
+    private var weeklyRecallPreloadToken = 0
     private var preloadedSignature: SupplementalPreloadSignature?
     private var readyWaiters: [CheckedContinuation<QuizSessionData, Error>] = []
     private var scheduledWordIDs: [UUID] = []
@@ -38,6 +45,7 @@ final class QuizPreparationManager {
     func reset() {
         clearPrimaryPreparation()
         cancelSupplementalPreload()
+        cancelWeeklyRecallPreload()
     }
 
     /// Clears primary daily-quiz generation state without discarding a supplemental preload.
@@ -72,6 +80,109 @@ final class QuizPreparationManager {
 
     var hasPreloadedSupplementalQuiz: Bool {
         preloadedHydratedQuestions?.isEmpty == false || preloadedQuiz != nil
+    }
+
+    var hasPreloadedWeeklyRecall: Bool {
+        hydratedWeeklyRecallQuestions?.isEmpty == false && preloadedWeeklyRecall != nil
+    }
+
+    /// Silently builds the weekly recall quiz while the user takes today's primary daily quiz.
+    func scheduleWeeklyRecallPreload(
+        modelContainer: ModelContainer,
+        modelContext: ModelContext,
+        forceRefresh: Bool = false
+    ) {
+        if hasPreloadedWeeklyRecall, !forceRefresh {
+            return
+        }
+
+        weeklyRecallPreloadTask?.cancel()
+        weeklyRecallPreloadToken += 1
+        let token = weeklyRecallPreloadToken
+
+        weeklyRecallPreloadTask = Task.detached(priority: .utility) { [weak self] in
+            do {
+                let payload = try await QuizPreparationActor().prepareWeeklyRecall(container: modelContainer)
+                await Task.yield()
+                await MainActor.run {
+                    guard let self else { return }
+                    guard !Task.isCancelled, token == self.weeklyRecallPreloadToken else { return }
+                    Task { @MainActor in
+                        await Task.yield()
+                        guard !Task.isCancelled, token == self.weeklyRecallPreloadToken else { return }
+                        self.applyWeeklyRecallPreload(payload, modelContext: modelContext)
+                    }
+                }
+            } catch {
+                await MainActor.run {
+                    guard let self else { return }
+                    guard token == self.weeklyRecallPreloadToken else { return }
+                    self.preloadedWeeklyRecall = nil
+                    self.hydratedWeeklyRecallQuestions = nil
+                }
+            }
+        }
+    }
+
+    func cancelWeeklyRecallPreload() {
+        weeklyRecallPreloadTask?.cancel()
+        weeklyRecallPreloadTask = nil
+        weeklyRecallPreloadToken += 1
+        preloadedWeeklyRecall = nil
+        hydratedWeeklyRecallQuestions = nil
+    }
+
+    func makeWeeklyRecallPresentation(isDebugPreview: Bool = false) -> WeeklyRecallPresentation? {
+        guard let payload = preloadedWeeklyRecall,
+              let questions = hydratedWeeklyRecallQuestions,
+              questions.count == QuizGenerator.weeklyQuestionCount else {
+            return nil
+        }
+        return WeeklyRecallPresentation(
+            questions: questions,
+            preQuizConsecutiveCorrect: payload.preQuizConsecutiveCorrect,
+            isDebugPreview: isDebugPreview
+        )
+    }
+
+    private func applyWeeklyRecallPreload(_ payload: WeeklyRecallSessionData?, modelContext: ModelContext) {
+        guard let payload else {
+            preloadedWeeklyRecall = nil
+            hydratedWeeklyRecallQuestions = nil
+            weeklyRecallPreloadRevision += 1
+            weeklyRecallPreloadTask = nil
+            return
+        }
+        guard let questions = hydrateWeeklyRecallQuestions(from: payload, modelContext: modelContext),
+              questions.count == QuizGenerator.weeklyQuestionCount else {
+            weeklyRecallPreloadTask = nil
+            return
+        }
+        preloadedWeeklyRecall = payload
+        hydratedWeeklyRecallQuestions = questions
+        weeklyRecallPreloadRevision += 1
+        weeklyRecallPreloadTask = nil
+    }
+
+    private func hydrateWeeklyRecallQuestions(
+        from payload: WeeklyRecallSessionData,
+        modelContext: ModelContext
+    ) -> [QuizQuestion]? {
+        let snapshot = PersistedWeeklyRecall(
+            questions: payload.persistedQuestions,
+            currentQuestionIndex: 0,
+            correctCount: 0,
+            rememberedWordIDs: [],
+            missedWordIDs: [],
+            quizStartedAt: Date(),
+            selectedAnswer: nil,
+            isAnswerRevealed: false,
+            preQuizConsecutiveCorrect: payload.preQuizConsecutiveCorrect,
+            preQuizTotalAttempts: 0,
+            preQuizSuccessfulRecalls: 0,
+            isDebugPreview: false
+        )
+        return WeeklyRecallQuizPersistence.rebuildQuestions(from: snapshot, modelContext: modelContext)
     }
 
     /// Silently builds the next supplemental quiz for instant presentation.

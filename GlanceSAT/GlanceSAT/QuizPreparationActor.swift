@@ -43,6 +43,27 @@ actor QuizPreparationActor {
         )
     }
 
+    /// Builds the weekly recall quiz off the main thread; returns `nil` when not enough words are available.
+    func prepareWeeklyRecall(container: ModelContainer) async throws -> WeeklyRecallSessionData? {
+        try Task.checkCancellation()
+        await Task.yield()
+
+        let backgroundContext = ModelContext(container)
+        guard let plan = try WeeklyRecallQuizPlanner.plan(context: backgroundContext) else {
+            return nil
+        }
+
+        try Task.checkCancellation()
+
+        return WeeklyRecallSessionData(
+            persistedQuestions: plan.questions.map { PersistedQuizQuestion(from: $0) },
+            targetWordIDs: plan.targetWords.map(\.id),
+            preQuizConsecutiveCorrect: Dictionary(
+                uniqueKeysWithValues: plan.targetWords.map { ($0.id, $0.consecutiveCorrect) }
+            )
+        )
+    }
+
     private func generateQuizPayload(
         wordIDs: [UUID],
         calendarDayKey: String,
