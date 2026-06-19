@@ -345,8 +345,9 @@ enum QuizGenerator {
             needCount: 3,
             correct: correct,
             context: context,
-            usedDistractorIDs: &usedDistractorIDs
-        ) { synonymLikeAnswer(from: $0) }
+            usedDistractorIDs: &usedDistractorIDs,
+            synonymDistractorFiltering: true
+        )
 
         let options = shuffledFourOptions(correct: correct, wrong: pick.displayOptions)
 
@@ -392,8 +393,9 @@ enum QuizGenerator {
             needCount: 3,
             correct: correct,
             context: context,
-            usedDistractorIDs: &usedDistractorIDs
-        ) { inflect($0.word, as: sentenceBuild.inflection) }
+            usedDistractorIDs: &usedDistractorIDs,
+            displayText: { inflect($0.word, as: sentenceBuild.inflection) }
+        )
 
         let options = shuffledFourOptions(correct: correct, wrong: pick.displayOptions)
         guard options.count >= 2 else { return nil }
@@ -422,8 +424,9 @@ enum QuizGenerator {
             needCount: 3,
             correct: correct,
             context: context,
-            usedDistractorIDs: &usedDistractorIDs
-        ) { Self.inflect($0.word, as: inflection) }
+            usedDistractorIDs: &usedDistractorIDs,
+            displayText: { Self.inflect($0.word, as: inflection) }
+        )
 
         let options = shuffledFourOptions(correct: correct, wrong: pick.displayOptions)
 
@@ -456,16 +459,41 @@ enum QuizGenerator {
         correct: String,
         context: ModelContext,
         usedDistractorIDs: inout Set<UUID>,
-        displayText: (SATWord) -> String
+        synonymDistractorFiltering: Bool = false,
+        displayText: ((SATWord) -> String)? = nil
     ) throws -> RecencyWrongPick {
         var displayOptions: [String] = []
         var headwords: [String] = []
+        let forbiddenSynonymKeys = synonymDistractorFiltering
+            ? normalizedForbiddenSynonymDistractorKeys(for: target)
+            : nil
 
         func absorb(_ candidates: [SATWord], ignoringUsed: Bool = false) {
             for word in candidates where displayOptions.count < needCount {
                 if !ignoringUsed, usedDistractorIDs.contains(word.id) { continue }
-                let option = displayText(word)
-                guard isDistinctOption(option, correct: correct, targetWord: target.word, existing: displayOptions) else {
+                if synonymDistractorFiltering,
+                   isInvalidSynonymDistractorSource(candidate: word, target: target) {
+                    continue
+                }
+
+                let option: String
+                if synonymDistractorFiltering {
+                    guard let picked = validSynonymDistractorString(from: word, target: target) else {
+                        continue
+                    }
+                    option = picked
+                } else {
+                    guard let displayText else { continue }
+                    option = displayText(word)
+                }
+
+                guard isDistinctOption(
+                    option,
+                    correct: correct,
+                    targetWord: target.word,
+                    existing: displayOptions,
+                    forbiddenSynonymKeys: forbiddenSynonymKeys
+                ) else {
                     continue
                 }
                 displayOptions.append(option)
@@ -533,9 +561,29 @@ enum QuizGenerator {
                 usedDistractorIDs: usedDistractorIDs,
                 ignoringUsed: true
             ) where displayOptions.count < needCount {
-                let alternate = "\(displayText(word)) (\(suffix))"
+                if synonymDistractorFiltering,
+                   isInvalidSynonymDistractorSource(candidate: word, target: target) {
+                    continue
+                }
+                let baseOption: String
+                if synonymDistractorFiltering {
+                    guard let picked = validSynonymDistractorString(from: word, target: target) else {
+                        continue
+                    }
+                    baseOption = picked
+                } else {
+                    guard let displayText else { continue }
+                    baseOption = displayText(word)
+                }
+                let alternate = "\(baseOption) (\(suffix))"
                 suffix += 1
-                guard isDistinctOption(alternate, correct: correct, targetWord: target.word, existing: displayOptions) else {
+                guard isDistinctOption(
+                    alternate,
+                    correct: correct,
+                    targetWord: target.word,
+                    existing: displayOptions,
+                    forbiddenSynonymKeys: forbiddenSynonymKeys
+                ) else {
                     continue
                 }
                 displayOptions.append(alternate)
@@ -642,19 +690,62 @@ enum QuizGenerator {
 
     // MARK: - Helpers
 
-    private static func synonymLikeAnswer(from word: SATWord) -> String {
-        if let s = word.quizSynonyms.randomElement() {
-            let t = s.trimmingCharacters(in: .whitespacesAndNewlines)
-            if !t.isEmpty { return t }
-        }
-        return word.word.trimmingCharacters(in: .whitespacesAndNewlines)
+    // MARK: - Synonym distractor filtering
+
+    /// Headword + quiz-sense synonyms that must never appear as synonym-match distractors.
+    private static func normalizedForbiddenSynonymDistractorKeys(for target: SATWord) -> Set<String> {
+        var keys = Set(target.quizSynonyms.map { normalizedKey($0) })
+        keys.insert(normalizedKey(target.word))
+        return keys.filter { !$0.isEmpty }
     }
 
-    private static func isDistinctOption(_ option: String, correct: String, targetWord: String, existing: [String]) -> Bool {
+    /// Rule B — skip candidate words semantically linked to the target via headwords or shared synonyms.
+    private static func isInvalidSynonymDistractorSource(candidate: SATWord, target: SATWord) -> Bool {
+        let candidateHeadword = normalizedKey(candidate.word)
+        let targetHeadword = normalizedKey(target.word)
+        let targetSynonymKeys = Set(target.quizSynonyms.map { normalizedKey($0) }.filter { !$0.isEmpty })
+        let candidateSynonymKeys = Set(candidate.quizSynonyms.map { normalizedKey($0) }.filter { !$0.isEmpty })
+
+        if targetSynonymKeys.contains(candidateHeadword) {
+            return true
+        }
+        if candidateSynonymKeys.contains(targetHeadword) {
+            return true
+        }
+        if !targetSynonymKeys.isDisjoint(with: candidateSynonymKeys) {
+            return true
+        }
+        return false
+    }
+
+    /// Rule A — pick a display string from the candidate that is not the target headword or a target synonym.
+    private static func validSynonymDistractorString(from candidate: SATWord, target: SATWord) -> String? {
+        let forbidden = normalizedForbiddenSynonymDistractorKeys(for: target)
+        var options = candidate.quizSynonyms.shuffled().map {
+            $0.trimmingCharacters(in: .whitespacesAndNewlines)
+        }
+        options.append(candidate.word.trimmingCharacters(in: .whitespacesAndNewlines))
+
+        for raw in options {
+            let key = normalizedKey(raw)
+            guard !key.isEmpty, !forbidden.contains(key) else { continue }
+            return raw
+        }
+        return nil
+    }
+
+    private static func isDistinctOption(
+        _ option: String,
+        correct: String,
+        targetWord: String,
+        existing: [String],
+        forbiddenSynonymKeys: Set<String>? = nil
+    ) -> Bool {
         let key = Self.normalizedKey(option)
         if key.isEmpty { return false }
         if key == Self.normalizedKey(correct) { return false }
         if key == Self.normalizedKey(targetWord) { return false }
+        if let forbiddenSynonymKeys, forbiddenSynonymKeys.contains(key) { return false }
         let used = Set(existing.map { Self.normalizedKey($0) })
         return !used.contains(key)
     }
@@ -934,12 +1025,20 @@ enum QuizGenerator {
 
         var distractors: [String] = []
         let charge = target.semanticCharge.trimmingCharacters(in: .whitespacesAndNewlines)
+        let forbiddenSynonymKeys = normalizedForbiddenSynonymDistractorKeys(for: target)
 
         func absorb(_ candidates: [Word]) {
             for word in candidates where distractors.count < 3 {
                 if word.id == target.id || usedDistractorIDs.contains(word.id) { continue }
-                let option = synonymLikeAnswer(from: word)
-                guard isDistinctOption(option, correct: correct, targetWord: target.word, existing: distractors) else { continue }
+                if isInvalidSynonymDistractorSource(candidate: word, target: target) { continue }
+                guard let option = validSynonymDistractorString(from: word, target: target) else { continue }
+                guard isDistinctOption(
+                    option,
+                    correct: correct,
+                    targetWord: target.word,
+                    existing: distractors,
+                    forbiddenSynonymKeys: forbiddenSynonymKeys
+                ) else { continue }
                 distractors.append(option)
                 usedDistractorIDs.insert(word.id)
             }
@@ -973,7 +1072,13 @@ enum QuizGenerator {
 
         while distractors.count < 3 {
             let filler = "\(correct) (\(distractors.count))"
-            guard isDistinctOption(filler, correct: correct, targetWord: target.word, existing: distractors) else { break }
+            guard isDistinctOption(
+                filler,
+                correct: correct,
+                targetWord: target.word,
+                existing: distractors,
+                forbiddenSynonymKeys: forbiddenSynonymKeys
+            ) else { break }
             distractors.append(filler)
         }
 
