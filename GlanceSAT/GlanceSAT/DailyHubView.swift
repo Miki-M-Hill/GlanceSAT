@@ -270,9 +270,7 @@ struct DailyHubView: View {
                     sessions: quizSessions,
                     force: true
                 )
-                Task {
-                    await syncDailyWords()
-                }
+                applyBootstrapTodayWords()
             }
             .onAppear {
                 Task {
@@ -294,7 +292,11 @@ struct DailyHubView: View {
             .onChange(of: scenePhase) { _, phase in
                 guard phase == .active else { return }
                 Task {
-                    await syncDailyWords()
+                    if AppLaunchState.shouldSkipForegroundRefreshAfterColdBootstrap() {
+                        applyBootstrapTodayWords()
+                    } else {
+                        await syncDailyWords()
+                    }
                     prefetchPrimaryQuizIfNeeded()
                 }
                 guard didRunInitialStreakReconcile else { return }

@@ -307,7 +307,11 @@ enum DailyWordBatchService {
     /// Future days are pre-computed so widgets stay fresh without a host launch.
     @MainActor
     @discardableResult
-    static func refresh(modelContext: ModelContext, referenceDate: Date = Date()) async -> [Word] {
+    static func refresh(
+        modelContext: ModelContext,
+        referenceDate: Date = Date(),
+        deferWidgetSnapshot: Bool = false
+    ) async -> [Word] {
         await WidgetInteractionReconciler.reconcile(modelContainer: modelContext.container)
 
         let calendar = Calendar.current
@@ -327,8 +331,9 @@ enum DailyWordBatchService {
         let hadCommittedTodayBatch = !(queue[todayKey]?.isEmpty ?? true)
 
         if !hadCommittedTodayBatch {
+            let keysToFill = deferWidgetSnapshot ? [todayKey] : requiredKeys
             var reservedIDs = Set<UUID>()
-            for key in requiredKeys {
+            for key in keysToFill {
                 let dayDate = dateFromCalendarDayKey(key, calendar: calendar) ?? referenceDate
                 let batch = selectNewBatchPool(
                     modelContext: modelContext,
@@ -341,7 +346,7 @@ enum DailyWordBatchService {
                 newWordIDsByDay[key] = Array(batch.newWordIDs)
                 reservedIDs.formUnion(batch.words.map(\.id))
             }
-        } else {
+        } else if !deferWidgetSnapshot {
             let missingFutureKeys = requiredKeys.dropFirst().filter { key in
                 queue[key]?.isEmpty != false
             }
@@ -392,8 +397,9 @@ enum DailyWordBatchService {
         } else if let todayIDs = queue[todayKey], !todayIDs.isEmpty {
             let resolved = resolveWords(wordIDs: todayIDs, modelContext: modelContext)
             if resolved.isEmpty {
+                let keysToFill = deferWidgetSnapshot ? [todayKey] : requiredKeys
                 var reservedIDs = Set<UUID>()
-                for key in requiredKeys {
+                for key in keysToFill {
                     let dayDate = dateFromCalendarDayKey(key, calendar: calendar) ?? referenceDate
                     let batch = selectNewBatchPool(
                         modelContext: modelContext,
@@ -420,8 +426,9 @@ enum DailyWordBatchService {
                 }
             }
         } else {
+            let keysToFill = deferWidgetSnapshot ? [todayKey] : requiredKeys
             var reservedIDs = Set<UUID>()
-            for key in requiredKeys {
+            for key in keysToFill {
                 let dayDate = dateFromCalendarDayKey(key, calendar: calendar) ?? referenceDate
                 let batch = selectNewBatchPool(
                     modelContext: modelContext,
@@ -454,6 +461,99 @@ enum DailyWordBatchService {
         }
         persistQueue(queue, newWordIDsByDay: newWordIDsByDay)
 
+        if deferWidgetSnapshot {
+            scheduleDeferredRollingQueueSync(
+                container: modelContext.container,
+                referenceDate: referenceDate
+            )
+            return cappedToday
+        }
+
+        await writeRollingQueueWidgetSnapshots(
+            modelContext: modelContext,
+            queue: queue,
+            requiredKeys: requiredKeys,
+            hadPastDays: hadPastDays,
+            hadCommittedTodayBatch: hadCommittedTodayBatch,
+            expandedCommittedTodayBatch: expandedCommittedTodayBatch
+        )
+
+        return cappedToday
+    }
+
+    /// Fills future rolling-queue days and writes widget snapshots after UI unlock.
+    @MainActor
+    static func syncRollingQueueAndWidgetSnapshots(
+        modelContext: ModelContext,
+        referenceDate: Date = Date()
+    ) async {
+        let calendar = Calendar.current
+        let todayKey = calendarDayKey(for: referenceDate, calendar: calendar)
+        let requiredKeys = rollingQueueDayKeys(for: referenceDate, calendar: calendar)
+        let persisted = loadPersistedQueue()
+        var queue = persisted?.dailyBatches ?? [:]
+        var newWordIDsByDay = persisted?.dailyNewWordIDs ?? [:]
+        let cap = selectionCap
+        let hadPastDays = queue.keys.contains { $0 < todayKey && !(queue[$0]?.isEmpty ?? true) }
+        let hadCommittedTodayBatch = !(queue[todayKey]?.isEmpty ?? true)
+
+        let missingFutureKeys = requiredKeys.dropFirst().filter { key in
+            queue[key]?.isEmpty != false
+        }
+        if !missingFutureKeys.isEmpty {
+            var reservedIDs = Set(requiredKeys.compactMap { queue[$0] }.flatMap { $0 })
+            for key in missingFutureKeys {
+                let dayDate = dateFromCalendarDayKey(key, calendar: calendar) ?? referenceDate
+                let batch = selectNewBatchPool(
+                    modelContext: modelContext,
+                    referenceDate: dayDate,
+                    totalCount: cap,
+                    excluding: reservedIDs
+                )
+                guard !batch.isEmpty else { continue }
+                queue[key] = batch.words.map(\.id)
+                newWordIDsByDay[key] = Array(batch.newWordIDs)
+                reservedIDs.formUnion(batch.words.map(\.id))
+            }
+        }
+
+        queue = pruneQueue(queue, keeping: requiredKeys)
+        newWordIDsByDay = newWordIDsByDay.filter { requiredKeys.contains($0.key) }
+        persistQueue(queue, newWordIDsByDay: newWordIDsByDay)
+
+        await writeRollingQueueWidgetSnapshots(
+            modelContext: modelContext,
+            queue: queue,
+            requiredKeys: requiredKeys,
+            hadPastDays: hadPastDays,
+            hadCommittedTodayBatch: hadCommittedTodayBatch,
+            expandedCommittedTodayBatch: false
+        )
+    }
+
+    @MainActor
+    private static func scheduleDeferredRollingQueueSync(
+        container: ModelContainer,
+        referenceDate: Date
+    ) {
+        Task(priority: .utility) {
+            let context = ModelContext(container)
+            await syncRollingQueueAndWidgetSnapshots(
+                modelContext: context,
+                referenceDate: referenceDate
+            )
+        }
+    }
+
+    @MainActor
+    private static func writeRollingQueueWidgetSnapshots(
+        modelContext: ModelContext,
+        queue: [String: [UUID]],
+        requiredKeys: [String],
+        hadPastDays: Bool,
+        hadCommittedTodayBatch: Bool,
+        expandedCommittedTodayBatch: Bool
+    ) async {
         var snapshotBatches: [String: [Word]] = [:]
         for key in requiredKeys {
             guard let ids = queue[key], !ids.isEmpty else { continue }
@@ -468,8 +568,6 @@ enum DailyWordBatchService {
         if hadPastDays || !hadCommittedTodayBatch || expandedCommittedTodayBatch {
             WidgetTimelineReloader.scheduleAllWidgetReload()
         }
-
-        return cappedToday
     }
 
     /// Post-quiz: SRS invalidates pre-computed future days — flush and rebuild the rolling queue.

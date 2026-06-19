@@ -56,9 +56,8 @@ private struct AppLaunchGate: View {
         }
         .task {
             let container = modelContext.container
-            await Task.detached(priority: .userInitiated) {
-                await AppBootstrap.initializeAppData(container: container)
-            }.value
+            AppBootstrap.scheduleBackgroundImport(container: container)
+            await AppBootstrap.initializeAppData(container: container)
             AppLaunchState.markDataLoaded()
             scheduleSplashDismiss()
         }
@@ -143,6 +142,10 @@ private struct AppRootView: View {
             case .active:
                 AnalyticsManager.checkForWidgetInstalls()
                 Task(priority: .userInitiated) {
+                    if AppLaunchState.shouldSkipForegroundRefreshAfterColdBootstrap() {
+                        await NotificationManager.scheduleStandardDailyReminders()
+                        return
+                    }
                     await WordJSONImportService.importIfNeeded(container: modelContext.container)
                     await refreshWidgetDataFromHost()
                     await NotificationManager.scheduleStandardDailyReminders()

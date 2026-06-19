@@ -13,7 +13,14 @@ enum WordJSONImportService {
 
     private static let hasSeededDatabaseKey = "hasSeededDatabase_v1"
     private static let randomSortBackfillKey = "hasBackfilledRandomSortHash_v1"
+    /// Stable key — sync runs only when bundled JSON content hash changes, not on app updates.
     private static let bundledDatabaseSyncHashKey = "bundledDatabaseSyncHash_v5"
+    private static let legacyBundledDatabaseSyncHashKeys = [
+        "bundledDatabaseSyncHash_v4",
+        "bundledDatabaseSyncHash_v3",
+        "bundledDatabaseSyncHash_v2",
+        "bundledDatabaseSyncHash_v1",
+    ]
     private static let lexicalSyncRevisionKey = "bundledDatabaseLexicalSyncRevision_v1"
 
     /// Monotonic counter bumped after bundled lexical metadata is written to SwiftData.
@@ -51,7 +58,7 @@ enum WordJSONImportService {
                 defaults.set(true, forKey: hasSeededDatabaseKey)
             }
 
-            let lastSyncedHash = defaults.string(forKey: bundledDatabaseSyncHashKey)
+            let lastSyncedHash = resolvedLastSyncedHash(defaults: defaults)
             if lastSyncedHash == bundledHash {
                 scheduleRandomSortHashBackfill(container: container)
                 return
@@ -142,6 +149,20 @@ enum WordJSONImportService {
             try? context.save()
         }
         UserDefaults.standard.set(true, forKey: randomSortBackfillKey)
+    }
+
+    /// Reads the stored content hash, migrating legacy key names without forcing a re-sync.
+    private static func resolvedLastSyncedHash(defaults: UserDefaults) -> String? {
+        if let current = defaults.string(forKey: bundledDatabaseSyncHashKey) {
+            return current
+        }
+        for legacyKey in legacyBundledDatabaseSyncHashKeys {
+            guard let legacyHash = defaults.string(forKey: legacyKey) else { continue }
+            defaults.set(legacyHash, forKey: bundledDatabaseSyncHashKey)
+            defaults.removeObject(forKey: legacyKey)
+            return legacyHash
+        }
+        return nil
     }
 }
 
