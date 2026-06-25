@@ -154,9 +154,12 @@ enum DailyQuizPersistence {
         return snapshot
     }
 
-    static func save(_ snapshot: PersistedDailyQuiz) {
+    static func save(_ snapshot: PersistedDailyQuiz, flushToDisk: Bool = false) {
         guard let data = try? JSONEncoder().encode(snapshot) else { return }
         UserDefaults.standard.set(data, forKey: dailyQuizPersistenceKey)
+        if flushToDisk {
+            UserDefaults.standard.synchronize()
+        }
     }
 
     static func clear() {

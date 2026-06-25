@@ -7,6 +7,7 @@ import Foundation
 
 enum InsightsStatsCache {
     private static let storageKey = "insightsWordStats.v1"
+    private static let pendingRefreshKey = "insightsWordStats.refreshPending.v1"
     private static let maxAge: TimeInterval = 60 * 60 * 6
 
     struct Snapshot: Codable {
@@ -32,6 +33,20 @@ enum InsightsStatsCache {
         )
         guard let data = try? JSONEncoder().encode(snapshot) else { return }
         UserDefaults.standard.set(data, forKey: storageKey)
+        clearWordStatsRefreshPending()
+    }
+
+    /// Set before a background word-stats scan; cleared only by a successful `save`.
+    static func markWordStatsRefreshPending() {
+        UserDefaults.standard.set(true, forKey: pendingRefreshKey)
+    }
+
+    static func clearWordStatsRefreshPending() {
+        UserDefaults.standard.removeObject(forKey: pendingRefreshKey)
+    }
+
+    static var isWordStatsRefreshPending: Bool {
+        UserDefaults.standard.bool(forKey: pendingRefreshKey)
     }
 
     static func isFresh(referenceDate: Date = Date()) -> Bool {
@@ -45,5 +60,6 @@ enum InsightsStatsCache {
 
     static func clear() {
         UserDefaults.standard.removeObject(forKey: storageKey)
+        clearWordStatsRefreshPending()
     }
 }

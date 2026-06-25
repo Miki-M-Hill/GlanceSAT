@@ -9,7 +9,11 @@ import SwiftData
 /// Builds sentence-completion quiz payloads for the quiz widget snapshot.
 /// Uses `exampleSentence` + `alternateExampleSentence` — never `quizSentence`.
 enum WidgetSentenceQuizBuilder {
-    static func apply(to snapshot: inout WidgetWordSnapshot, target: Word, context: ModelContext) {
+    static func apply(
+        to snapshot: inout WidgetWordSnapshot,
+        target: Word,
+        distractorPool: QuizGenerator.WidgetDistractorPool
+    ) {
         snapshot.sentenceQuizPrompt = ""
         snapshot.synonymQuizOptions = []
         snapshot.synonymQuizCorrectAnswer = ""
@@ -20,7 +24,7 @@ enum WidgetSentenceQuizBuilder {
             guard let quiz = try? QuizGenerator.makeWidgetSentenceQuiz(
                 for: target,
                 exampleSentence: sentence,
-                context: context
+                distractorPool: distractorPool
             ) else {
                 continue
             }
@@ -39,5 +43,10 @@ enum WidgetSentenceQuizBuilder {
         snapshot.sentenceQuizPrompt = first.prompt
         snapshot.synonymQuizOptions = first.options
         snapshot.synonymQuizCorrectAnswer = first.correctAnswer
+    }
+
+    static func apply(to snapshot: inout WidgetWordSnapshot, target: Word, context: ModelContext) {
+        guard let pool = try? QuizGenerator.WidgetDistractorPool(context: context, for: [target]) else { return }
+        apply(to: &snapshot, target: target, distractorPool: pool)
     }
 }

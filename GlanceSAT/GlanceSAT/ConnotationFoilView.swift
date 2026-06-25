@@ -85,9 +85,8 @@ struct ConnotationFoilView: View {
                         )
                 }
         }
-        .buttonStyle(.plain)
+        .buttonStyle(QuizAnswerButtonStyle())
         .allowsHitTesting(!isAnswerRevealed)
-        .animation(.easeOut(duration: 0.2), value: isAnswerRevealed)
     }
 
     private func pillFill(isCorrect: Bool, isSelected: Bool) -> Color {

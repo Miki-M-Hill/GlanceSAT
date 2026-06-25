@@ -202,7 +202,7 @@ struct GlanceSATProgressScreen: View {
             weeklyAbsorbedDelta: viewModel.weeklyMasteredDelta,
             quizAccuracy: viewModel.quizAccuracy,
             monthlyQuizAccuracyDelta: viewModel.monthlyQuizAccuracyDelta,
-            bestCheckInStreak: viewModel.bestStreak,
+            bestCheckInStreak: max(viewModel.bestStreak, insightsDisplayedStreakDays),
             categories: viewModel.categories,
             recentQuizTrend: viewModel.recentQuizTrend,
             hasMinimumQuizHistory: viewModel.hasMinimumQuizHistory()
@@ -237,6 +237,8 @@ struct GlanceSATProgressScreen: View {
             }
             .onChange(of: sessionRefreshSignature) { _, _ in
                 reconcileInsightsStreakPlantState()
+                insightsCoordinator.applySessionUpdate(to: viewModel, sessions: sessions)
+                categoryBarFractions = viewModel.categories.map { CGFloat(max(0, min(1, $0.accuracy))) }
                 insightsCoordinator.scheduleRefresh(
                     container: modelContext.container,
                     sessions: sessions,
@@ -251,6 +253,10 @@ struct GlanceSATProgressScreen: View {
             }
             .onReceive(NotificationCenter.default.publisher(for: .satExamDateDidChange)) { _ in
                 refreshSATCountdownHeader()
+            }
+            .onReceive(NotificationCenter.default.publisher(for: .insightsSessionsDidUpdate)) { _ in
+                insightsCoordinator.applySessionUpdate(to: viewModel, sessions: sessions)
+                categoryBarFractions = viewModel.categories.map { CGFloat(max(0, min(1, $0.accuracy))) }
             }
             .onReceive(NotificationCenter.default.publisher(for: .insightsWordStatsDidUpdate)) { _ in
                 guard let stats = insightsCoordinator.cachedWordStats else { return }
@@ -677,7 +683,7 @@ struct GlanceSATProgressScreen: View {
 
     private var trajectorySectionSubtitle: String? {
         if displayData.hasMinimumQuizHistory {
-            return "last 10 days"
+            return "Last 10 days"
         }
         return "Your trajectory will appear after 3 quizzes"
     }

@@ -83,7 +83,7 @@ enum WidgetPrefsReader {
     }
 
     static func lockScreenTextAlignment() -> HorizontalAlignment {
-        let raw = defaults?.string(forKey: Keys.lockScreenTextAlignment) ?? "leading"
+        let raw = defaults?.string(forKey: Keys.lockScreenTextAlignment) ?? "center"
         return raw == "center" ? .center : .leading
     }
 }

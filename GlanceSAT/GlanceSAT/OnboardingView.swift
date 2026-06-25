@@ -477,6 +477,7 @@ struct OnboardingView: View {
                 OnboardingHeaderBlock(
                     title: "Consistency always wins",
                     subheader: "Turn your recall quiz into a daily habit",
+                    detailText: "One daily notification when it's time for your daily quiz",
                     metrics: metrics
                 )
 
@@ -700,14 +701,6 @@ struct OnboardingView: View {
                 action: handlePrimaryCTA
             )
 
-            if page == 5 {
-                Text("One daily notification when it's time for your daily quiz")
-                    .font(.system(size: 11, weight: .regular))
-                    .foregroundStyle(OnboardingColors.secondaryText)
-                    .multilineTextAlignment(.center)
-                    .minimumScaleFactor(0.85)
-                    .padding(.horizontal, 4)
-            }
         }
     }
 
@@ -1166,7 +1159,35 @@ private struct OnboardingAccessibilityLineLimit: ViewModifier {
     }
 }
 
+private enum OnboardingCTAStyle {
+    /// Slightly dimmer terracotta in dark mode — avoids orange bloom against charcoal.
+    static func fillColor(_ scheme: ColorScheme, enabled: Bool) -> Color {
+        guard enabled else {
+            return OnboardingColors.hubOrange.opacity(0.38)
+        }
+        return scheme == .dark
+            ? Color(red: 0.65, green: 0.43, blue: 0.31)
+            : OnboardingColors.hubOrange
+    }
+
+    static func shadowColor(_ scheme: ColorScheme, enabled: Bool) -> Color {
+        guard enabled else { return .clear }
+        return scheme == .dark
+            ? Color.black.opacity(0.22)
+            : OnboardingColors.hubOrange.opacity(0.3)
+    }
+
+    static func shadowRadius(_ scheme: ColorScheme) -> CGFloat {
+        scheme == .dark ? 10 : 15
+    }
+
+    static func shadowY(_ scheme: ColorScheme) -> CGFloat {
+        scheme == .dark ? 5 : 8
+    }
+}
+
 private struct OnboardingPrimaryButton: View {
+    @Environment(\.colorScheme) private var colorScheme
     @Environment(\.dynamicTypeSize) private var dynamicTypeSize
 
     let title: String
@@ -1174,6 +1195,10 @@ private struct OnboardingPrimaryButton: View {
     var isLoading: Bool = false
     var loadingTitle: String? = nil
     let action: () -> Void
+
+    private var showsActiveStyle: Bool {
+        isEnabled && !isLoading
+    }
 
     var body: some View {
         Button(action: action) {
@@ -1197,13 +1222,13 @@ private struct OnboardingPrimaryButton: View {
                 .foregroundColor(.white)
                 .frame(maxWidth: .infinity)
                 .frame(height: 56)
-                .background(isEnabled && !isLoading ? OnboardingColors.hubOrange : OnboardingColors.hubOrange.opacity(0.38))
+                .background(OnboardingCTAStyle.fillColor(colorScheme, enabled: showsActiveStyle))
                 .clipShape(Capsule())
                 .shadow(
-                    color: OnboardingColors.hubOrange.opacity(isEnabled && !isLoading ? 0.3 : 0),
-                    radius: 15,
+                    color: OnboardingCTAStyle.shadowColor(colorScheme, enabled: showsActiveStyle),
+                    radius: OnboardingCTAStyle.shadowRadius(colorScheme),
                     x: 0,
-                    y: 8
+                    y: OnboardingCTAStyle.shadowY(colorScheme)
                 )
         }
         .buttonStyle(.plain)
@@ -1275,6 +1300,7 @@ private struct OnboardingViewport<Content: View>: View {
 private struct OnboardingHeaderBlock: View {
     let title: String
     var subheader: String?
+    var detailText: String?
     let metrics: OnboardingLayoutMetrics
     var titleLineLimit: Int = 1
     var titleCompactFontSize: CGFloat?
@@ -1302,6 +1328,10 @@ private struct OnboardingHeaderBlock: View {
 
             if let subheader {
                 OnboardingBodyText(subheader, compactScale: metrics.isCompact)
+            }
+
+            if let detailText {
+                OnboardingBodyText(detailText, compactScale: metrics.isCompact)
             }
         }
         .frame(maxWidth: .infinity, alignment: .center)
@@ -1791,7 +1821,30 @@ private struct WidgetInstallStep: View {
 
 // MARK: - Lock screen carousel (Screen 1)
 
+private enum LockScreenPreviewStyle {
+    /// Slightly dimmer plant green in dark mode — avoids bloom against charcoal onboarding.
+    static func cardFill(_ scheme: ColorScheme) -> Color {
+        scheme == .dark
+            ? Color(red: 0.43, green: 0.58, blue: 0.57)
+            : OnboardingColors.sageGreen
+    }
+
+    static func shadowColor(_ scheme: ColorScheme) -> Color {
+        scheme == .dark ? Color.black.opacity(0.22) : OnboardingColors.sageGreen.opacity(0.28)
+    }
+
+    static func shadowRadius(_ scheme: ColorScheme, compact: Bool) -> CGFloat {
+        scheme == .dark ? (compact ? 8 : 10) : (compact ? 16 : 20)
+    }
+
+    static func shadowY(_ scheme: ColorScheme, compact: Bool) -> CGFloat {
+        scheme == .dark ? (compact ? 4 : 6) : (compact ? 8 : 10)
+    }
+}
+
 private struct LockScreenStaticPreview: View {
+    @Environment(\.colorScheme) private var colorScheme
+
     var isCompact: Bool = false
 
     private var cornerRadius: CGFloat { isCompact ? 34 : 40 }
@@ -1803,8 +1856,12 @@ private struct LockScreenStaticPreview: View {
     var body: some View {
         ZStack {
             RoundedRectangle(cornerRadius: cornerRadius, style: .continuous)
-                .fill(OnboardingColors.sageGreen)
-                .shadow(color: OnboardingColors.sageGreen.opacity(0.28), radius: isCompact ? 16 : 20, y: isCompact ? 8 : 10)
+                .fill(LockScreenPreviewStyle.cardFill(colorScheme))
+                .shadow(
+                    color: LockScreenPreviewStyle.shadowColor(colorScheme),
+                    radius: LockScreenPreviewStyle.shadowRadius(colorScheme, compact: isCompact),
+                    y: LockScreenPreviewStyle.shadowY(colorScheme, compact: isCompact)
+                )
 
             VStack(spacing: isCompact ? 12 : 14) {
                 Image(systemName: "lock.fill")
@@ -1858,6 +1915,7 @@ private struct LockScreenWordCarousel: View {
         WordMoment(id: 16, clock: "18:00", word: "inchoate", definition: "still forming"),
     ]
 
+    @Environment(\.colorScheme) private var colorScheme
     @State private var index = 0
     @State private var transitionProgress: Double?
 
@@ -1870,8 +1928,12 @@ private struct LockScreenWordCarousel: View {
 
         ZStack {
             RoundedRectangle(cornerRadius: 40, style: .continuous)
-                .fill(OnboardingColors.sageGreen)
-                .shadow(color: OnboardingColors.sageGreen.opacity(0.28), radius: 20, y: 10)
+                .fill(LockScreenPreviewStyle.cardFill(colorScheme))
+                .shadow(
+                    color: LockScreenPreviewStyle.shadowColor(colorScheme),
+                    radius: LockScreenPreviewStyle.shadowRadius(colorScheme, compact: false),
+                    y: LockScreenPreviewStyle.shadowY(colorScheme, compact: false)
+                )
 
             VStack(spacing: 14) {
                 Image(systemName: "lock.fill")
@@ -1926,6 +1988,8 @@ private struct LockScreenWordCarousel: View {
 
 /// Dust particles scatter from the outgoing word/clock, then converge into the next moment.
 private struct LockScreenDustTransition: View {
+    @Environment(\.colorScheme) private var colorScheme
+
     let fromClock: String
     let fromWord: String
     let fromDefinition: String
@@ -1944,6 +2008,10 @@ private struct LockScreenDustTransition: View {
         progress <= 0.5 ? 0 : min(1, (progress - 0.5) / 0.5)
     }
 
+    private var transitionBlur: CGFloat {
+        colorScheme == .dark ? 5 : 8
+    }
+
     var body: some View {
         ZStack {
             if progress < 0.48 {
@@ -1952,7 +2020,7 @@ private struct LockScreenDustTransition: View {
                     word: fromWord,
                     definition: fromDefinition
                 )
-                .blur(radius: disintegratePhase * 8)
+                .blur(radius: disintegratePhase * transitionBlur)
                 .opacity(1 - disintegratePhase * 0.95)
                 .scaleEffect(1 + disintegratePhase * 0.05)
             }
@@ -1985,7 +2053,7 @@ private struct LockScreenDustTransition: View {
                     word: toWord,
                     definition: toDefinition
                 )
-                .blur(radius: (1 - integratePhase) * 8)
+                .blur(radius: (1 - integratePhase) * transitionBlur)
                 .opacity(max(0, integratePhase * 1.05 - 0.05))
                 .scaleEffect(0.92 + integratePhase * 0.08)
             }
@@ -2052,10 +2120,11 @@ private struct LockScreenDustTransition: View {
     }
 
     private func particleAlpha(spec: DustParticleSpec) -> Double {
+        let darkDimming = colorScheme == .dark ? 0.72 : 1.0
         if progress <= 0.5 {
-            return spec.twinkle * Self.easeOutCubic(disintegratePhase) * 0.92
+            return spec.twinkle * Self.easeOutCubic(disintegratePhase) * 0.92 * darkDimming
         }
-        return spec.twinkle * (1 - Self.easeInOutCubic(integratePhase)) * 0.88
+        return spec.twinkle * (1 - Self.easeInOutCubic(integratePhase)) * 0.88 * darkDimming
     }
 
     private static func easeOutCubic(_ value: Double) -> Double {
@@ -2076,31 +2145,38 @@ private struct DustParticleSpec {
 }
 
 private struct LockScreenCarouselSlide: View {
+    @Environment(\.colorScheme) private var colorScheme
+
     let clock: String
     let word: String
     let definition: String
+
+    private var isDark: Bool { colorScheme == .dark }
 
     var body: some View {
         VStack(spacing: 14) {
             Text(clock)
                 .font(.system(size: 34, weight: .semibold, design: .rounded))
-                .foregroundStyle(Color.white.opacity(0.95))
+                .foregroundStyle(Color.white.opacity(isDark ? 0.88 : 0.95))
                 .monospacedDigit()
 
             VStack(alignment: .center, spacing: 5) {
                 Text(word)
                     .font(.system(size: 18, weight: .semibold))
-                    .foregroundStyle(.white)
+                    .foregroundStyle(Color.white.opacity(isDark ? 0.92 : 1))
                 Text(definition)
                     .font(.system(size: 12, weight: .regular))
-                    .foregroundStyle(Color.white.opacity(0.88))
+                    .foregroundStyle(Color.white.opacity(isDark ? 0.78 : 0.88))
                     .lineLimit(2)
                     .minimumScaleFactor(0.75)
                     .multilineTextAlignment(.center)
             }
             .frame(maxWidth: .infinity, alignment: .center)
             .padding(12)
-            .background(Color.white.opacity(0.18), in: RoundedRectangle(cornerRadius: 14, style: .continuous))
+            .background(
+                Color.white.opacity(isDark ? 0.14 : 0.18),
+                in: RoundedRectangle(cornerRadius: 14, style: .continuous)
+            )
         }
     }
 }
@@ -2479,7 +2555,7 @@ enum DiagnosticBaseline: String {
         case .solidFoundation:
             return "Strive to eliminate the last few gaps\nso nothing surprises you on test day"
         case .alreadyAhead:
-            return "Strive to maintain momentum even\nstrong scorers lose words without repetition"
+            return "Strive to maintain momentum\nEven strong scorers lose words\nwithout repetition"
         }
     }
 

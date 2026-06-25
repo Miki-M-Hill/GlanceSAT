@@ -12,9 +12,8 @@ import UIKit
 typealias SATWord = Word
 
 private enum PostQuizResumeQuizButton {
-    /// Faded pastel charcoal; label uses `HubPalette.espresso` like the quiz title.
-    static let fill = Color(red: 0.48, green: 0.49, blue: 0.54).opacity(0.38)
-    static let stroke = Color.white.opacity(0.42)
+    static let fill = DailyQuizChrome.postQuizSecondaryFill
+    static let stroke = DailyQuizChrome.postQuizSecondaryStroke
 }
 
 private enum QuizCoverPhase {
@@ -96,6 +95,8 @@ struct DailyHubView: View {
     @State private var usedQuestionSlots: Set<String> = []
     /// Today's calendar-day vocabulary batch (same ten for carousel, quiz, and widgets).
     @State private var dailyWords: [Word] = []
+    /// Prevents duplicate cold-launch hydration from `.task` and `.onAppear`.
+    @State private var didHydrateTodayWords = false
     @State private var frozenStreakDays: Int?
     @State private var frozenEvolutionTier: Int?
     @State private var frozenPlantShowsWilted: Bool?
@@ -165,6 +166,12 @@ struct DailyHubView: View {
             keys.insert(DailyWordBatchService.calendarDayKey())
         }
         return keys
+    }
+
+    private func freshlyFetchedQuizSessions() -> [QuizSession] {
+        var descriptor = FetchDescriptor<QuizSession>()
+        descriptor.sortBy = [SortDescriptor(\.startedAt, order: .reverse)]
+        return (try? modelContext.fetch(descriptor)) ?? quizSessions
     }
 
     private var displayedStreakDays: Int {
@@ -273,10 +280,6 @@ struct DailyHubView: View {
                 applyBootstrapTodayWords()
             }
             .onAppear {
-                Task {
-                    await hydrateTodayWordsIfNeeded()
-                    prefetchPrimaryQuizIfNeeded()
-                }
                 #if DEBUG
                 if debugForcePreQuizToday {
                     applyDebugPreQuizInMemoryState()
@@ -292,10 +295,14 @@ struct DailyHubView: View {
             .onChange(of: scenePhase) { _, phase in
                 guard phase == .active else { return }
                 Task {
-                    if AppLaunchState.shouldSkipForegroundRefreshAfterColdBootstrap() {
-                        applyBootstrapTodayWords()
+                    if shouldUseBootstrapTodayHandoff {
+                        if !didHydrateTodayWords {
+                            applyBootstrapTodayWords()
+                            didHydrateTodayWords = true
+                        }
                     } else {
                         await syncDailyWords()
+                        didHydrateTodayWords = true
                     }
                     prefetchPrimaryQuizIfNeeded()
                 }
@@ -306,6 +313,7 @@ struct DailyHubView: View {
             }
             .onChange(of: entitlementManager.hasPremiumAccess) { _, _ in
                 Task {
+                    guard !shouldUseBootstrapTodayHandoff else { return }
                     await syncDailyWords()
                     await ensurePremiumDailyWordCapacityIfNeeded()
                 }
@@ -697,10 +705,9 @@ struct DailyHubView: View {
             }
             triggerSupplementalPreloadIfNeeded()
             pendingStreakUpgradeReveal = true
-            insightsCoordinator.scheduleRefresh(
+            insightsCoordinator.refreshAfterQuiz(
                 container: modelContext.container,
-                sessions: quizSessions,
-                force: true
+                sessions: freshlyFetchedQuizSessions()
             )
             Task {
                 if let milestone = await MilestoneManager.evaluateAfterQuiz(container: modelContext.container) {
@@ -1476,46 +1483,43 @@ struct DailyHubView: View {
         frozenPostQuizOutcomesByWordID = map
     }
 
+    /// True during cold bootstrap — Today must read persisted IDs, not run a full `refresh`.
+    private var shouldUseBootstrapTodayHandoff: Bool {
+        AppLaunchState.hasPerformedInitialFetch
+            || AppLaunchState.shouldSkipForegroundRefreshAfterColdBootstrap()
+    }
+
     /// Cold boot: wait for bootstrap, then consume its persisted batch (no duplicate `refresh`).
     private func hydrateTodayWordsIfNeeded() async {
+        guard !didHydrateTodayWords else { return }
+
         if !AppLaunchState.isDataLoaded {
-            await waitForBootstrapDataLoaded()
+            await AppLaunchState.waitForDataLoadedIfNeeded()
         }
-        if AppLaunchState.hasPerformedInitialFetch {
-            applyBootstrapTodayWords()
-            await ensurePremiumDailyWordCapacityIfNeeded()
-            return
-        }
-        await syncDailyWords()
+
+        applyBootstrapTodayWords()
+        didHydrateTodayWords = true
+        await ensurePremiumDailyWordCapacityIfNeeded()
     }
 
     /// RevenueCat can resolve after bootstrap capped today's batch at 3; re-sync so premium shows 10.
     private func ensurePremiumDailyWordCapacityIfNeeded() async {
         guard entitlementManager.hasPremiumAccess else { return }
         guard dailyWords.count < FreemiumLimits.effectiveDailyWordCount else { return }
+        guard !shouldUseBootstrapTodayHandoff else { return }
         await syncDailyWords()
     }
 
-    private func waitForBootstrapDataLoaded() async {
-        if AppLaunchState.isDataLoaded { return }
-        await withCheckedContinuation { (continuation: CheckedContinuation<Void, Never>) in
-            var token: NSObjectProtocol?
-            token = NotificationCenter.default.addObserver(
-                forName: AppLaunchState.dataLoadedNotification,
-                object: nil,
-                queue: .main
-            ) { _ in
-                if let token { NotificationCenter.default.removeObserver(token) }
-                continuation.resume()
-            }
-            if AppLaunchState.isDataLoaded {
-                if let token { NotificationCenter.default.removeObserver(token) }
-                continuation.resume()
-            }
-        }
-    }
-
     private func applyBootstrapTodayWords() {
+        let persistedIDs = DailyWordBatchService.loadPersistedTodayWordIDs()
+        guard !persistedIDs.isEmpty else {
+            dailyWords = []
+            refreshPersistedQuizFlags()
+            refreshPersistedWeeklyRecallFlags()
+            restoreTodayQuizCompletionFromWidgetState()
+            return
+        }
+
         dailyWords = DailyWordBatchService.loadPersistedTodayWords(modelContext: modelContext)
         refreshPersistedQuizFlags()
         refreshPersistedWeeklyRecallFlags()
@@ -1524,7 +1528,15 @@ struct DailyHubView: View {
     }
 
     private func syncDailyWords() async {
-        dailyWords = await DailyWordBatchService.refresh(modelContext: modelContext)
+        guard !shouldUseBootstrapTodayHandoff else {
+            applyBootstrapTodayWords()
+            return
+        }
+
+        dailyWords = await DailyWordBatchService.refresh(
+            modelContext: modelContext,
+            deferWidgetSnapshot: true
+        )
         refreshPersistedQuizFlags()
         refreshPersistedWeeklyRecallFlags()
         restoreTodayQuizCompletionFromWidgetState()
@@ -1839,6 +1851,7 @@ struct DailyHubView: View {
                 isDailyQuizContentLoading = false
                 freezeStreakPresentation()
                 pendingPresentQuizAsSupplemental = saved.isSupplementalRound
+                quizCoverPhase = .daily
                 showDailyQuiz = true
                 scheduleSupplementalPreload()
                 return

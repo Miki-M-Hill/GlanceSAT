@@ -45,15 +45,16 @@ actor InsightsStatsActor {
 
     func computeWordStats(container: ModelContainer, now: Date = Date()) async throws -> InsightsWordStats {
         let backgroundContext = ModelContext(container)
+        let widgetGlancedIDs = WidgetGlanceTracker.sync(referenceDate: now)
+        let wordsEncountered = widgetGlancedIDs.count
+        let weeklyWordDelta = WidgetGlanceTracker.weeklyNewGlanceCount(referenceDate: now)
 
         let weekAgo = Calendar.current.date(byAdding: .day, value: -7, to: now) ?? now
         let calendar = Calendar.current
         let tomorrowStart = calendar.startOfDay(for: calendar.date(byAdding: .day, value: 1, to: now) ?? now)
         let nextDayStart = calendar.date(byAdding: .day, value: 1, to: tomorrowStart) ?? tomorrowStart
 
-        var wordsEncountered = 0
         var wordsMastered = 0
-        var weeklyWordDelta = 0
         var weeklyMasteredDelta = 0
         var weeklyRemembered = 0
         var tomorrowReviewCount = 0
@@ -73,15 +74,10 @@ actor InsightsStatsActor {
 
             for word in batch {
                 let row = WordStatsRow(word: word)
-                let encountered = row.isEncountered
                 let mastered = row.isMastered
 
-                if encountered { wordsEncountered += 1 }
                 if mastered { wordsMastered += 1 }
 
-                if encountered, (row.lastReviewDate ?? .distantPast) >= weekAgo {
-                    weeklyWordDelta += 1
-                }
                 if mastered, (row.lastReviewDate ?? .distantPast) >= weekAgo {
                     weeklyMasteredDelta += 1
                 }
@@ -134,6 +130,7 @@ actor InsightsStatsActor {
 
 /// Primitive snapshot extracted inside the background context (no `Word` crosses actor boundaries).
 private struct WordStatsRow {
+    let wordID: UUID
     let totalAttempts: Int
     let successfulRecalls: Int
     let consecutiveCorrect: Int
@@ -156,6 +153,7 @@ private struct WordStatsRow {
     }
 
     init(word: Word) {
+        wordID = word.id
         totalAttempts = word.totalAttempts
         successfulRecalls = word.successfulRecalls
         consecutiveCorrect = word.consecutiveCorrect

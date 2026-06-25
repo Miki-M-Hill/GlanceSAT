@@ -17,6 +17,35 @@ enum SentenceBlank {
     static let token = "_________"
     /// Word replacement includes a space on each side of the blank token.
     static let replacement = " \(token) "
+
+    /// SAT-style article before the blank: `a`/`an` → `a/an` so vowel-initial distractors are not obvious.
+    static func normalizeArticleBeforeBlank(_ prompt: String) -> String {
+        guard let blankRange = prompt.range(of: token) else { return prompt }
+
+        let prefix = String(prompt[..<blankRange.lowerBound])
+        let suffix = String(prompt[blankRange.upperBound...])
+
+        let trailingWhitespaceLength = prefix.reversed().prefix(while: \.isWhitespace).count
+        guard trailingWhitespaceLength <= prefix.count else { return prompt }
+        let contentEnd = prefix.index(prefix.endIndex, offsetBy: -trailingWhitespaceLength)
+        let content = String(prefix[..<contentEnd])
+        let trailingWhitespace = String(prefix[contentEnd...])
+
+        guard !content.isEmpty else { return prompt }
+
+        let normalizedPrefix: String
+        if let lastSpace = content.lastIndex(where: \.isWhitespace) {
+            let wordStart = content.index(after: lastSpace)
+            let lastWord = content[wordStart...]
+            guard lastWord.lowercased() == "a" || lastWord.lowercased() == "an" else { return prompt }
+            normalizedPrefix = String(content[..<wordStart]) + "a/an"
+        } else {
+            guard content.lowercased() == "a" || content.lowercased() == "an" else { return prompt }
+            normalizedPrefix = "a/an"
+        }
+
+        return normalizedPrefix + trailingWhitespace + token + suffix
+    }
 }
 
 struct QuizQuestion: Identifiable {
@@ -373,10 +402,52 @@ enum QuizGenerator {
         let correctAnswer: String
     }
 
+    /// Pre-indexed distractor pools for widget snapshot batching.
+    /// Runs one SQL fetch per distinct tier/POS in the batch — same candidate pools as in-app quizzes.
+    struct WidgetDistractorPool {
+        private let byTier: [String: [SATWord]]
+        private let byPartOfSpeech: [String: [SATWord]]
+        private let catalog: [SATWord]
+
+        init(context: ModelContext, for targets: [SATWord]) throws {
+            let tiers = Set(targets.map { resolvedDistractorTier(for: $0) })
+            var tierBuckets: [String: [SATWord]] = [:]
+            tierBuckets.reserveCapacity(tiers.count)
+            for tier in tiers {
+                tierBuckets[tier] = try fetchWordsByDistractorTier(tier, context: context)
+            }
+
+            let partsOfSpeech = Set(
+                targets
+                    .map { $0.partOfSpeech.trimmingCharacters(in: .whitespacesAndNewlines) }
+                    .filter { !$0.isEmpty }
+            )
+            var posBuckets: [String: [SATWord]] = [:]
+            posBuckets.reserveCapacity(partsOfSpeech.count)
+            for pos in partsOfSpeech {
+                posBuckets[pos] = try fetchWordsByPartOfSpeech(pos, context: context)
+            }
+
+            byTier = tierBuckets
+            byPartOfSpeech = posBuckets
+            catalog = try fetchDistractorCatalogPool(context: context)
+        }
+
+        func words(forTier tier: String) -> [SATWord] {
+            byTier[tier] ?? []
+        }
+
+        func words(forPartOfSpeech partOfSpeech: String) -> [SATWord] {
+            byPartOfSpeech[partOfSpeech] ?? []
+        }
+
+        var catalogPool: [SATWord] { catalog }
+    }
+
     static func makeWidgetSentenceQuiz(
         for target: SATWord,
         exampleSentence: String,
-        context: ModelContext
+        distractorPool: WidgetDistractorPool
     ) throws -> WidgetSentenceQuiz? {
         let sentence = exampleSentence.trimmingCharacters(in: .whitespacesAndNewlines)
         guard !sentence.isEmpty,
@@ -392,7 +463,7 @@ enum QuizGenerator {
             for: target,
             needCount: 3,
             correct: correct,
-            context: context,
+            distractorPool: distractorPool,
             usedDistractorIDs: &usedDistractorIDs,
             displayText: { inflect($0.word, as: sentenceBuild.inflection) }
         )
@@ -404,6 +475,19 @@ enum QuizGenerator {
             promptText: sentenceBuild.prompt,
             options: options,
             correctAnswer: correct
+        )
+    }
+
+    static func makeWidgetSentenceQuiz(
+        for target: SATWord,
+        exampleSentence: String,
+        context: ModelContext
+    ) throws -> WidgetSentenceQuiz? {
+        let pool = try WidgetDistractorPool(context: context, for: [target])
+        return try makeWidgetSentenceQuiz(
+            for: target,
+            exampleSentence: exampleSentence,
+            distractorPool: pool
         )
     }
 
@@ -462,6 +546,54 @@ enum QuizGenerator {
         synonymDistractorFiltering: Bool = false,
         displayText: ((SATWord) -> String)? = nil
     ) throws -> RecencyWrongPick {
+        let targetTier = resolvedDistractorTier(for: target)
+        return try pickRecencyWrongOptions(
+            for: target,
+            needCount: needCount,
+            correct: correct,
+            tierPool: try fetchWordsByDistractorTier(targetTier, context: context),
+            posPool: try fetchWordsByPartOfSpeech(target.partOfSpeech, context: context),
+            catalogPool: try fetchDistractorCatalogPool(context: context),
+            usedDistractorIDs: &usedDistractorIDs,
+            synonymDistractorFiltering: synonymDistractorFiltering,
+            displayText: displayText
+        )
+    }
+
+    private static func pickRecencyWrongOptions(
+        for target: SATWord,
+        needCount: Int,
+        correct: String,
+        distractorPool: WidgetDistractorPool,
+        usedDistractorIDs: inout Set<UUID>,
+        synonymDistractorFiltering: Bool = false,
+        displayText: ((SATWord) -> String)? = nil
+    ) throws -> RecencyWrongPick {
+        let targetTier = resolvedDistractorTier(for: target)
+        return try pickRecencyWrongOptions(
+            for: target,
+            needCount: needCount,
+            correct: correct,
+            tierPool: distractorPool.words(forTier: targetTier),
+            posPool: distractorPool.words(forPartOfSpeech: target.partOfSpeech),
+            catalogPool: distractorPool.catalogPool,
+            usedDistractorIDs: &usedDistractorIDs,
+            synonymDistractorFiltering: synonymDistractorFiltering,
+            displayText: displayText
+        )
+    }
+
+    private static func pickRecencyWrongOptions(
+        for target: SATWord,
+        needCount: Int,
+        correct: String,
+        tierPool: [SATWord],
+        posPool: [SATWord],
+        catalogPool: [SATWord],
+        usedDistractorIDs: inout Set<UUID>,
+        synonymDistractorFiltering: Bool = false,
+        displayText: ((SATWord) -> String)? = nil
+    ) -> RecencyWrongPick {
         var displayOptions: [String] = []
         var headwords: [String] = []
         let forbiddenSynonymKeys = synonymDistractorFiltering
@@ -502,9 +634,6 @@ enum QuizGenerator {
             }
         }
 
-        let targetTier = resolvedDistractorTier(for: target)
-
-        let tierPool = try fetchWordsByDistractorTier(targetTier, context: context)
         absorb(
             filterDistractorCandidates(
                 tierPool,
@@ -515,7 +644,6 @@ enum QuizGenerator {
         )
 
         if displayOptions.count < needCount {
-            let posPool = try fetchWordsByPartOfSpeech(target.partOfSpeech, context: context)
             absorb(
                 filterDistractorCandidates(
                     posPool,
@@ -527,7 +655,6 @@ enum QuizGenerator {
         }
 
         if displayOptions.count < needCount {
-            let catalogPool = try fetchDistractorCatalogPool(context: context)
             absorb(
                 filterDistractorCandidates(
                     catalogPool,
@@ -541,7 +668,6 @@ enum QuizGenerator {
         // If we run out of options due to strict uniqueness, reset and refill.
         if displayOptions.count < needCount, !usedDistractorIDs.isEmpty {
             usedDistractorIDs.removeAll()
-            let catalogPool = try fetchDistractorCatalogPool(context: context)
             absorb(
                 filterDistractorCandidates(
                     catalogPool,
@@ -554,7 +680,6 @@ enum QuizGenerator {
 
         if displayOptions.count < needCount {
             var suffix = 0
-            let catalogPool = try fetchDistractorCatalogPool(context: context)
             for word in filterDistractorCandidates(
                 catalogPool,
                 targetID: target.id,
@@ -854,7 +979,7 @@ enum QuizGenerator {
             if let regex = try? Regex(pattern) {
                 let replaced = sentence.replacing(regex, with: SentenceBlank.replacement)
                 if replaced != sentence {
-                    return (replaced, inflection)
+                    return (SentenceBlank.normalizeArticleBeforeBlank(replaced), inflection)
                 }
             }
         }
@@ -916,23 +1041,31 @@ enum QuizGenerator {
         guard !trimmedWord.isEmpty else {
             return sentence
         }
+        let finalized: String
         do {
             let escaped = NSRegularExpression.escapedPattern(for: trimmedWord)
             let pattern = "(?i)\\b\(escaped)\\b"
             let regex = try Regex(pattern)
             let replaced = sentence.replacing(regex, with: SentenceBlank.replacement)
             if replaced != sentence {
-                return replaced
+                finalized = replaced
+            } else if let range = sentence.range(of: trimmedWord, options: [.caseInsensitive, .diacriticInsensitive]) {
+                var copy = sentence
+                copy.replaceSubrange(range, with: SentenceBlank.replacement)
+                finalized = copy
+            } else {
+                finalized = sentence + SentenceBlank.replacement
             }
         } catch {
-            // Fall through to substring fallback.
+            if let range = sentence.range(of: trimmedWord, options: [.caseInsensitive, .diacriticInsensitive]) {
+                var copy = sentence
+                copy.replaceSubrange(range, with: SentenceBlank.replacement)
+                finalized = copy
+            } else {
+                finalized = sentence + SentenceBlank.replacement
+            }
         }
-        if let range = sentence.range(of: trimmedWord, options: [.caseInsensitive, .diacriticInsensitive]) {
-            var copy = sentence
-            copy.replaceSubrange(range, with: SentenceBlank.replacement)
-            return copy
-        }
-        return sentence + SentenceBlank.replacement
+        return SentenceBlank.normalizeArticleBeforeBlank(finalized)
     }
 
     private static func normalizedKey(_ s: String) -> String {

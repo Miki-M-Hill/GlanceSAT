@@ -620,7 +620,7 @@ private struct GlanceSATLockFamiliesView: View {
                 )
                 VStack(alignment: alignment, spacing: metrics.spacing) {
                     Text(entry.word.word)
-                        .font(.system(size: metrics.wordSize, weight: .semibold, design: .default))
+                        .font(.system(size: metrics.wordSize, weight: .bold, design: .default))
                         .foregroundStyle(.primary)
                         .multilineTextAlignment(textAlignment)
                         .lineLimit(1)
@@ -629,7 +629,7 @@ private struct GlanceSATLockFamiliesView: View {
                         .widgetAccentable()
 
                     Text(entry.word.widgetDefinitionWithPartOfSpeech)
-                        .font(.system(size: metrics.bodySize, weight: .bold, design: .default))
+                        .font(.system(size: metrics.bodySize, weight: .medium, design: .default))
                         .foregroundStyle(.primary)
                         .multilineTextAlignment(textAlignment)
                         .lineLimit(nil)

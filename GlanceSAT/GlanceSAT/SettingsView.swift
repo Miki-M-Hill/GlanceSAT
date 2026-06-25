@@ -36,7 +36,7 @@ struct SettingsView: View {
     }
 
     private var lockScreenWidgetAlignmentSubtitle: String {
-        let raw = WidgetAppGroup.defaults?.string(forKey: "widget.lockScreenTextAlignment") ?? "leading"
+        let raw = WidgetAppGroup.defaults?.string(forKey: "widget.lockScreenTextAlignment") ?? "center"
         return raw == "center" ? "Center aligned" : "Left aligned"
     }
 
@@ -197,7 +197,7 @@ struct SettingsView: View {
 
                 Text("Manage subscription")
                     .font(.system(size: 16, weight: .regular, design: .rounded))
-                    .foregroundStyle(HubPalette.espresso)
+                     .foregroundStyle(HubPalette.espresso)
 
                 Spacer(minLength: 8)
 

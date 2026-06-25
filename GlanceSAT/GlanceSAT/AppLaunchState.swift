@@ -24,6 +24,34 @@ enum AppLaunchState {
         NotificationCenter.default.post(name: dataLoadedNotification, object: nil)
     }
 
+    /// Await cold-bootstrap completion exactly once (safe if notification and flag race).
+    @MainActor static func waitForDataLoadedIfNeeded() async {
+        guard !isDataLoaded else { return }
+        await withCheckedContinuation { (continuation: CheckedContinuation<Void, Never>) in
+            var didResume = false
+            let resumeOnce: () -> Void = {
+                guard !didResume else { return }
+                didResume = true
+                continuation.resume()
+            }
+
+            var token: NSObjectProtocol?
+            token = NotificationCenter.default.addObserver(
+                forName: dataLoadedNotification,
+                object: nil,
+                queue: .main
+            ) { _ in
+                if let token { NotificationCenter.default.removeObserver(token) }
+                resumeOnce()
+            }
+
+            if isDataLoaded {
+                if let token { NotificationCenter.default.removeObserver(token) }
+                resumeOnce()
+            }
+        }
+    }
+
     @MainActor static func markInitialFetchPerformed() {
         hasPerformedInitialFetch = true
     }

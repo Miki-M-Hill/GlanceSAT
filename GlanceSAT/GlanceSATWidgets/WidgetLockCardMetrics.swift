@@ -15,8 +15,8 @@ enum WidgetLockCardMetrics {
     }
 
     static func compute(contentSize: CGSize, word: String, subtitle: String) -> Values {
-        let spacing: CGFloat = 3
-        let maxWord: CGFloat = 28
+        let spacing: CGFloat = 2
+        let maxWord: CGFloat = 22
         let minWord: CGFloat = 12
         let minBody: CGFloat = 8
         let maxBodyCap: CGFloat = 36
@@ -24,7 +24,7 @@ enum WidgetLockCardMetrics {
 
         var wordSize = maxWord
         while wordSize > minWord,
-              !fitsSingleLine(text: word, width: width, fontSize: wordSize, weight: .semibold) {
+              !fitsSingleLine(text: word, width: width, fontSize: wordSize, weight: .bold) {
             wordSize -= 0.5
         }
         wordSize = max(minWord, wordSize * 0.85)
@@ -33,7 +33,7 @@ enum WidgetLockCardMetrics {
             text: word,
             width: width,
             fontSize: wordSize,
-            weight: .semibold,
+            weight: .bold,
             maxLines: 1
         )
         let bodyBudget = max(10, contentSize.height - spacing - wordBlock)
@@ -50,7 +50,7 @@ enum WidgetLockCardMetrics {
         return Values(wordSize: wordSize, bodySize: bodySize, spacing: spacing)
     }
 
-    /// Largest bold body size that still fits the full definition in the remaining height.
+    /// Largest medium-weight body size that still fits the full definition in the remaining height.
     private static func largestBodySize(
         text: String,
         width: CGFloat,
@@ -66,7 +66,7 @@ enum WidgetLockCardMetrics {
 
         while low <= high {
             let mid = (low + high) / 2
-            let height = textHeight(text: text, width: width, fontSize: mid, weight: .bold)
+            let height = textHeight(text: text, width: width, fontSize: mid, weight: .medium)
             if height <= budget - 1 {
                 best = mid
                 low = mid + 0.25

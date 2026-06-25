@@ -53,6 +53,11 @@ final class ProgressViewModel: ObservableObject {
     let minQuizzesForInsights = 3
 
     func refresh(wordStats: InsightsWordStats, sessions: [QuizSession], now: Date = Date()) {
+        applyWordStats(wordStats, now: now)
+        refreshSessions(sessions, now: now)
+    }
+
+    func applyWordStats(_ wordStats: InsightsWordStats, now: Date = Date()) {
         wordsEncountered = wordStats.wordsEncountered
         wordsMastered = wordStats.wordsMastered
         weeklyWordDelta = wordStats.weeklyWordDelta
@@ -63,7 +68,9 @@ final class ProgressViewModel: ObservableObject {
         let normalizedStats = wordStats.normalizingLegacyCategoryLabels()
         categories = normalizedStats.categories
         categoryAttemptsByName = normalizedStats.categoryAttemptsByName
+    }
 
+    func refreshSessions(_ sessions: [QuizSession], now: Date = Date()) {
         quizCount = sessions.count
         quizAccuracy = quizAccuracyPercent(from: sessions)
         monthlyQuizAccuracyDelta = computeMonthlyQuizAccuracyDelta(from: sessions, now: now)

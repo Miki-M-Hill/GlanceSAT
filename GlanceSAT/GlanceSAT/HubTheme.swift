@@ -522,6 +522,9 @@ struct WordConnotationRow: View {
 
     private var capsuleForeground: Color {
         if colorScheme == .dark {
+            if presentation.polarity == .mixed {
+                return .white
+            }
             return Color.Theme.backgroundPrimary
         }
         switch presentation.polarity {
@@ -565,6 +568,11 @@ enum DailyQuizChrome {
     static let lightCapsuleStroke = Color.white.opacity(0.62)
     /// Matches the prominent “Next Question” / “Finish” control on the daily quiz (light mode).
     static let nextButtonTint = Color(red: 0.22, green: 0.22, blue: 0.24)
+    /// Post-quiz secondary CTAs (“Take another quiz”, “Resume quiz”) — also dark-mode Next / Finish fill.
+    static let postQuizSecondaryFill = Color(red: 0.48, green: 0.49, blue: 0.54).opacity(0.38)
+    static let postQuizSecondaryStroke = Color.white.opacity(0.42)
+    /// Charcoal label on light quiz capsules in dark mode (fixed ink, not appearance-flipped linen).
+    private static let quizDarkModeCapsuleLabel = Color(red: 0.106, green: 0.106, blue: 0.11)
 
     static func capsuleFill(for colorScheme: ColorScheme) -> Color {
         colorScheme == .dark ? HubPalette.oatmeal : lightCapsuleFill
@@ -574,33 +582,49 @@ enum DailyQuizChrome {
         colorScheme == .dark ? Color.white.opacity(0.14) : lightCapsuleStroke
     }
 
-    /// Idle answer bubble fill — matches softened question word color in dark mode.
+    /// Idle answer bubble fill — same hue as the question prompt in dark mode.
     static func answerCapsuleFill(for colorScheme: ColorScheme) -> Color {
-        colorScheme == .dark ? HubPalette.softHighlight.opacity(0.88) : lightCapsuleFill
+        colorScheme == .dark ? HubPalette.softHighlight : lightCapsuleFill
     }
 
     static func answerCapsuleStroke(for colorScheme: ColorScheme) -> Color {
-        colorScheme == .dark ? HubPalette.softHighlight.opacity(0.22) : lightCapsuleStroke
+        colorScheme == .dark ? HubPalette.softHighlight.opacity(0.35) : lightCapsuleStroke
     }
 
-    /// Question word + next-button label in dark mode.
+    /// Question word color in dark mode (`softHighlight`).
     static func questionHighlightColor(for colorScheme: ColorScheme) -> Color {
         colorScheme == .dark ? HubPalette.softHighlight : Color.primary
     }
 
-    /// Idle answer label — charcoal text on linen-like bubbles in dark mode.
+    /// Charcoal on light quiz capsules in dark mode.
     static func answerLabelColor(for colorScheme: ColorScheme) -> Color {
-        colorScheme == .dark ? Color.Theme.backgroundPrimary : Color.primary
+        colorScheme == .dark ? quizDarkModeCapsuleLabel : Color.primary
     }
 
+    /// Next / Finish — matches post-quiz “Take another quiz” in dark mode (no outline).
     static func nextButtonFill(for colorScheme: ColorScheme) -> Color {
-        colorScheme == .dark ? HubPalette.oatmealDeep : nextButtonTint
+        colorScheme == .dark ? postQuizSecondaryFill : nextButtonTint
     }
 
     static func nextButtonLabelColor(for colorScheme: ColorScheme) -> Color {
-        questionHighlightColor(for: colorScheme)
+        colorScheme == .dark ? .white : HubPalette.linen
     }
 
+    static func nextButtonStroke(for colorScheme: ColorScheme) -> Color {
+        colorScheme == .dark ? .clear : Color.white.opacity(0.22)
+    }
+
+    static func nextButtonShowsStroke(for colorScheme: ColorScheme) -> Bool {
+        colorScheme != .dark
+    }
+
+}
+
+/// Suppresses the default `Button` press dimming that reads as a flash on dark quiz capsules.
+struct QuizAnswerButtonStyle: ButtonStyle {
+    func makeBody(configuration: Configuration) -> some View {
+        configuration.label
+    }
 }
 
 // MARK: - Toolbar icon chrome

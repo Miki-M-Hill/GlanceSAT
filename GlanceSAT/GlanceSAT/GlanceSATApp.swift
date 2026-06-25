@@ -56,8 +56,10 @@ private struct AppLaunchGate: View {
         }
         .task {
             let container = modelContext.container
-            AppBootstrap.scheduleBackgroundImport(container: container)
-            await AppBootstrap.initializeAppData(container: container)
+            await Task.detached(priority: .userInitiated) {
+                AppBootstrap.scheduleBackgroundImport(container: container)
+                await AppBootstrap.initializeAppData(container: container)
+            }.value
             AppLaunchState.markDataLoaded()
             scheduleSplashDismiss()
         }
@@ -141,6 +143,10 @@ private struct AppRootView: View {
             switch phase {
             case .active:
                 AnalyticsManager.checkForWidgetInstalls()
+                insightsCoordinator.reconcilePendingWordStatsRefresh(
+                    container: modelContext.container,
+                    sessions: fetchQuizSessions()
+                )
                 Task(priority: .userInitiated) {
                     if AppLaunchState.shouldSkipForegroundRefreshAfterColdBootstrap() {
                         await NotificationManager.scheduleStandardDailyReminders()
@@ -298,6 +304,13 @@ private struct AppRootView: View {
     @MainActor
     private func bootstrapAppServices(container: ModelContainer) async {
         insightsCoordinator.loadCachedIfNeeded()
+        let sessions = fetchQuizSessions()
+        if InsightsStatsCache.isWordStatsRefreshPending {
+            insightsCoordinator.reconcilePendingWordStatsRefresh(
+                container: container,
+                sessions: sessions
+            )
+        }
 
         let dayKey = DailyWordBatchService.calendarDayKey()
         guard !WidgetDailyState.isPrimaryQuizCompleted(for: dayKey) else { return }
@@ -322,11 +335,20 @@ private struct AppRootView: View {
             }
         }
 
-        insightsCoordinator.scheduleRefresh(
-            container: container,
-            sessions: (try? modelContext.fetch(FetchDescriptor<QuizSession>())) ?? [],
-            force: insightsCoordinator.cachedWordStats == nil
-        )
+        if !InsightsStatsCache.isWordStatsRefreshPending {
+            insightsCoordinator.scheduleRefresh(
+                container: container,
+                sessions: sessions,
+                force: insightsCoordinator.cachedWordStats == nil
+            )
+        }
+    }
+
+    @MainActor
+    private func fetchQuizSessions() -> [QuizSession] {
+        var descriptor = FetchDescriptor<QuizSession>()
+        descriptor.sortBy = [SortDescriptor(\.startedAt, order: .reverse)]
+        return (try? modelContext.fetch(descriptor)) ?? []
     }
 
     private var debugPreferredColorScheme: ColorScheme? {
@@ -814,19 +836,40 @@ struct GlanceSATApp: App {
         #endif
     }
 
-    var sharedModelContainer: ModelContainer = {
-        do {
-            return try ModelContainerFactory.makeShared()
-        } catch {
-            fatalError("Could not create ModelContainer: \(error)")
-        }
-    }()
-
     var body: some Scene {
         WindowGroup {
-            AppLaunchGate()
-                .background(HubPalette.linen.ignoresSafeArea())
+            ModelContainerRoot()
         }
-        .modelContainer(sharedModelContainer)
+    }
+}
+
+/// Loads SwiftData off the main thread so `GlanceSATApp` init returns immediately.
+private struct ModelContainerRoot: View {
+    @State private var container: ModelContainer?
+
+    var body: some View {
+        Group {
+            if let container {
+                AppLaunchGate()
+                    .modelContainer(container)
+            } else {
+                SplashView()
+                    .background(HubPalette.linen.ignoresSafeArea())
+            }
+        }
+        .task {
+            guard container == nil else { return }
+            container = await Self.loadContainer()
+        }
+    }
+
+    private static func loadContainer() async -> ModelContainer {
+        await Task.detached(priority: .userInitiated) {
+            do {
+                return try ModelContainerFactory.makeShared()
+            } catch {
+                fatalError("Could not create ModelContainer: \(error)")
+            }
+        }.value
     }
 }

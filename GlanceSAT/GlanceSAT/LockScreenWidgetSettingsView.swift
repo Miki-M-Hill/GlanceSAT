@@ -10,7 +10,7 @@ struct LockScreenWidgetSettingsView: View {
     @Environment(\.dismiss) private var dismiss
     @Environment(\.colorScheme) private var colorScheme
 
-    @State private var alignmentRaw: String = "leading"
+    @State private var alignmentRaw: String = "center"
 
     private static let alignmentKey = "widget.lockScreenTextAlignment"
 
@@ -56,7 +56,7 @@ struct LockScreenWidgetSettingsView: View {
             }
         }
         .onAppear {
-            alignmentRaw = WidgetAppGroup.defaults?.string(forKey: Self.alignmentKey) ?? "leading"
+            alignmentRaw = WidgetAppGroup.defaults?.string(forKey: Self.alignmentKey) ?? "center"
         }
     }
 

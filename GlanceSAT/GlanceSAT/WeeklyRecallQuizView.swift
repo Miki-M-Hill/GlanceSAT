@@ -243,36 +243,33 @@ struct WeeklyRecallQuizView: View {
                 .padding(.horizontal, Self.answerCapsuleHorizontalPadding)
                 .background { capsuleBackground(isCorrect: isCorrect, isSelected: isSelected) }
         }
-        .buttonStyle(.plain)
+        .buttonStyle(QuizAnswerButtonStyle())
         .allowsHitTesting(!isAnswerRevealed)
-        .animation(.easeOut(duration: 0.2), value: isAnswerRevealed)
+    }
+
+    private func capsuleFill(isCorrect: Bool, isSelected: Bool) -> Color {
+        if isAnswerRevealed {
+            if isCorrect { return correctAnswerGreen }
+            if isSelected { return incorrectAnswerRed }
+        }
+        return answerCapsuleIdleFill
+    }
+
+    private func capsuleStroke(isCorrect: Bool, isSelected: Bool) -> Color {
+        if isAnswerRevealed, isCorrect || isSelected {
+            return Color.white.opacity(0.35)
+        }
+        return answerCapsuleIdleStroke
     }
 
     @ViewBuilder
     private func capsuleBackground(isCorrect: Bool, isSelected: Bool) -> some View {
-        if isAnswerRevealed {
-            if isCorrect {
+        Capsule(style: .continuous)
+            .fill(capsuleFill(isCorrect: isCorrect, isSelected: isSelected))
+            .overlay(
                 Capsule(style: .continuous)
-                    .fill(correctAnswerGreen)
-            } else if isSelected {
-                Capsule(style: .continuous)
-                    .fill(incorrectAnswerRed)
-            } else {
-                Capsule(style: .continuous)
-                    .fill(answerCapsuleIdleFill)
-                    .overlay(
-                        Capsule(style: .continuous)
-                            .strokeBorder(answerCapsuleIdleStroke, lineWidth: 1)
-                    )
-            }
-        } else {
-            Capsule(style: .continuous)
-                .fill(answerCapsuleIdleFill)
-                .overlay(
-                    Capsule(style: .continuous)
-                        .strokeBorder(answerCapsuleIdleStroke, lineWidth: 1)
-                )
-        }
+                    .strokeBorder(capsuleStroke(isCorrect: isCorrect, isSelected: isSelected), lineWidth: 1)
+            )
     }
 
     @ViewBuilder
@@ -288,22 +285,19 @@ struct WeeklyRecallQuizView: View {
                     Text(isFinalQuestion ? "Finish" : "Next Question")
                         .font(.body.weight(.semibold))
                         .multilineTextAlignment(.center)
-                        .foregroundStyle(HubPalette.linen)
+                        .foregroundStyle(quizFooterButtonLabelColor)
                         .frame(maxWidth: .infinity)
                         .padding(.vertical, Self.answerCapsuleVerticalPadding)
                         .padding(.horizontal, Self.answerCapsuleHorizontalPadding)
                         .background {
                             Capsule(style: .continuous)
                                 .fill(quizFooterButtonTint)
-                                .overlay(
-                                    Capsule(style: .continuous)
-                                        .strokeBorder(
-                                            colorScheme == .dark
-                                                ? Color.white.opacity(0.14)
-                                                : Color.white.opacity(0.22),
-                                            lineWidth: 1
-                                        )
-                                )
+                                .overlay {
+                                    if quizFooterButtonShowsStroke {
+                                        Capsule(style: .continuous)
+                                            .strokeBorder(quizFooterButtonStroke, lineWidth: 1)
+                                    }
+                                }
                         }
                 }
                 .buttonStyle(.plain)
@@ -340,6 +334,18 @@ struct WeeklyRecallQuizView: View {
         DailyQuizChrome.nextButtonFill(for: colorScheme)
     }
 
+    private var quizFooterButtonLabelColor: Color {
+        DailyQuizChrome.nextButtonLabelColor(for: colorScheme)
+    }
+
+    private var quizFooterButtonStroke: Color {
+        DailyQuizChrome.nextButtonStroke(for: colorScheme)
+    }
+
+    private var quizFooterButtonShowsStroke: Bool {
+        DailyQuizChrome.nextButtonShowsStroke(for: colorScheme)
+    }
+
     private func questionTypeTitle(for type: QuestionType) -> String {
         switch type {
         case .synonym:
@@ -356,8 +362,11 @@ struct WeeklyRecallQuizView: View {
 
         let correct = normalized(option) == normalized(question.correctAnswer)
         GlanceHaptics.light()
-        selectedAnswer = option
-        isAnswerRevealed = true
+        var revealTransaction = Transaction(animation: nil)
+        withTransaction(revealTransaction) {
+            selectedAnswer = option
+            isAnswerRevealed = true
+        }
 
         let responseSeconds = Date().timeIntervalSince(questionShownAt)
         if correct {
