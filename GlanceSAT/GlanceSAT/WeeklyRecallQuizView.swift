@@ -16,6 +16,7 @@ struct WeeklyRecallPresentation {
 struct WeeklyRecallQuizView: View {
     @Environment(\.modelContext) private var modelContext
     @Environment(\.colorScheme) private var colorScheme
+    @Environment(\.scenePhase) private var scenePhase
 
     let questions: [QuizQuestion]
     let preQuizConsecutiveCorrect: [UUID: Int]
@@ -24,6 +25,7 @@ struct WeeklyRecallQuizView: View {
     let onFinished: () -> Void
     let onExit: () -> Void
     var onShowingRecapChanged: ((Bool) -> Void)? = nil
+    var onRegisterExitAction: (((() -> Void)?) -> Void)? = nil
 
     @State private var currentQuestionIndex = 0
     @State private var selectedAnswer: String?
@@ -71,7 +73,8 @@ struct WeeklyRecallQuizView: View {
         .background(HubPalette.linen)
         .onDisappear {
             pendingAdvanceWorkItem?.cancel()
-            persistInProgressIfNeeded()
+            persistInProgressIfNeeded(flushToDisk: true)
+            onRegisterExitAction?(nil)
         }
         .onAppear {
             shouldAnimateBetweenQuestions = false
@@ -85,6 +88,12 @@ struct WeeklyRecallQuizView: View {
                 AnalyticsManager.trackWeeklyRecallStarted(questionCount: questions.count)
             }
             resetQuestionTimer()
+            persistInitialSessionIfNeeded()
+            onRegisterExitAction?(handleExitRequest)
+        }
+        .onChange(of: scenePhase) { _, phase in
+            guard phase == .background else { return }
+            persistInProgressIfNeeded(flushToDisk: true)
         }
         .onChange(of: activeQuestionID, initial: true) { _, _ in
             resetQuestionTimer()
@@ -369,21 +378,26 @@ struct WeeklyRecallQuizView: View {
         }
 
         let responseSeconds = Date().timeIntervalSince(questionShownAt)
-        if correct {
-            UINotificationFeedbackGenerator().notificationOccurred(.success)
-            correctCount += 1
-            rememberedWordIDs.insert(question.targetWord.id)
-            applyWeeklyCorrect(for: question, responseSeconds: responseSeconds)
-        } else {
-            UINotificationFeedbackGenerator().notificationOccurred(.error)
-            missedWordIDs.insert(question.targetWord.id)
-            applyWeeklyIncorrect(for: question)
-        }
 
-        if correct {
-            let work = DispatchWorkItem { advanceToNextQuestion() }
-            pendingAdvanceWorkItem = work
-            DispatchQueue.main.asyncAfter(deadline: .now() + 1.2, execute: work)
+        DispatchQueue.main.async {
+            if correct {
+                GlanceHaptics.success()
+                correctCount += 1
+                rememberedWordIDs.insert(question.targetWord.id)
+                applyWeeklyCorrect(for: question, responseSeconds: responseSeconds)
+            } else {
+                GlanceHaptics.error()
+                missedWordIDs.insert(question.targetWord.id)
+                applyWeeklyIncorrect(for: question)
+            }
+
+            persistInProgressIfNeeded()
+
+            if correct {
+                let work = DispatchWorkItem { advanceToNextQuestion() }
+                pendingAdvanceWorkItem = work
+                DispatchQueue.main.asyncAfter(deadline: .now() + 1.2, execute: work)
+            }
         }
     }
 
@@ -441,6 +455,9 @@ struct WeeklyRecallQuizView: View {
             isAnswerRevealed = false
         }
         resetQuestionTimer()
+        DispatchQueue.main.async {
+            persistInProgressIfNeeded()
+        }
     }
 
     private func finishAndExit() {
@@ -450,7 +467,7 @@ struct WeeklyRecallQuizView: View {
 
     func handleExitRequest() {
         pendingAdvanceWorkItem?.cancel()
-        persistInProgressIfNeeded()
+        persistInProgressIfNeeded(flushToDisk: true)
         onExit()
     }
 
@@ -482,7 +499,12 @@ struct WeeklyRecallQuizView: View {
         }
     }
 
-    private func persistInProgressIfNeeded() {
+    private func persistInitialSessionIfNeeded() {
+        guard !didApplyResume, WeeklyRecallQuizPersistence.load() == nil else { return }
+        persistInProgressIfNeeded()
+    }
+
+    private func persistInProgressIfNeeded(flushToDisk: Bool = false) {
         guard !quizComplete, !questions.isEmpty else { return }
         let snapshot = PersistedWeeklyRecall(
             questions: questions.map { PersistedQuizQuestion(from: $0) },
@@ -498,6 +520,6 @@ struct WeeklyRecallQuizView: View {
             preQuizSuccessfulRecalls: preQuizSuccessfulRecalls,
             isDebugPreview: isDebugPreview
         )
-        WeeklyRecallQuizPersistence.save(snapshot)
+        WeeklyRecallQuizPersistence.save(snapshot, flushToDisk: flushToDisk)
     }
 }

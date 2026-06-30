@@ -43,10 +43,6 @@ struct DailyQuizMasteryCelebrationView: View {
                 .ignoresSafeArea()
 
             VStack(spacing: 0) {
-                topBar
-                    .padding(.horizontal, 20)
-                    .padding(.top, 8)
-
                 headerBlock
                     .padding(.horizontal, 22)
                     .padding(.top, 12)
@@ -84,24 +80,6 @@ struct DailyQuizMasteryCelebrationView: View {
                 Spacer(minLength: 0)
             }
             .frame(maxWidth: .infinity, maxHeight: .infinity)
-        }
-    }
-
-    private var topBar: some View {
-        HStack {
-            Button(action: onContinue) {
-                Image(systemName: "xmark")
-                    .font(.system(size: 14, weight: .semibold))
-                    .foregroundStyle(HubPalette.espresso)
-                    .frame(width: 36, height: 36)
-                    .background {
-                        GlanceAdaptiveGlassCircle(diameter: 36)
-                    }
-            }
-            .buttonStyle(.plain)
-            .accessibilityLabel("Close")
-
-            Spacer()
         }
     }
 

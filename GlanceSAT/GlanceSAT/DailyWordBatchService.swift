@@ -470,11 +470,20 @@ enum DailyWordBatchService {
         return slices
     }
 
-    private static func archiveStaleQueueEntries(queue: inout [String: [UUID]], todayKey: String) {
+    private static func archiveStaleQueueEntries(
+        queue: inout [String: [UUID]],
+        newWordIDsByDay: inout [String: [UUID]],
+        todayKey: String
+    ) {
         for (key, ids) in queue where key < todayKey && !ids.isEmpty {
-            appendToBatchHistory(dayKey: key, wordIDs: ids)
+            appendToBatchHistory(
+                dayKey: key,
+                wordIDs: ids,
+                newWordIDs: newWordIDsByDay[key] ?? []
+            )
         }
         queue = queue.filter { $0.key >= todayKey }
+        newWordIDsByDay = newWordIDsByDay.filter { $0.key >= todayKey }
     }
 
     private static func pruneQueue(_ queue: [String: [UUID]], keeping requiredKeys: [String]) -> [String: [UUID]] {
@@ -839,6 +848,25 @@ enum DailyWordBatchService {
         return copy
     }
 
+    /// Today carousel display slots (1-indexed alphabetical positions): 3, 9, 5, 2, 7, 6, 4, 1, 10, 8.
+    static let carouselAlphabeticalSlotOrder = [3, 9, 5, 2, 7, 6, 4, 1, 10, 8]
+
+    /// Reorders a daily batch for the Today tab carousel (pre- and post-quiz).
+    /// Words are sorted A→Z first; slots outside the batch size are skipped.
+    static func carouselDisplayOrder(_ words: [Word]) -> [Word] {
+        guard words.count > 1 else { return words }
+
+        let alphabetical = words.sorted {
+            $0.word.localizedCaseInsensitiveCompare($1.word) == .orderedAscending
+        }
+
+        return carouselAlphabeticalSlotOrder.compactMap { slot in
+            let index = slot - 1
+            guard index >= 0, index < alphabetical.count else { return nil }
+            return alphabetical[index]
+        }
+    }
+
     /// Randomizes selection order so unseen / Level-0 words are not served alphabetically.
     @MainActor
     static func shuffledDailySelection(_ words: [Word], dayKey: String) -> [Word] {
@@ -1003,6 +1031,61 @@ enum DailyWordBatchService {
         return Set(ids)
     }
 
+    /// New-word IDs for a day from the rolling queue or archived batch history.
+    nonisolated static func loadNewWordIDs(forDayKey dayKey: String) -> Set<UUID> {
+        let queued = loadPersistedNewWordIDs(forDayKey: dayKey)
+        if !queued.isEmpty { return queued }
+        return loadHistoricalNewWordIDs(forDayKey: dayKey)
+    }
+
+    /// Word IDs for a day from the rolling queue or archived batch history.
+    nonisolated static func loadWordIDs(forDayKey dayKey: String) -> [UUID] {
+        let queued = loadPersistedWordIDs(forDayKey: dayKey)
+        if !queued.isEmpty { return queued }
+        return loadHistoricalWordIDs(forDayKey: dayKey) ?? []
+    }
+
+    nonisolated static func loadHistoricalDayKeys() -> [String] {
+        guard let history = loadBatchHistory() else { return [] }
+        return history.entries.map(\.calendarDayKey)
+    }
+
+    nonisolated static func loadHistoricalWordIDs(forDayKey dayKey: String) -> [UUID]? {
+        guard let history = loadBatchHistory(),
+              let entry = history.entries.first(where: { $0.calendarDayKey == dayKey }),
+              !entry.wordIDs.isEmpty else {
+            return nil
+        }
+        return entry.wordIDs
+    }
+
+    nonisolated static func loadHistoricalNewWordIDs(forDayKey dayKey: String) -> Set<UUID> {
+        guard let history = loadBatchHistory(),
+              let entry = history.entries.first(where: { $0.calendarDayKey == dayKey }) else {
+            return []
+        }
+        if !entry.newWordIDs.isEmpty {
+            return Set(entry.newWordIDs)
+        }
+        return inferredHistoricalNewWordIDs(forDayKey: dayKey, wordIDs: entry.wordIDs)
+    }
+
+    private static func inferredHistoricalNewWordIDs(forDayKey dayKey: String, wordIDs: [UUID]) -> Set<UUID> {
+        let priorIDs = historicalWordIDs(beforeDayKey: dayKey)
+        let candidates = wordIDs.filter { !priorIDs.contains($0) }
+        let quota = targetNewWordQuota(forCap: wordIDs.count)
+        return Set(candidates.prefix(quota))
+    }
+
+    private static func historicalWordIDs(beforeDayKey dayKey: String) -> Set<UUID> {
+        guard let history = loadBatchHistory() else { return [] }
+        return Set(
+            history.entries
+                .filter { $0.calendarDayKey < dayKey }
+                .flatMap(\.wordIDs)
+        )
+    }
+
     /// Union of every word ever labeled new in a persisted daily batch (Insights glance eligibility).
     nonisolated static func allPersistedNewWordIDs() -> Set<UUID> {
         guard let queue = loadPersistedQueue() else { return [] }
@@ -1058,6 +1141,20 @@ enum DailyWordBatchService {
     private struct PersistedBatchHistoryEntry: Codable, Equatable {
         var calendarDayKey: String
         var wordIDs: [UUID]
+        var newWordIDs: [UUID] = []
+
+        init(calendarDayKey: String, wordIDs: [UUID], newWordIDs: [UUID] = []) {
+            self.calendarDayKey = calendarDayKey
+            self.wordIDs = wordIDs
+            self.newWordIDs = newWordIDs
+        }
+
+        init(from decoder: Decoder) throws {
+            let container = try decoder.container(keyedBy: CodingKeys.self)
+            calendarDayKey = try container.decode(String.self, forKey: .calendarDayKey)
+            wordIDs = try container.decode([UUID].self, forKey: .wordIDs)
+            newWordIDs = try container.decodeIfPresent([UUID].self, forKey: .newWordIDs) ?? []
+        }
     }
 
     private struct PersistedBatchHistory: Codable {
@@ -1128,13 +1225,22 @@ enum DailyWordBatchService {
         return result
     }
 
-    private static func appendToBatchHistory(dayKey: String, wordIDs: [UUID]) {
+    private static func appendToBatchHistory(dayKey: String, wordIDs: [UUID], newWordIDs: [UUID] = []) {
         guard !wordIDs.isEmpty else { return }
         var history = loadBatchHistory() ?? PersistedBatchHistory(entries: [])
         if let index = history.entries.firstIndex(where: { $0.calendarDayKey == dayKey }) {
             history.entries[index].wordIDs = wordIDs
+            if !newWordIDs.isEmpty {
+                history.entries[index].newWordIDs = newWordIDs
+            }
         } else {
-            history.entries.append(PersistedBatchHistoryEntry(calendarDayKey: dayKey, wordIDs: wordIDs))
+            history.entries.append(
+                PersistedBatchHistoryEntry(
+                    calendarDayKey: dayKey,
+                    wordIDs: wordIDs,
+                    newWordIDs: newWordIDs
+                )
+            )
         }
         if history.entries.count > maxBatchHistoryEntries {
             history.entries = Array(history.entries.suffix(maxBatchHistoryEntries))
@@ -1176,8 +1282,12 @@ enum DailyWordBatchService {
         persistQueue(dailyBatches, newWordIDsByDay: newWordIDsByDay, generatedAt: generatedAt)
     }
 
-    static func archiveStaleRollingQueueEntries(queue: inout [String: [UUID]], todayKey: String) {
-        archiveStaleQueueEntries(queue: &queue, todayKey: todayKey)
+    static func archiveStaleRollingQueueEntries(
+        queue: inout [String: [UUID]],
+        newWordIDsByDay: inout [String: [UUID]],
+        todayKey: String
+    ) {
+        archiveStaleQueueEntries(queue: &queue, newWordIDsByDay: &newWordIDsByDay, todayKey: todayKey)
     }
 
     static func pruneRollingQueue(_ queue: [String: [UUID]], keeping requiredKeys: [String]) -> [String: [UUID]] {

@@ -27,7 +27,7 @@ struct GlanceSATWidgetRootView: View {
                 GlanceSATWidgetRestView(entry: entry, family: family, deepLinkURL: deepLinkURL)
             } else {
                 switch family {
-                case .accessoryInline, .accessoryRectangular, .accessoryCircular:
+                case .accessoryRectangular:
                     GlanceSATLockFamiliesView(entry: entry, family: family, deepLinkURL: deepLinkURL)
                 default:
                     GlanceSATHomeFamiliesView(entry: entry, family: family, deepLinkURL: deepLinkURL)
@@ -55,21 +55,6 @@ struct GlanceSATWidgetLockedView: View {
     @ViewBuilder
     private var lockedContent: some View {
         switch family {
-        case .accessoryInline:
-            Label("Daily limit reached", systemImage: "lock.fill")
-                .font(.system(.footnote, design: .default, weight: .medium))
-                .lineLimit(nil)
-                .minimumScaleFactor(0.4)
-                .widgetAccentable()
-
-        case .accessoryCircular:
-            ZStack {
-                AccessoryWidgetBackground()
-                Image(systemName: "lock.fill")
-                    .font(.system(size: 20, weight: .semibold))
-                    .widgetAccentable()
-            }
-
         case .accessoryRectangular:
             HStack(alignment: .center, spacing: 8) {
                 Image(systemName: "lock.fill")
@@ -128,17 +113,13 @@ struct GlanceSATWidgetStaleView: View {
     @ViewBuilder
     private var staleContent: some View {
         switch family {
-        case .accessoryInline:
-            Text("Open GlanceSAT")
-        case .accessoryRectangular, .accessoryCircular:
+        case .accessoryRectangular:
             VStack(spacing: 2) {
                 Image(systemName: "arrow.clockwise")
-                    .font(.system(size: family == .accessoryCircular ? 18 : 16, weight: .semibold))
-                if family == .accessoryRectangular {
-                    Text("Updating…")
-                        .font(.system(size: 12, weight: .medium))
-                        .lineLimit(1)
-                }
+                    .font(.system(size: 16, weight: .semibold))
+                Text("Updating…")
+                    .font(.system(size: 12, weight: .medium))
+                    .lineLimit(1)
             }
             .frame(maxWidth: .infinity, maxHeight: .infinity)
         default:
@@ -180,7 +161,7 @@ struct GlanceSATWidgetRestView: View {
                 .widgetURL(deepLinkURL)
             Group {
                 switch family {
-                case .accessoryInline, .accessoryRectangular, .accessoryCircular:
+                case .accessoryRectangular:
                     lockRestBody
                 default:
                     homeRestBody
@@ -191,44 +172,23 @@ struct GlanceSATWidgetRestView: View {
 
     @ViewBuilder
     private var lockRestBody: some View {
-        switch family {
-        case .accessoryCircular:
-            ZStack {
-                AccessoryWidgetBackground()
-                Image(systemName: "leaf.fill")
-                    .font(.system(size: 20, weight: .semibold, design: .default))
-                    .widgetAccentable()
-            }
-
-        case .accessoryRectangular:
-            HStack(alignment: .center, spacing: 8) {
-                Image(systemName: "leaf.fill")
-                    .font(.system(size: 22, weight: .semibold, design: .default))
-                    .widgetAccentable()
-
-                VStack(alignment: .leading, spacing: 1) {
-                    Text("Rest.")
-                        .font(.system(size: 15, weight: .semibold, design: .default))
-                        .lineLimit(1)
-                    Text("See you tomorrow.")
-                        .font(.system(size: 12, weight: .regular, design: .default))
-                        .foregroundStyle(.secondary)
-                        .lineLimit(1)
-                        .minimumScaleFactor(0.8)
-                }
-            }
-            .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .leading)
-
-        case .accessoryInline:
-            Label("Rest. See you tomorrow.", systemImage: "leaf.fill")
-                .font(.system(.footnote, design: .default, weight: .medium))
-                .lineLimit(1)
-                .minimumScaleFactor(0.72)
+        HStack(alignment: .center, spacing: 8) {
+            Image(systemName: "leaf.fill")
+                .font(.system(size: 22, weight: .semibold, design: .default))
                 .widgetAccentable()
 
-        default:
-            EmptyView()
+            VStack(alignment: .leading, spacing: 1) {
+                Text("Rest.")
+                    .font(.system(size: 15, weight: .semibold, design: .default))
+                    .lineLimit(1)
+                Text("See you tomorrow.")
+                    .font(.system(size: 12, weight: .regular, design: .default))
+                    .foregroundStyle(.secondary)
+                    .lineLimit(1)
+                    .minimumScaleFactor(0.8)
+            }
         }
+        .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .leading)
     }
 
     @ViewBuilder
@@ -596,73 +556,37 @@ private struct GlanceSATLockFamiliesView: View {
 
     @ViewBuilder
     private var lockContent: some View {
-        switch family {
-        case .accessoryCircular:
-            ZStack {
-                AccessoryWidgetBackground()
-                Text(monogram)
-                    .font(.title2.weight(.bold))
+        GeometryReader { proxy in
+            let alignment = WidgetPrefsReader.lockScreenTextAlignment()
+            let textAlignment: TextAlignment = alignment == .center ? .center : .leading
+            let frameAlignment = Alignment(horizontal: alignment, vertical: .center)
+            let metrics = WidgetLockCardMetrics.compute(
+                contentSize: proxy.size,
+                word: entry.word.word,
+                subtitle: entry.word.widgetDefinitionWithPartOfSpeech
+            )
+            VStack(alignment: alignment, spacing: metrics.spacing) {
+                Text(entry.word.word)
+                    .font(.system(size: metrics.wordSize, weight: .bold, design: .default))
                     .foregroundStyle(.primary)
+                    .multilineTextAlignment(textAlignment)
                     .lineLimit(1)
-                    .minimumScaleFactor(0.5)
+                    .minimumScaleFactor(0.45)
+                    .frame(maxWidth: .infinity, alignment: frameAlignment)
+                    .widgetAccentable()
+
+                Text(entry.word.widgetDefinitionWithPartOfSpeech)
+                    .font(.system(size: metrics.bodySize, weight: .medium, design: .default))
+                    .foregroundStyle(.primary)
+                    .multilineTextAlignment(textAlignment)
+                    .lineLimit(nil)
+                    .fixedSize(horizontal: false, vertical: true)
+                    .frame(maxWidth: .infinity, alignment: frameAlignment)
+                    .layoutPriority(1)
                     .widgetAccentable()
             }
-
-        case .accessoryRectangular:
-            GeometryReader { proxy in
-                let alignment = WidgetPrefsReader.lockScreenTextAlignment()
-                let textAlignment: TextAlignment = alignment == .center ? .center : .leading
-                let frameAlignment = Alignment(horizontal: alignment, vertical: .center)
-                let metrics = WidgetLockCardMetrics.compute(
-                    contentSize: proxy.size,
-                    word: entry.word.word,
-                    subtitle: entry.word.widgetDefinitionWithPartOfSpeech
-                )
-                VStack(alignment: alignment, spacing: metrics.spacing) {
-                    Text(entry.word.word)
-                        .font(.system(size: metrics.wordSize, weight: .bold, design: .default))
-                        .foregroundStyle(.primary)
-                        .multilineTextAlignment(textAlignment)
-                        .lineLimit(1)
-                        .minimumScaleFactor(0.45)
-                        .frame(maxWidth: .infinity, alignment: frameAlignment)
-                        .widgetAccentable()
-
-                    Text(entry.word.widgetDefinitionWithPartOfSpeech)
-                        .font(.system(size: metrics.bodySize, weight: .medium, design: .default))
-                        .foregroundStyle(.primary)
-                        .multilineTextAlignment(textAlignment)
-                        .lineLimit(nil)
-                        .fixedSize(horizontal: false, vertical: true)
-                        .frame(maxWidth: .infinity, alignment: frameAlignment)
-                        .layoutPriority(1)
-                        .widgetAccentable()
-                }
-                .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: frameAlignment)
-            }
-
-        case .accessoryInline:
-            Text(inlineText)
-                .font(.headline.weight(.semibold))
-                .foregroundStyle(.primary)
-                .minimumScaleFactor(0.45)
-                .lineLimit(1)
-                .widgetAccentable()
-                .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .leading)
-
-        default:
-            EmptyView()
+            .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: frameAlignment)
         }
-    }
-
-    private var inlineText: String {
-        "\(entry.word.word) · \(entry.word.widgetDefinitionWithPartOfSpeech)"
-    }
-
-    private var monogram: String {
-        let t = entry.word.word.trimmingCharacters(in: .whitespacesAndNewlines)
-        guard let c = t.first else { return "G" }
-        return String(c).uppercased()
     }
 }
 

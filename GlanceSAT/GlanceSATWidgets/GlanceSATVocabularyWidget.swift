@@ -171,9 +171,7 @@ struct GlanceSATLockScreenVocabularyWidget: Widget {
         .description("Turn every unlock into SAT progress\nSet text alignment in settings for your preferred aesthetic.")
         .contentMarginsDisabled()
         .supportedFamilies([
-            .accessoryInline,
             .accessoryRectangular,
-            .accessoryCircular,
         ])
     }
 }

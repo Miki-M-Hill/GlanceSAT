@@ -124,6 +124,7 @@ struct DailyHubView: View {
     @State private var pendingWeeklyRecall: WeeklyRecallPresentation?
     @State private var quizCoverPhase: QuizCoverPhase = .daily
     @State private var weeklyRecallResume: PersistedWeeklyRecall?
+    @State private var weeklyRecallExitAction: (() -> Void)?
     @State private var hasPersistedWeeklyRecallProgress = false
     @State private var weeklyRecallShowsRecap = false
     /// Set when the daily quiz completes on a weekly-recall day so the post-quiz CTA is ready before the hub appears.
@@ -137,7 +138,7 @@ struct DailyHubView: View {
     @State private var todayScrollOriginMinY: CGFloat?
 
     private var displayWords: [Word] {
-        dailyWords
+        DailyWordBatchService.carouselDisplayOrder(dailyWords)
     }
 
     private var todayNewWordIDs: Set<UUID> {
@@ -324,6 +325,7 @@ struct DailyHubView: View {
                 } else if !isPresented {
                     clearAllOptimisticQuizCTAState()
                     refreshPersistedQuizFlagsDeferred()
+                    refreshPersistedWeeklyRecallFlagsDeferred()
                     quizPreparation.cancelWeeklyRecallPreload()
                 }
             }
@@ -399,6 +401,7 @@ struct DailyHubView: View {
         isDailyQuizContentLoading = false
         quizCoverPhase = .daily
         weeklyRecallResume = nil
+        weeklyRecallExitAction = nil
         weeklyRecallShowsRecap = false
         clearAllOptimisticQuizCTAState()
         refreshPersistedQuizFlagsDeferred()
@@ -631,7 +634,7 @@ struct DailyHubView: View {
                 } else if quizCoverPhase == .weeklyRecall, !weeklyRecallShowsRecap {
                     ToolbarItem(placement: .cancellationAction) {
                         DailyQuizBackButton {
-                            exitWeeklyRecallFromCover()
+                            requestWeeklyRecallExit()
                         }
                     }
                 }
@@ -688,6 +691,7 @@ struct DailyHubView: View {
             supplementalMissedWordIDs = completion.missedWordIDs.intersection(dailyIDs)
             syncFrozenPostQuizOutcomes()
             quizCompletedToday = true
+            WidgetGlanceTracker.creditPrimaryQuizDay(DailyWordBatchService.calendarDayKey())
             WeeklyRecallEligibility.recordFirstDailyQuizCompleted()
             quizPreparation.clearPrimaryPreparation()
             #if DEBUG
@@ -735,7 +739,8 @@ struct DailyHubView: View {
                 isDebugPreview: presentation.isDebugPreview,
                 onFinished: finishWeeklyRecallFromCover,
                 onExit: exitWeeklyRecallFromCover,
-                onShowingRecapChanged: { weeklyRecallShowsRecap = $0 }
+                onShowingRecapChanged: { weeklyRecallShowsRecap = $0 },
+                onRegisterExitAction: { weeklyRecallExitAction = $0 }
             )
         } else {
             ContentUnavailableView("Weekly quiz unavailable", systemImage: "exclamationmark.triangle")
@@ -777,6 +782,7 @@ struct DailyHubView: View {
     private func finishWeeklyRecallFromCover() {
         pendingWeeklyRecall = nil
         weeklyRecallResume = nil
+        weeklyRecallExitAction = nil
         weeklyRecallShowsRecap = false
         postQuizOffersWeeklyRecall = false
         quizCoverPhase = .daily
@@ -787,12 +793,21 @@ struct DailyHubView: View {
         #endif
     }
 
+    private func requestWeeklyRecallExit() {
+        if let weeklyRecallExitAction {
+            weeklyRecallExitAction()
+        } else {
+            exitWeeklyRecallFromCover()
+        }
+    }
+
     private func exitWeeklyRecallFromCover() {
         weeklyRecallResume = nil
+        weeklyRecallExitAction = nil
         weeklyRecallShowsRecap = false
         quizCoverPhase = .daily
         showDailyQuiz = false
-        hasPersistedWeeklyRecallProgress = WeeklyRecallQuizPersistence.hasPausedSession
+        refreshPersistedWeeklyRecallFlags()
     }
 
     private func resumeWeeklyRecall() {
@@ -842,6 +857,7 @@ struct DailyHubView: View {
     private func resetQuizCoverForDailyPresentation() {
         quizCoverPhase = .daily
         weeklyRecallResume = nil
+        weeklyRecallExitAction = nil
         weeklyRecallShowsRecap = false
     }
 
@@ -1112,7 +1128,7 @@ struct DailyHubView: View {
                 if showPostQuizWeeklyRecallCTA || showPostQuizStartWeeklyRecallCTA || showPostQuizResumeCTA || canOfferSupplementalQuiz {
                     VStack(spacing: heroSpacing) {
                         if showPostQuizWeeklyRecallCTA {
-                            postQuizSecondaryQuizButton(title: "Resume Weekly Quiz") {
+                            postQuizSecondaryQuizButton(title: "Resume Weekly Recap") {
                                 resumeWeeklyRecall()
                             }
                         } else if showPostQuizStartWeeklyRecallCTA {
@@ -1166,7 +1182,7 @@ struct DailyHubView: View {
         let shape = RoundedRectangle(cornerRadius: 16, style: .continuous)
 
         return Button {
-            if title == "Take another quiz" || title == "Resume quiz" || title == "Resume Weekly Quiz" || title == "Start Weekly Recap" {
+            if title == "Take another quiz" || title == "Resume quiz" || title == "Resume Weekly Recap" || title == "Start Weekly Recap" {
                 GlanceHaptics.medium()
             }
             action()
@@ -2207,27 +2223,12 @@ private struct DailyHubPostQuizCard: View {
     private var metadataRow: some View {
         HStack(alignment: .center, spacing: 6) {
             if model.senses.count > 1 {
-                ForEach(Array(model.senses.enumerated()), id: \.offset) { index, sense in
-                    Button {
-                        withAnimation(.spring(response: 0.32, dampingFraction: 0.78)) {
-                            sensePage = index
-                        }
-                        UISelectionFeedbackGenerator().selectionChanged()
-                    } label: {
-                        partOfSpeechChip(sense.partOfSpeech, isSelected: index == sensePage)
-                            .lineLimit(1)
-                            .minimumScaleFactor(0.75)
-                    }
-                    .buttonStyle(.plain)
-                    .fixedSize(horizontal: true, vertical: false)
-                    .accessibilityLabel("\(sense.partOfSpeech) meaning")
-                    .accessibilityAddTraits(index == sensePage ? [.isSelected] : [])
-                }
+                WordSenseToggle(
+                    labels: model.senses.map(\.partOfSpeech),
+                    selectedIndex: $sensePage
+                )
             } else if let sense = model.senses.first {
-                partOfSpeechChip(sense.partOfSpeech, isSelected: true)
-                    .lineLimit(1)
-                    .minimumScaleFactor(0.75)
-                    .fixedSize(horizontal: true, vertical: false)
+                WordPartOfSpeechChip(label: sense.partOfSpeech)
             }
 
             WordConnotationRow(word: model.connotationSource, compact: true)
@@ -2322,25 +2323,6 @@ private struct DailyHubPostQuizCard: View {
             .overlay(
                 Capsule(style: .continuous)
                     .strokeBorder(Color.white.opacity(0.46), lineWidth: 0.7)
-            )
-    }
-
-    private func partOfSpeechChip(_ label: String, isSelected: Bool) -> some View {
-        Text(label)
-            .font(GlanceHubFont.semibold(12))
-            .foregroundStyle(isSelected ? WordCardChrome.partOfSpeechForeground : WordCardChrome.partOfSpeechInactiveForeground)
-            .padding(.horizontal, 12)
-            .padding(.vertical, 7)
-            .background(
-                Capsule(style: .continuous)
-                    .fill(isSelected ? WordCardChrome.partOfSpeechFill : WordCardChrome.partOfSpeechInactiveFill)
-                    .overlay(
-                        Capsule(style: .continuous)
-                            .strokeBorder(
-                                isSelected ? Color.white.opacity(0.35) : WordCardChrome.partOfSpeechInactiveStroke,
-                                lineWidth: isSelected ? 1 : 0.7
-                            )
-                    )
             )
     }
 }
@@ -2495,27 +2477,12 @@ private struct DailyHubWordCapsule: View {
     private var postQuizMetadataRow: some View {
         HStack(alignment: .center, spacing: 6) {
             if senses.count > 1 {
-                ForEach(Array(senses.enumerated()), id: \.offset) { index, sense in
-                    Button {
-                        withAnimation(.spring(response: 0.32, dampingFraction: 0.78)) {
-                            sensePage = index
-                        }
-                        UISelectionFeedbackGenerator().selectionChanged()
-                    } label: {
-                        partOfSpeechChip(sense.partOfSpeech, isSelected: index == sensePage)
-                            .lineLimit(1)
-                            .minimumScaleFactor(0.75)
-                    }
-                    .buttonStyle(.plain)
-                    .fixedSize(horizontal: true, vertical: false)
-                    .accessibilityLabel("\(sense.partOfSpeech) meaning")
-                    .accessibilityAddTraits(index == sensePage ? [.isSelected] : [])
-                }
+                WordSenseToggle(
+                    labels: senses.map(\.partOfSpeech),
+                    selectedIndex: $sensePage
+                )
             } else {
-                partOfSpeechChip(activePartOfSpeech, isSelected: true)
-                    .lineLimit(1)
-                    .minimumScaleFactor(0.75)
-                    .fixedSize(horizontal: true, vertical: false)
+                WordPartOfSpeechChip(label: activePartOfSpeech)
             }
 
             WordConnotationRow(word: word, compact: true)
@@ -2544,8 +2511,11 @@ private struct DailyHubWordCapsule: View {
             .padding(.bottom, 8)
         } else {
             if !isPostQuiz {
-                senseSwitcherChips
-                    .padding(.top, 14)
+                WordSenseToggle(
+                    labels: senses.map(\.partOfSpeech),
+                    selectedIndex: $sensePage
+                )
+                .padding(.top, 14)
 
                 Divider()
                     .background(HubPalette.espressoFaint)
@@ -2631,43 +2601,6 @@ private struct DailyHubWordCapsule: View {
             )
     }
 
-    private func partOfSpeechChip(_ label: String, isSelected: Bool) -> some View {
-        Text(label)
-            .font(GlanceHubFont.semibold(12))
-            .foregroundStyle(isSelected ? WordCardChrome.partOfSpeechForeground : WordCardChrome.partOfSpeechInactiveForeground)
-            .padding(.horizontal, 12)
-            .padding(.vertical, 7)
-            .background(
-                Capsule(style: .continuous)
-                    .fill(isSelected ? WordCardChrome.partOfSpeechFill : WordCardChrome.partOfSpeechInactiveFill)
-                    .overlay(
-                        Capsule(style: .continuous)
-                            .strokeBorder(
-                                isSelected ? Color.white.opacity(0.35) : WordCardChrome.partOfSpeechInactiveStroke,
-                                lineWidth: isSelected ? 1 : 0.7
-                            )
-                    )
-            )
-    }
-
-    private var senseSwitcherChips: some View {
-        HStack(spacing: 8) {
-            ForEach(Array(senses.enumerated()), id: \.offset) { index, sense in
-                Button {
-                    withAnimation(.spring(response: 0.32, dampingFraction: 0.78)) {
-                        sensePage = index
-                    }
-                    UISelectionFeedbackGenerator().selectionChanged()
-                } label: {
-                    partOfSpeechChip(sense.partOfSpeech, isSelected: index == sensePage)
-                }
-                .buttonStyle(.plain)
-                .accessibilityLabel("\(sense.partOfSpeech) meaning")
-                .accessibilityAddTraits(index == sensePage ? [.isSelected] : [])
-            }
-        }
-    }
-
     private func hubSenseDetail(
         sense: WordSenseBlock,
         topPadding: CGFloat,
@@ -2677,7 +2610,7 @@ private struct DailyHubWordCapsule: View {
     ) -> some View {
         VStack(alignment: .leading, spacing: 0) {
             if showPartOfSpeechBadge {
-                partOfSpeechChip(sense.partOfSpeech, isSelected: true)
+                WordPartOfSpeechChip(label: sense.partOfSpeech)
                     .padding(.top, topPadding)
 
                 Divider()

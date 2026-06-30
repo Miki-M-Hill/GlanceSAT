@@ -112,7 +112,7 @@ struct DailyQuizView: View {
         .onDisappear {
             pendingAdvanceWorkItem?.cancel()
             pendingAdvanceWorkItem = nil
-            persistInProgressIfNeeded()
+            persistInProgressIfNeeded(flushToDisk: true)
         }
         .onAppear {
             shouldAnimateBetweenQuestions = false
@@ -655,25 +655,27 @@ struct DailyQuizView: View {
         let responseSeconds = Date().timeIntervalSince(questionShownAt)
         let quality = Self.srsQuality(correct: correct, responseSeconds: responseSeconds)
 
-        if correct {
-            UINotificationFeedbackGenerator().notificationOccurred(.success)
-            correctCount += 1
-            rememberedWordIDs.insert(question.targetWord.id)
-            applySRSUpdate(for: question, quality: quality)
-        } else {
-            UINotificationFeedbackGenerator().notificationOccurred(.error)
-            missedWordIDs.insert(question.targetWord.id)
-            applySRSUpdate(for: question, quality: quality)
-        }
-
-        persistInProgressIfNeeded()
-
-        if correct {
-            let work = DispatchWorkItem {
-                advanceToNextQuestion()
+        DispatchQueue.main.async {
+            if correct {
+                GlanceHaptics.success()
+                correctCount += 1
+                rememberedWordIDs.insert(question.targetWord.id)
+                applySRSUpdate(for: question, quality: quality)
+            } else {
+                GlanceHaptics.error()
+                missedWordIDs.insert(question.targetWord.id)
+                applySRSUpdate(for: question, quality: quality)
             }
-            pendingAdvanceWorkItem = work
-            DispatchQueue.main.asyncAfter(deadline: .now() + 1.2, execute: work)
+
+            persistInProgressIfNeeded()
+
+            if correct {
+                let work = DispatchWorkItem {
+                    advanceToNextQuestion()
+                }
+                pendingAdvanceWorkItem = work
+                DispatchQueue.main.asyncAfter(deadline: .now() + 1.2, execute: work)
+            }
         }
     }
 
@@ -698,7 +700,9 @@ struct DailyQuizView: View {
             isAnswerRevealed = false
         }
         resetQuestionTimer()
-        persistInProgressIfNeeded()
+        DispatchQueue.main.async {
+            persistInProgressIfNeeded()
+        }
     }
 
     private func questionTypeTitle(for type: QuestionType) -> String {

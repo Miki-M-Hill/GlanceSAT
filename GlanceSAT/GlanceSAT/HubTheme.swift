@@ -240,6 +240,95 @@ enum WordCardChrome {
     static let partOfSpeechInactiveStroke = Color.white.opacity(0.42)
 }
 
+/// Single part-of-speech label when a word has only one sense.
+struct WordPartOfSpeechChip: View {
+    let label: String
+
+    var body: some View {
+        Text(label)
+            .font(GlanceHubFont.semibold(12))
+            .foregroundStyle(WordCardChrome.partOfSpeechForeground)
+            .lineLimit(1)
+            .minimumScaleFactor(0.75)
+            .padding(.horizontal, 12)
+            .padding(.vertical, 7)
+            .background(
+                Capsule(style: .continuous)
+                    .fill(WordCardChrome.partOfSpeechFill)
+                    .overlay(
+                        Capsule(style: .continuous)
+                            .strokeBorder(Color.white.opacity(0.35), lineWidth: 1)
+                    )
+            )
+    }
+}
+
+/// Segmented toggle for switching between multiple word senses.
+struct WordSenseToggle: View {
+    let labels: [String]
+    @Binding var selectedIndex: Int
+    var isEnabled: Bool = true
+
+    @Namespace private var highlightNamespace
+
+    private let segmentHorizontalPadding: CGFloat = 12
+    private let segmentVerticalPadding: CGFloat = 7
+    private let trackInset: CGFloat = 2
+    private let highlightSpring = Animation.spring(response: 0.32, dampingFraction: 0.78)
+
+    var body: some View {
+        HStack(spacing: 0) {
+            ForEach(Array(labels.enumerated()), id: \.offset) { index, label in
+                Button {
+                    guard isEnabled, selectedIndex != index else { return }
+                    GlanceHaptics.light()
+                    withAnimation(highlightSpring) {
+                        selectedIndex = index
+                    }
+                } label: {
+                    Text(label)
+                        .font(GlanceHubFont.semibold(12))
+                        .lineLimit(1)
+                        .minimumScaleFactor(0.75)
+                        .foregroundStyle(
+                            selectedIndex == index
+                                ? WordCardChrome.partOfSpeechForeground
+                                : WordCardChrome.partOfSpeechInactiveForeground
+                        )
+                        .padding(.horizontal, segmentHorizontalPadding)
+                        .padding(.vertical, segmentVerticalPadding)
+                        .background {
+                            if selectedIndex == index {
+                                Capsule(style: .continuous)
+                                    .fill(WordCardChrome.partOfSpeechFill)
+                                    .overlay(
+                                        Capsule(style: .continuous)
+                                            .strokeBorder(Color.white.opacity(0.35), lineWidth: 1)
+                                    )
+                                    .matchedGeometryEffect(id: "senseHighlight", in: highlightNamespace)
+                            }
+                        }
+                        .contentShape(Rectangle())
+                }
+                .buttonStyle(.plain)
+                .disabled(!isEnabled)
+                .accessibilityLabel("\(label) meaning")
+                .accessibilityAddTraits(selectedIndex == index ? [.isSelected] : [])
+            }
+        }
+        .padding(trackInset)
+        .background(
+            Capsule(style: .continuous)
+                .fill(WordCardChrome.partOfSpeechInactiveFill)
+        )
+        .overlay(
+            Capsule(style: .continuous)
+                .strokeBorder(WordCardChrome.partOfSpeechInactiveStroke, lineWidth: 0.7)
+        )
+        .fixedSize(horizontal: true, vertical: false)
+    }
+}
+
 /// Solid oatmeal card surface shared by Insights metric tiles and Today hub cards.
 enum HubSolidCardChrome {
     static let cornerRadius: CGFloat = 28
@@ -629,6 +718,18 @@ struct QuizAnswerButtonStyle: ButtonStyle {
 
 // MARK: - Toolbar icon chrome
 
+enum GlanceTapTarget {
+    static let minimumSide: CGFloat = 44
+}
+
+extension View {
+    /// Centers the drawn control in a square hit region without changing its appearance.
+    func glanceMinimumTapTarget(_ side: CGFloat = GlanceTapTarget.minimumSide) -> some View {
+        frame(width: side, height: side)
+            .contentShape(Rectangle())
+    }
+}
+
 private enum DailyQuizToolbarIconLayout {
     static let size: CGFloat = 36
     static let symbolPointSize: CGFloat = 16
@@ -679,6 +780,7 @@ struct DailyQuizBackButton: View {
                 .foregroundStyle(DailyQuizToolbarIconStyle.foreground(colorScheme: colorScheme, isEnabled: true))
                 .frame(width: DailyQuizToolbarIconLayout.size, height: DailyQuizToolbarIconLayout.size)
                 .dailyQuizToolbarIconChrome(colorScheme: colorScheme)
+                .glanceMinimumTapTarget()
         }
         .buttonStyle(.plain)
         .accessibilityLabel(accessibilityLabel)
@@ -704,6 +806,7 @@ struct DailyQuizToolbarIconButton: View {
                 .foregroundStyle(DailyQuizToolbarIconStyle.foreground(colorScheme: colorScheme, isEnabled: isEnabled))
                 .frame(width: DailyQuizToolbarIconLayout.size, height: DailyQuizToolbarIconLayout.size)
                 .dailyQuizToolbarIconChrome(colorScheme: colorScheme)
+                .glanceMinimumTapTarget()
         }
         .buttonStyle(.plain)
         .allowsHitTesting(isEnabled)

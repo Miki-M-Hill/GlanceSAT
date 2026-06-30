@@ -38,6 +38,7 @@ struct AppPaywallScreen: View {
                         .font(.system(size: 14, weight: .semibold))
                         .foregroundStyle(OnboardingColors.primaryText)
                         .frame(width: 32, height: 32)
+                        .glanceMinimumTapTarget()
                 }
                 .buttonStyle(.plain)
                 Spacer()
@@ -86,7 +87,7 @@ struct AppPaywallScreen: View {
                                 ),
                                 badgeLabel: plan.paywallBadgeLabel,
                                 isSelected: selectedPlan == plan,
-                                compactLayout: false
+                                compactLayout: true
                             ) {
                                 selectedPlan = plan
                                 AnalyticsManager.trackPaywallPlanTapped(

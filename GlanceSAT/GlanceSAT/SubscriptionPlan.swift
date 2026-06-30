@@ -115,11 +115,10 @@ enum SubscriptionPlan: String, CaseIterable, Identifiable, Sendable {
     }
 
     static func visiblePlans(satTestWithin90Days: Bool) -> [SubscriptionPlan] {
-        if satTestWithin90Days {
-            return [.oneMonth, .threeMonth, .annual]
-        }
-        return [.oneMonth, .annual]
+        _ = satTestWithin90Days
+        return allPaywallPlans
     }
 
-    static let inAppPaywallPlans: [SubscriptionPlan] = [.oneMonth, .annual]
+    static let allPaywallPlans: [SubscriptionPlan] = [.oneMonth, .threeMonth, .annual]
+    static let inAppPaywallPlans: [SubscriptionPlan] = allPaywallPlans
 }

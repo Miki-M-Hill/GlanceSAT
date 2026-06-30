@@ -73,6 +73,7 @@ struct MilestoneCelebrationView: View {
                     .background {
                         GlanceAdaptiveGlassCircle(diameter: 36)
                     }
+                    .glanceMinimumTapTarget()
             }
             .buttonStyle(.plain)
             .accessibilityLabel("Close")

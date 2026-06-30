@@ -32,6 +32,7 @@ struct OnboardingView: View {
     @State private var diagnosticAnswers: [Int: Int] = [:]
     @State private var calibrationQuestionIndex = 0
     @State private var calibrationAdvanceTask: Task<Void, Never>?
+    @State private var calibrationShowsNextWordCTA = false
     @State private var calibrationIsTransitioning = false
     @State private var visibleInsight: String?
     @State private var calibrationComplete = false
@@ -47,7 +48,7 @@ struct OnboardingView: View {
     )
     @State private var slideDirection: OnboardingSlideDirection = .forward
 
-    private let screenCount = 9
+    private let screenCount = 10
 
     @Environment(\.dynamicTypeSize) private var dynamicTypeSize
 
@@ -65,10 +66,6 @@ struct OnboardingView: View {
                 reminderMinute = components.minute ?? 0
             }
         )
-    }
-
-    private var isCalibrationCTAEnabled: Bool {
-        calibrationComplete
     }
 
     private var isTimelineCTAEnabled: Bool {
@@ -129,7 +126,10 @@ struct OnboardingView: View {
         }
         .onChange(of: page) { oldPage, newPage in
             if oldPage == 4 && newPage != 4 {
-                cancelCalibrationAdvanceTask()
+                pauseCalibration()
+            }
+            if newPage == 4 {
+                resumeCalibrationIfNeeded()
             }
             if newPage == 6 {
                 Task { await prefetchPaywallTrialEligibility() }
@@ -232,6 +232,7 @@ struct OnboardingView: View {
         case 6: personalizedPlanScreen
         case 7: paywallScreen
         case 8: widgetScreen
+        case 9: howToGlanceScreen
         default: EmptyView()
         }
     }
@@ -329,97 +330,104 @@ struct OnboardingView: View {
 
     private var goalsScreen: some View {
         OnboardingViewport { metrics in
+            let sectionSpacing = metrics.isCompact ? 16.0 : 22.0
+            let blockSpacing = metrics.isCompact ? 10.0 : 14.0
+
             VStack(alignment: .center, spacing: 0) {
                 OnboardingHeaderBlock(
                     title: "Set your goals",
                     metrics: metrics
                 )
 
-                Spacer(minLength: 40)
+                ScrollView(.vertical, showsIndicators: false) {
+                    VStack(alignment: .center, spacing: sectionSpacing) {
+                        Text("Is this your first SAT?")
+                            .font(.system(size: 19, weight: .semibold))
+                            .foregroundStyle(OnboardingColors.primaryText)
+                            .multilineTextAlignment(.center)
 
-                VStack(alignment: .center, spacing: 24) {
-                    Text("Is this your first SAT?")
-                        .font(.system(size: 19, weight: .semibold))
-                        .foregroundStyle(OnboardingColors.primaryText)
-                        .multilineTextAlignment(.center)
-
-                    OnboardingBinaryChoice(
-                        options: [("yes", "Yes"), ("no", "No")],
-                        selection: isFirstSATRaw
-                    ) { value in
-                        isFirstSATRaw = value
-                        if value == "yes" {
-                            previousScoreRaw = ""
-                        } else {
-                            dreamScoreRaw = ""
+                        OnboardingBinaryChoice(
+                            options: [("yes", "Yes"), ("no", "No")],
+                            selection: isFirstSATRaw
+                        ) { value in
+                            isFirstSATRaw = value
+                            if value == "yes" {
+                                previousScoreRaw = ""
+                            } else {
+                                dreamScoreRaw = ""
+                            }
                         }
-                    }
-                    .animation(OnboardingMotion.selection, value: isFirstSATRaw)
+                        .animation(OnboardingMotion.selection, value: isFirstSATRaw)
 
-                    if isFirstSAT == false {
-                        VStack(alignment: .center, spacing: 24) {
-                            VStack(alignment: .center, spacing: 14) {
-                                Text("What is your current Reading & Writing level?")
+                        if isFirstSAT == false {
+                            VStack(alignment: .center, spacing: sectionSpacing) {
+                                VStack(alignment: .center, spacing: blockSpacing) {
+                                    Text("What is your current\nReading & Writing level?")
+                                        .font(.system(size: 18, weight: .semibold))
+                                        .foregroundStyle(OnboardingColors.primaryText)
+                                        .lineSpacing(4)
+                                        .multilineTextAlignment(.center)
+                                        .fixedSize(horizontal: false, vertical: true)
+
+                                    OnboardingScoreLabelBar(
+                                        labels: SATScoreTier.previousScoreOptions.map(\.displayLabel),
+                                        selection: previousScoreRaw
+                                    ) { label in
+                                        guard let tier = SATScoreTier.previousScoreOptions.first(where: { $0.displayLabel == label }) else { return }
+                                        previousScoreRaw = tier.rawValue
+                                    }
+                                    .animation(OnboardingMotion.selection, value: previousScoreRaw)
+                                }
+                                .transition(.opacity.combined(with: .move(edge: .top)))
+
+                                if previousScore != nil {
+                                    VStack(alignment: .center, spacing: blockSpacing) {
+                                        Text("What is your goal score for\nReading & Writing?")
+                                            .font(.system(size: 18, weight: .semibold))
+                                            .foregroundStyle(OnboardingColors.primaryText)
+                                            .lineSpacing(4)
+                                            .multilineTextAlignment(.center)
+                                            .fixedSize(horizontal: false, vertical: true)
+
+                                        OnboardingScoreLabelBar(
+                                            labels: dreamScoreLabels,
+                                            selection: dreamScoreRaw
+                                        ) { label in
+                                            dreamScoreRaw = label
+                                        }
+                                        .animation(OnboardingMotion.selection, value: dreamScoreRaw)
+                                    }
+                                    .transition(.opacity.combined(with: .move(edge: .top)))
+                                }
+                            }
+                            .animation(OnboardingMotion.selection, value: previousScoreRaw)
+                        }
+
+                        if isFirstSAT == true {
+                            VStack(alignment: .center, spacing: blockSpacing) {
+                                Text("What is your goal score for\nReading & Writing?")
                                     .font(.system(size: 18, weight: .semibold))
                                     .foregroundStyle(OnboardingColors.primaryText)
                                     .lineSpacing(4)
                                     .multilineTextAlignment(.center)
                                     .fixedSize(horizontal: false, vertical: true)
 
-                                OnboardingScoreBar(
-                                    tiers: SATScoreTier.previousScoreOptions,
-                                    selection: previousScoreRaw
-                                ) { tier in
-                                    previousScoreRaw = tier.rawValue
+                                OnboardingScoreLabelBar(
+                                    labels: dreamScoreLabels,
+                                    selection: dreamScoreRaw
+                                ) { label in
+                                    dreamScoreRaw = label
                                 }
-                                .animation(OnboardingMotion.selection, value: previousScoreRaw)
+                                .animation(OnboardingMotion.selection, value: dreamScoreRaw)
                             }
                             .transition(.opacity.combined(with: .move(edge: .top)))
-
-                            if previousScore != nil {
-                                VStack(alignment: .center, spacing: 14) {
-                                    Text("What is your dream score?")
-                                        .font(.system(size: 18, weight: .semibold))
-                                        .foregroundStyle(OnboardingColors.primaryText)
-                                        .lineSpacing(4)
-                                        .multilineTextAlignment(.center)
-
-                                    OnboardingScoreLabelBar(
-                                        labels: dreamScoreLabels,
-                                        selection: dreamScoreRaw
-                                    ) { label in
-                                        dreamScoreRaw = label
-                                    }
-                                    .animation(OnboardingMotion.selection, value: dreamScoreRaw)
-                                }
-                                .transition(.opacity.combined(with: .move(edge: .top)))
-                            }
                         }
-                        .animation(OnboardingMotion.selection, value: previousScoreRaw)
                     }
-
-                    if isFirstSAT == true {
-                        VStack(alignment: .center, spacing: 14) {
-                            Text("What is your dream Reading & Writing score?")
-                                .font(.system(size: 18, weight: .semibold))
-                                .foregroundStyle(OnboardingColors.primaryText)
-                                .lineSpacing(4)
-                                .multilineTextAlignment(.center)
-
-                            OnboardingScoreLabelBar(
-                                labels: dreamScoreLabels,
-                                selection: dreamScoreRaw
-                            ) { label in
-                                dreamScoreRaw = label
-                            }
-                            .animation(OnboardingMotion.selection, value: dreamScoreRaw)
-                        }
-                        .transition(.opacity.combined(with: .move(edge: .top)))
-                    }
+                    .animation(OnboardingMotion.selection, value: isFirstSATRaw)
+                    .frame(maxWidth: .infinity)
+                    .padding(.top, metrics.isCompact ? 16 : 28)
+                    .padding(.bottom, 12)
                 }
-                .animation(OnboardingMotion.selection, value: isFirstSATRaw)
-
-                Spacer(minLength: 0)
             }
         }
     }
@@ -428,8 +436,9 @@ struct OnboardingView: View {
         OnboardingViewport { metrics in
             VStack(alignment: .center, spacing: 0) {
                 OnboardingHeaderBlock(
-                    title: "Let's find your starting point",
-                    metrics: metrics
+                    title: calibrationShowsReveal ? "Your starting point" : "Find your starting point with a few SAT words",
+                    metrics: metrics,
+                    titleLineLimit: calibrationShowsReveal ? 1 : 2
                 )
 
                 Spacer(minLength: 40)
@@ -545,6 +554,26 @@ struct OnboardingView: View {
         }
     }
 
+    private var howToGlanceScreen: some View {
+        OnboardingViewport { metrics in
+            VStack(alignment: .center, spacing: 0) {
+                OnboardingHeaderBlock(
+                    title: "How to Glance",
+                    metrics: metrics
+                )
+
+                Spacer(minLength: 40)
+
+                HowToGlanceVerticalGraphic(
+                    quizReminderTime: formattedReminderTime,
+                    isCompact: metrics.isCompact
+                )
+
+                Spacer(minLength: 0)
+            }
+        }
+    }
+
     private var widgetScreen: some View {
         GeometryReader { proxy in
             let metrics = OnboardingLayoutMetrics.resolve(height: proxy.size.height)
@@ -613,21 +642,89 @@ struct OnboardingView: View {
         VStack(spacing: 12) {
             OnboardingPrimaryButton(
                 title: "My widget is live",
-                isEnabled: !isFinishingOnboarding,
-                isLoading: isFinishingOnboarding,
-                loadingTitle: "Getting your words ready…",
-                action: { finishOnboarding(widgetDeferred: false) }
+                isEnabled: true,
+                action: { advanceFromWidgetInstall(widgetDeferred: false) }
             )
 
             Button("I'll do this in a minute") {
-                finishOnboarding(widgetDeferred: true)
+                advanceFromWidgetInstall(widgetDeferred: true)
             }
             .font(.system(size: 15, weight: .medium))
             .foregroundStyle(OnboardingColors.secondaryText)
             .buttonStyle(.plain)
-            .disabled(isFinishingOnboarding)
-            .opacity(isFinishingOnboarding ? 0 : 1)
-            .animation(.easeInOut(duration: 0.18), value: isFinishingOnboarding)
+        }
+    }
+
+    private var howToGlanceBottomChrome: some View {
+        VStack(spacing: 12) {
+            OnboardingPrimaryButton(
+                title: "I'm ready",
+                isEnabled: !isFinishingOnboarding,
+                isLoading: isFinishingOnboarding,
+                loadingTitle: "Getting your words ready…",
+                action: finishOnboarding
+            )
+        }
+    }
+
+    private var defaultBottomChrome: some View {
+        VStack(spacing: 12) {
+            OnboardingPrimaryButton(
+                title: paywallPrimaryButtonTitle,
+                isEnabled: isPrimaryCTAEnabled && !entitlementManager.isPurchasing && !entitlementManager.isRestoring,
+                isLoading: page == 6 && isAdvancingToPaywall,
+                action: handlePrimaryCTA
+            )
+
+        }
+    }
+
+    private var bottomChrome: some View {
+        Group {
+            if page == OnboardingFlowPage.widgetInstall {
+                widgetInstallBottomChrome
+            } else if page == OnboardingFlowPage.howToGlance {
+                howToGlanceBottomChrome
+            } else if page == OnboardingFlowPage.paywall {
+                paywallBottomChrome
+            } else {
+                defaultBottomChrome
+            }
+        }
+        .padding(.horizontal, OnboardingLayout.horizontalPadding)
+        .padding(.top, page == OnboardingFlowPage.widgetInstall ? 28 : 12)
+        .padding(.bottom, 24)
+        .background(
+            OnboardingColors.linen.opacity(0.96)
+                .ignoresSafeArea(edges: .bottom)
+        )
+    }
+
+    private var primaryCTATitle: String {
+        switch page {
+        case 0: return "Tell me more"
+        case 1: return "See how it works"
+        case 2: return "Let's get started"
+        case 3: return "Set my goals"
+        case 4:
+            return calibrationComplete ? "Save my starting point" : "Next Word"
+        case 5: return "Set my habit"
+        case 6: return "Unlock my plan"
+        case 7:
+            return isEligibleForTrial ? "Start 7-Day Free Trial" : "Unlock full access"
+        case 9: return "I'm ready"
+        default: return "Continue"
+        }
+    }
+
+    private var isPrimaryCTAEnabled: Bool {
+        switch page {
+        case 2: return isTimelineCTAEnabled
+        case 3: return isGoalsCTAEnabled
+        case 4: return calibrationComplete || calibrationShowsNextWordCTA || isCurrentCalibrationQuestionAnswered
+        case 6: return !isAdvancingToPaywall
+        case 9: return !isFinishingOnboarding
+        default: return true
         }
     }
 
@@ -692,62 +789,6 @@ struct OnboardingView: View {
         }
     }
 
-    private var defaultBottomChrome: some View {
-        VStack(spacing: 12) {
-            OnboardingPrimaryButton(
-                title: paywallPrimaryButtonTitle,
-                isEnabled: isPrimaryCTAEnabled && !entitlementManager.isPurchasing && !entitlementManager.isRestoring,
-                isLoading: page == 6 && isAdvancingToPaywall,
-                action: handlePrimaryCTA
-            )
-
-        }
-    }
-
-    private var bottomChrome: some View {
-        Group {
-            if page == OnboardingFlowPage.widgetInstall {
-                widgetInstallBottomChrome
-            } else if page == OnboardingFlowPage.paywall {
-                paywallBottomChrome
-            } else {
-                defaultBottomChrome
-            }
-        }
-        .padding(.horizontal, OnboardingLayout.horizontalPadding)
-        .padding(.top, page == OnboardingFlowPage.widgetInstall ? 28 : 12)
-        .padding(.bottom, 24)
-        .background(
-            OnboardingColors.linen.opacity(0.96)
-                .ignoresSafeArea(edges: .bottom)
-        )
-    }
-
-    private var primaryCTATitle: String {
-        switch page {
-        case 0: return "Tell me more"
-        case 1: return "See how it works"
-        case 2: return "Let's get started"
-        case 3: return "Set my goals"
-        case 4: return "Save my starting point"
-        case 5: return "Set my habit"
-        case 6: return "Unlock my plan"
-        case 7:
-            return isEligibleForTrial ? "Start 7-Day Free Trial" : "Unlock full access"
-        default: return "Continue"
-        }
-    }
-
-    private var isPrimaryCTAEnabled: Bool {
-        switch page {
-        case 2: return isTimelineCTAEnabled
-        case 3: return isGoalsCTAEnabled
-        case 4: return isCalibrationCTAEnabled
-        case 6: return !isAdvancingToPaywall
-        default: return true
-        }
-    }
-
     private var paywallPrimaryButtonTitle: String {
         if page == OnboardingFlowPage.paywall, entitlementManager.isPurchasing {
             return isEligibleForTrial ? "Starting trial…" : "Unlocking…"
@@ -774,6 +815,7 @@ struct OnboardingView: View {
         case 6: return "plan_preview"
         case 7: return "paywall"
         case 8: return "widget_install"
+        case 9: return "how_to_glance"
         default: return nil
         }
     }
@@ -787,7 +829,19 @@ struct OnboardingView: View {
                 dreamScore: dreamScoreRaw
             )
         case 4:
-            persistDiagnosticBaseline()
+            if calibrationComplete {
+                persistDiagnosticBaseline()
+            } else if let question = DiagnosticQuestionBank.questions[safe: calibrationQuestionIndex],
+                      diagnosticAnswers[question.id] != nil {
+                cancelCalibrationAdvanceTask()
+                advanceCalibration(after: question)
+                return
+            } else if calibrationShowsNextWordCTA {
+                skipCalibrationIfWaiting()
+                return
+            } else {
+                return
+            }
         case 5:
             Task {
                 await NotificationManager.requestAuthorizationAndScheduleReminders()
@@ -825,6 +879,47 @@ struct OnboardingView: View {
         advancePage()
     }
 
+    private var isCurrentCalibrationQuestionAnswered: Bool {
+        guard let question = DiagnosticQuestionBank.questions[safe: calibrationQuestionIndex] else { return false }
+        return diagnosticAnswers[question.id] != nil
+    }
+
+    private func pauseCalibration() {
+        cancelCalibrationAdvanceTask()
+        calibrationIsTransitioning = false
+        calibrationContentOpacity = 1
+    }
+
+    private func resumeCalibrationIfNeeded() {
+        guard !calibrationComplete else { return }
+
+        calibrationIsTransitioning = false
+        calibrationContentOpacity = 1
+        cancelCalibrationAdvanceTask()
+
+        guard DiagnosticQuestionBank.questions.contains(where: { diagnosticAnswers[$0.id] == nil }) else {
+            persistDiagnosticBaseline()
+            calibrationShowsReveal = true
+            calibrationComplete = true
+            return
+        }
+
+        calibrationShowsReveal = false
+
+        if let currentQuestion = DiagnosticQuestionBank.questions[safe: calibrationQuestionIndex],
+           diagnosticAnswers[currentQuestion.id] != nil {
+            visibleInsight = currentQuestion.insightTag
+            calibrationShowsNextWordCTA = true
+            return
+        }
+
+        if let firstUnansweredIndex = DiagnosticQuestionBank.questions.firstIndex(where: { diagnosticAnswers[$0.id] == nil }) {
+            calibrationQuestionIndex = firstUnansweredIndex
+        }
+        visibleInsight = nil
+        calibrationShowsNextWordCTA = false
+    }
+
     private func handleCalibrationSelection(question: DiagnosticQuestion, optionIndex: Int) {
         if calibrationAdvanceTask != nil {
             cancelCalibrationAdvanceTask()
@@ -844,22 +939,27 @@ struct OnboardingView: View {
             visibleInsight = question.insightTag
         }
 
+        calibrationShowsNextWordCTA = true
         calibrationAdvanceTask = Task { @MainActor in
             do {
-                try await Task.sleep(nanoseconds: 2_200_000_000)
+                try await Task.sleep(nanoseconds: 4_200_000_000)
             } catch {
                 return
             }
             guard !Task.isCancelled else { return }
+            guard page == 4 else { return }
             calibrationAdvanceTask = nil
+            calibrationShowsNextWordCTA = false
             advanceCalibration(after: question)
         }
     }
 
     private func skipCalibrationIfWaiting() {
-        guard calibrationAdvanceTask != nil else { return }
         guard let question = DiagnosticQuestionBank.questions[safe: calibrationQuestionIndex] else { return }
-        AnalyticsManager.trackOnboardingCalibrationSkippedWait()
+        guard calibrationAdvanceTask != nil || diagnosticAnswers[question.id] != nil else { return }
+        if calibrationAdvanceTask != nil {
+            AnalyticsManager.trackOnboardingCalibrationSkippedWait()
+        }
         cancelCalibrationAdvanceTask()
         advanceCalibration(after: question)
     }
@@ -867,6 +967,7 @@ struct OnboardingView: View {
     private func cancelCalibrationAdvanceTask() {
         calibrationAdvanceTask?.cancel()
         calibrationAdvanceTask = nil
+        calibrationShowsNextWordCTA = false
     }
 
     private func advanceCalibration(after question: DiagnosticQuestion) {
@@ -881,6 +982,10 @@ struct OnboardingView: View {
 
         Task { @MainActor in
             try? await Task.sleep(nanoseconds: 220_000_000)
+            guard page == 4 else {
+                calibrationIsTransitioning = false
+                return
+            }
             visibleInsight = nil
 
             if isLast {
@@ -946,17 +1051,20 @@ struct OnboardingView: View {
         navigateToPage(OnboardingFlowPage.paywall, direction: .forward)
     }
 
-    private func finishOnboarding(widgetDeferred: Bool? = nil) {
-        guard !isFinishingOnboarding else { return }
-        isFinishingOnboarding = true
-        if let widgetDeferred {
-            if widgetDeferred {
-                AnalyticsManager.trackOnboardingWidgetDeferred()
-            } else {
-                AnalyticsManager.trackOnboardingWidgetConfirmed()
-            }
+    private func advanceFromWidgetInstall(widgetDeferred: Bool) {
+        if widgetDeferred {
+            AnalyticsManager.trackOnboardingWidgetDeferred()
+        } else {
+            AnalyticsManager.trackOnboardingWidgetConfirmed()
         }
         AnalyticsManager.trackOnboardingStepCompleted(stepName: "widget_install")
+        navigateToPage(OnboardingFlowPage.howToGlance, direction: .forward)
+    }
+
+    private func finishOnboarding() {
+        guard !isFinishingOnboarding else { return }
+        isFinishingOnboarding = true
+        AnalyticsManager.trackOnboardingStepCompleted(stepName: "how_to_glance")
         AnalyticsManager.trackOnboardingCompleted()
         WidgetAppGroup.saveOnboardingCompletionDate()
         Task { @MainActor in
@@ -998,6 +1106,7 @@ private struct OnboardingTopChrome: View {
                             .font(.system(size: 14, weight: .semibold))
                             .foregroundStyle(OnboardingColors.primaryText)
                             .frame(width: 32, height: 32)
+                            .glanceMinimumTapTarget()
                     }
                     .buttonStyle(.plain)
                     .accessibilityLabel("Close")
@@ -1015,6 +1124,7 @@ private struct OnboardingTopChrome: View {
                                 .font(.system(size: 17, weight: .semibold))
                                 .foregroundStyle(OnboardingColors.primaryText)
                                 .frame(width: 36, height: 36)
+                                .glanceMinimumTapTarget()
                         }
                         .buttonStyle(.plain)
                     }
@@ -1372,6 +1482,60 @@ private struct StudySmartVerticalGraphic: View {
     }
 }
 
+private struct HowToGlanceVerticalGraphic: View {
+    let quizReminderTime: String
+    let isCompact: Bool
+
+    private var steps: [(symbol: String, text: String)] {
+        [
+            (
+                "square.grid.2x2.fill",
+                "Learn SAT words passively\nthroughout the day from your\nLock Screen and Home Screen widgets."
+            ),
+            (
+                "checklist",
+                "Take a 3 minute quiz at \(quizReminderTime)\nto see what you retained."
+            ),
+            (
+                "checkmark.seal.fill",
+                "That's it. We'll handle the rest."
+            ),
+        ]
+    }
+
+    var body: some View {
+        VStack(spacing: isCompact ? 14 : 18) {
+            ForEach(Array(steps.enumerated()), id: \.offset) { index, step in
+                howToGlanceStep(symbol: step.symbol, text: step.text)
+
+                if index < steps.count - 1 {
+                    Image(systemName: "arrow.down")
+                        .font(.system(size: isCompact ? 14 : 16, weight: .semibold))
+                        .foregroundStyle(OnboardingColors.tertiaryText)
+                }
+            }
+        }
+        .frame(maxWidth: .infinity, alignment: .center)
+    }
+
+    private func howToGlanceStep(symbol: String, text: String) -> some View {
+        VStack(spacing: 10) {
+            Image(systemName: symbol)
+                .font(.system(size: isCompact ? 22 : 26, weight: .semibold))
+                .foregroundStyle(OnboardingColors.sageGreen)
+                .frame(width: isCompact ? 52 : 60, height: isCompact ? 52 : 60)
+                .background(OnboardingColors.sageGreen.opacity(0.12), in: Circle())
+
+            Text(text)
+                .font(.system(size: isCompact ? 15 : 17, weight: .semibold))
+                .foregroundStyle(OnboardingColors.primaryText)
+                .multilineTextAlignment(.center)
+                .frame(maxWidth: .infinity, alignment: .center)
+        }
+        .frame(maxWidth: .infinity, alignment: .center)
+    }
+}
+
 private struct OnboardingSelectionRow: View {
     let title: String
     let isSelected: Bool
@@ -1427,11 +1591,15 @@ private struct CalibrationQuestionCard: View {
     let isTransitioning: Bool
     let onSelect: (Int) -> Void
 
-    private var wordFontSize: CGFloat { isCompact ? 32 : 38 }
+    private var wordFontSize: CGFloat {
+        let base: CGFloat = isCompact ? 56 : 68
+        return base * 0.85
+    }
+    private var optionFontSize: CGFloat { isCompact ? 18 : 19 }
 
     var body: some View {
         VStack(alignment: .center, spacing: 20) {
-            Text(question.word)
+            Text(question.word.capitalized)
                 .font(.system(size: wordFontSize, weight: .bold, design: .default))
                 .tracking(-0.8)
                 .foregroundStyle(OnboardingColors.sageGreen)
@@ -1445,6 +1613,7 @@ private struct CalibrationQuestionCard: View {
                     ForEach(Array(question.options.enumerated()), id: \.offset) { index, option in
                         CalibrationOptionRow(
                             title: option,
+                            fontSize: optionFontSize,
                             isSelected: selectedIndex == index,
                             isDimmed: selectedIndex != nil && selectedIndex != index
                         ) {
@@ -1466,6 +1635,7 @@ private struct CalibrationQuestionCard: View {
 
 private struct CalibrationOptionRow: View {
     let title: String
+    let fontSize: CGFloat
     let isSelected: Bool
     let isDimmed: Bool
     let action: () -> Void
@@ -1473,7 +1643,7 @@ private struct CalibrationOptionRow: View {
     var body: some View {
         Button(action: action) {
             Text(title)
-                .font(.body.weight(.semibold))
+                .font(.system(size: fontSize, weight: .semibold))
                 .foregroundStyle(OnboardingColors.primaryText)
                 .opacity(isDimmed ? 0.5 : 1)
                 .multilineTextAlignment(.center)
@@ -1574,21 +1744,14 @@ private struct OnboardingBinaryChoice: View {
     }
 }
 
-private struct OnboardingScoreBar: View {
-    let tiers: [SATScoreTier]
-    let selection: String
-    let onSelect: (SATScoreTier) -> Void
-
-    var body: some View {
-        OnboardingScoreLabelBar(
-            labels: tiers.map(\.displayLabel),
-            selection: selection,
-            onSelect: { label in
-                guard let tier = tiers.first(where: { $0.displayLabel == label }) else { return }
-                onSelect(tier)
-            }
-        )
-    }
+private enum OnboardingScoreChipLayout {
+    /// Fits the longest onboarding label ("765+") in four columns on the narrowest phones without scaling.
+    static let fontSize: CGFloat = 17
+    static let tileMinHeight: CGFloat = 42
+    static let verticalPadding: CGFloat = 10
+    static let cornerRadius: CGFloat = 14
+    static let cardPadding: CGFloat = 6
+    static let columnSpacing: CGFloat = 8
 }
 
 private struct OnboardingScoreLabelBar: View {
@@ -1597,23 +1760,27 @@ private struct OnboardingScoreLabelBar: View {
     let onSelect: (String) -> Void
 
     var body: some View {
-        HStack(spacing: 8) {
+        HStack(spacing: OnboardingScoreChipLayout.columnSpacing) {
             ForEach(labels, id: \.self) { label in
                 Button {
                     onSelect(label)
                 } label: {
                     Text(label)
-                        .font(.system(size: 17, weight: .medium))
+                        .font(.system(size: OnboardingScoreChipLayout.fontSize, weight: .semibold, design: .rounded))
+                        .monospacedDigit()
                         .foregroundStyle(
                             selection == label ? OnboardingColors.sageGreen : OnboardingColors.primaryText
                         )
                         .lineLimit(1)
-                        .minimumScaleFactor(0.65)
-                        .frame(maxWidth: .infinity)
-                        .padding(.vertical, 14)
-                        .onboardingPremiumCard(cornerRadius: 12, padding: 10)
+                        .multilineTextAlignment(.center)
+                        .frame(maxWidth: .infinity, minHeight: OnboardingScoreChipLayout.tileMinHeight)
+                        .padding(.vertical, OnboardingScoreChipLayout.verticalPadding)
+                        .onboardingPremiumCard(
+                            cornerRadius: OnboardingScoreChipLayout.cornerRadius,
+                            padding: OnboardingScoreChipLayout.cardPadding
+                        )
                         .overlay(
-                            RoundedRectangle(cornerRadius: 12, style: .continuous)
+                            RoundedRectangle(cornerRadius: OnboardingScoreChipLayout.cornerRadius, style: .continuous)
                                 .stroke(
                                     selection == label
                                         ? OnboardingColors.sageGreen.opacity(0.45)
@@ -1625,6 +1792,7 @@ private struct OnboardingScoreLabelBar: View {
                 .buttonStyle(.plain)
             }
         }
+        .frame(maxWidth: .infinity)
     }
 }
 
@@ -1659,7 +1827,7 @@ private struct CalibrationRevealCard: View {
                     .fixedSize(horizontal: false, vertical: true)
 
                 Text(baseline.striveLine)
-                    .font(.system(size: 17, weight: .medium))
+                    .font(.system(size: 17, weight: .regular))
                     .foregroundStyle(OnboardingColors.primaryText)
                     .lineSpacing(8)
                     .multilineTextAlignment(.center)
@@ -2187,6 +2355,7 @@ private enum OnboardingFlowPage {
     static let paywall = 7
     /// Lock Screen widget install — advance here after purchase, restore, or 3-day pass.
     static let widgetInstall = 8
+    static let howToGlance = 9
 }
 
 // MARK: - Paywall (Screen 8)
@@ -2282,7 +2451,7 @@ private struct OnboardingPaywallScreen: View {
     }
 
     private var usesCompactPaywallLayout: Bool {
-        satTestDate == .within90
+        true
     }
 
     var body: some View {
@@ -2536,26 +2705,26 @@ enum DiagnosticBaseline: String {
     var statusLine: String {
         switch self {
         case .gettingStarted:
-            return "Several core SAT words still feel unfamiliar\nthat's normal before daily exposure kicks in"
+            return "Several core SAT words still feel unfamiliar.\nThat's completely normal before daily exposure kicks in."
         case .momentumGrowing:
-            return "You're recognizing more than you miss\nbut high-impact words still need repetition"
+            return "You're recognizing more than you miss,\nbut high-impact words still need repetition."
         case .solidFoundation:
-            return "You already grasp many exam words\nconsistency will sharpen speed and recall"
+            return "You already recognize many exam words.\nConsistency will sharpen both speed and recall."
         case .alreadyAhead:
-            return "Strong instincts on exam vocabulary\nGlance will keep you sharp not complacent"
+            return "Your vocabulary foundation is already strong.\nGlance will keep you sharp—not complacent."
         }
     }
 
     var striveLine: String {
         switch self {
         case .gettingStarted:
-            return "Strive for steady daily exposure first\naccuracy climbs once words feel familiar"
+            return "Strive for steady daily exposure first.\nAccuracy comes naturally once words feel familiar."
         case .momentumGrowing:
-            return "Strive to turn passive glances into\nconfident recall on quiz day"
+            return "Strive to turn passive glances\ninto confident recall on quiz day."
         case .solidFoundation:
-            return "Strive to eliminate the last few gaps\nso nothing surprises you on test day"
+            return "Strive to eliminate the last few gaps,\nso nothing surprises you on test day."
         case .alreadyAhead:
-            return "Strive to maintain momentum\nEven strong scorers lose words\nwithout repetition"
+            return "Strive to maintain your momentum.\nEven strong scorers lose words\nwithout regular repetition."
         }
     }
 

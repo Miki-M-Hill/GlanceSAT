@@ -211,6 +211,35 @@ enum NotificationManager {
         try? await center.add(request)
     }
 
+    static func updatePreferredReminderTime(hour: Int, minute: Int) async {
+        UserDefaults.standard.set(hour, forKey: dailyQuizReminderHourKey)
+        UserDefaults.standard.set(minute, forKey: dailyQuizReminderMinuteKey)
+
+        var components = Calendar.current.dateComponents([.year, .month, .day], from: Date())
+        components.hour = hour
+        components.minute = minute
+        components.second = 0
+        if let date = Calendar.current.date(from: components) {
+            UserDefaults.standard.set(date.timeIntervalSince1970, forKey: "quizReminderTime")
+        }
+
+        await scheduleStandardDailyReminders()
+    }
+
+    static func preferredReminderDate(calendar: Calendar = .current) -> Date {
+        var components = calendar.dateComponents([.year, .month, .day], from: Date())
+        components.hour = preferredReminderHour()
+        components.minute = preferredReminderMinute()
+        components.second = 0
+        return calendar.date(from: components) ?? Date()
+    }
+
+    static func formattedPreferredReminderTime() -> String {
+        let formatter = DateFormatter()
+        formatter.timeStyle = .short
+        return formatter.string(from: preferredReminderDate())
+    }
+
     private static func preferredReminderHour() -> Int {
         UserDefaults.standard.object(forKey: dailyQuizReminderHourKey) as? Int ?? 19
     }

@@ -9,13 +9,14 @@ import WidgetKit
 
 enum WidgetReminderNotificationCoordinator {
     private static let notificationID = "widgetReminder"
-    private static let reminderOffset: TimeInterval = 3_600
     private static let legacyNotificationIDs = ["widget-install-reminder"]
+    private static let dayTwoReminderHour = 11
+    private static let dayTwoReminderMinute = 0
 
     static func updateWidgetReminderNotification() async {
         guard let completionDate = WidgetAppGroup.onboardingCompletionDate else { return }
+        guard let targetDate = dayTwoReminderDate(from: completionDate) else { return }
 
-        let targetDate = completionDate.addingTimeInterval(reminderOffset)
         let center = UNUserNotificationCenter.current()
 
         if Date() >= targetDate {
@@ -38,17 +39,22 @@ enum WidgetReminderNotificationCoordinator {
             return
         }
 
+        let missingHome = !hasHomeInstalled
+        let missingLock = !hasLockInstalled
+
         let title: String
         let body: String
-        if hasLockInstalled, !hasHomeInstalled {
-            title = "Add the Home Screen widget"
-            body = "Add Glance to your Home Screen to keep your daily words in plain sight alongside your apps."
-        } else if hasHomeInstalled, !hasLockInstalled {
-            title = "Add the Lock Screen widget"
-            body = "See SAT words naturally each time you check your phone."
-        } else {
+        if missingHome, missingLock {
             title = "Glance works best with widgets"
-            body = "Add Glance to your Lock and Home screens to see SAT words naturally throughout the day."
+            body = "Add Glance to your Lock and Home screens to learn SAT words passively every time you check your phone."
+        } else if missingLock, hasHomeInstalled {
+            title = "Step 2: Add the Lock Screen widget"
+            body = "Your Home Screen is set! Now add Glance to your Lock Screen to catch new words 150+ times a day."
+        } else if missingHome, hasLockInstalled {
+            title = "Step 2: Add Home Screen widgets"
+            body = "Your Lock Screen is set! Now add Glance to your Home Screen to keep your words front and center."
+        } else {
+            return
         }
 
         let content = UNMutableNotificationContent()
@@ -63,6 +69,19 @@ enum WidgetReminderNotificationCoordinator {
         let trigger = UNCalendarNotificationTrigger(dateMatching: components, repeats: false)
         let request = UNNotificationRequest(identifier: notificationID, content: content, trigger: trigger)
         try? await center.add(request)
+    }
+
+    /// Calendar day after onboarding completes, at 11:00 AM local time.
+    private static func dayTwoReminderDate(from completionDate: Date, calendar: Calendar = .current) -> Date? {
+        let completionDay = calendar.startOfDay(for: completionDate)
+        guard let nextDay = calendar.date(byAdding: .day, value: 1, to: completionDay) else {
+            return nil
+        }
+        var components = calendar.dateComponents([.year, .month, .day], from: nextDay)
+        components.hour = dayTwoReminderHour
+        components.minute = dayTwoReminderMinute
+        components.second = 0
+        return calendar.date(from: components)
     }
 
     private static func currentWidgetConfigurations() async -> [WidgetInfo] {

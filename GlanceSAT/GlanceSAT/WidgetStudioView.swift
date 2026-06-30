@@ -96,6 +96,9 @@ struct WidgetStudioView: View {
                         .font(.system(size: 15, weight: .medium, design: .rounded))
                 }
                 .foregroundStyle(Color.wsCharcoalPrimary)
+                .padding(.vertical, 10)
+                .padding(.horizontal, 4)
+                .contentShape(Rectangle())
             }
             .buttonStyle(.plain)
 

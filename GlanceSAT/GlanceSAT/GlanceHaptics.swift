@@ -17,15 +17,27 @@ enum GlanceKeyboard {
 }
 
 enum GlanceHaptics {
+    private static let lightImpact = UIImpactFeedbackGenerator(style: .light)
+    private static let mediumImpact = UIImpactFeedbackGenerator(style: .medium)
+    private static let notification = UINotificationFeedbackGenerator()
+
     static func light() {
-        let generator = UIImpactFeedbackGenerator(style: .light)
-        generator.prepare()
-        generator.impactOccurred()
+        lightImpact.prepare()
+        lightImpact.impactOccurred()
     }
 
     static func medium() {
-        let generator = UIImpactFeedbackGenerator(style: .medium)
-        generator.prepare()
-        generator.impactOccurred()
+        mediumImpact.prepare()
+        mediumImpact.impactOccurred()
+    }
+
+    static func success() {
+        notification.prepare()
+        notification.notificationOccurred(.success)
+    }
+
+    static func error() {
+        notification.prepare()
+        notification.notificationOccurred(.error)
     }
 }

@@ -45,6 +45,8 @@ actor InsightsStatsActor {
 
     func computeWordStats(container: ModelContainer, now: Date = Date()) async throws -> InsightsWordStats {
         let backgroundContext = ModelContext(container)
+        let primaryQuizDayKeys = try fetchPrimaryQuizDayKeys(context: backgroundContext)
+        WidgetGlanceTracker.backfillFromPrimaryQuizDays(primaryQuizDayKeys)
         let widgetGlancedIDs = WidgetGlanceTracker.sync(referenceDate: now)
         let wordsEncountered = widgetGlancedIDs.count
         let weeklyWordDelta = WidgetGlanceTracker.weeklyNewGlanceCount(referenceDate: now)
@@ -125,6 +127,16 @@ actor InsightsStatsActor {
             categories: categories,
             categoryAttemptsByName: categoryAgg.mapValues(\.attempts)
         ).normalizingLegacyCategoryLabels()
+    }
+
+    private func fetchPrimaryQuizDayKeys(context: ModelContext) throws -> Set<String> {
+        let descriptor = FetchDescriptor<QuizSession>()
+        let sessions = try context.fetch(descriptor)
+        return Set(
+            sessions
+                .filter { $0.totalQuestions >= DailyWordBatchService.maxDailyWords }
+                .map(\.creditedQuizDayKey)
+        )
     }
 }
 

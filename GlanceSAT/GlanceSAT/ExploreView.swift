@@ -733,8 +733,28 @@ private struct LibraryWordPageContainer: View {
 private struct ExploreWordPageCard: View {
     let word: Word
     let maxContentHeight: CGFloat
-    @State private var sensePage = 0
+    var initialSenseIndex: Int = 0
+    var showsHelpAffordance: Bool = true
+    var senseSelectionEnabled: Bool = true
+
+    @State private var sensePage: Int
+    @State private var showsCardGuide = false
     @Environment(\.dynamicTypeSize) private var dynamicTypeSize
+
+    init(
+        word: Word,
+        maxContentHeight: CGFloat,
+        initialSenseIndex: Int = 0,
+        showsHelpAffordance: Bool = true,
+        senseSelectionEnabled: Bool = true
+    ) {
+        self.word = word
+        self.maxContentHeight = maxContentHeight
+        self.initialSenseIndex = initialSenseIndex
+        self.showsHelpAffordance = showsHelpAffordance
+        self.senseSelectionEnabled = senseSelectionEnabled
+        _sensePage = State(initialValue: initialSenseIndex)
+    }
 
     private var usesAccessibilityLayout: Bool {
         dynamicTypeSize.isAccessibilitySize
@@ -769,8 +789,29 @@ private struct ExploreWordPageCard: View {
         .background {
             HubSolidCardChrome.background()
         }
+        .overlay(alignment: .topTrailing) {
+            if showsHelpAffordance {
+                Button {
+                    showsCardGuide = true
+                } label: {
+                    Image(systemName: "info.circle")
+                        .font(.system(size: 17, weight: .semibold))
+                        .foregroundStyle(HubPalette.espressoMuted)
+                        .frame(width: 32, height: 32)
+                        .background {
+                            GlanceAdaptiveGlassCircle(diameter: 32)
+                        }
+                }
+                .buttonStyle(.plain)
+                .padding(14)
+                .accessibilityLabel("Word card guide")
+            }
+        }
+        .sheet(isPresented: $showsCardGuide) {
+            LibraryWordCardGuideSheet()
+        }
         .onChange(of: word.id) { _, _ in
-            sensePage = 0
+            sensePage = initialSenseIndex
         }
     }
 
@@ -803,17 +844,11 @@ private struct ExploreWordPageCard: View {
 
                 if senses.count > 1 {
                     HStack(spacing: 8) {
-                        ForEach(Array(senses.enumerated()), id: \.offset) { index, sense in
-                            Button {
-                                GlanceHaptics.light()
-                                withAnimation(.spring(response: 0.32, dampingFraction: 0.78)) {
-                                    sensePage = index
-                                }
-                            } label: {
-                                partOfSpeechChip(sense.partOfSpeech, isSelected: index == sensePage)
-                            }
-                            .buttonStyle(.plain)
-                        }
+                        WordSenseToggle(
+                            labels: senses.map(\.partOfSpeech),
+                            selectedIndex: $sensePage,
+                            isEnabled: senseSelectionEnabled
+                        )
 
                         WordConnotationRow(word: word, compact: true)
                             .layoutPriority(1)
@@ -823,7 +858,7 @@ private struct ExploreWordPageCard: View {
                     .padding(.top, 12)
                 } else if let only = senses.first {
                     HStack(alignment: .center, spacing: 6) {
-                        partOfSpeechChip(only.partOfSpeech, isSelected: true)
+                        WordPartOfSpeechChip(label: only.partOfSpeech)
                         WordConnotationRow(word: word, compact: true)
                         Spacer(minLength: 0)
                     }
@@ -900,25 +935,6 @@ private struct ExploreWordPageCard: View {
                 .italic(italic)
                 .foregroundStyle(HubPalette.espresso)
         }
-    }
-
-    private func partOfSpeechChip(_ label: String, isSelected: Bool) -> some View {
-        Text(label)
-            .font(GlanceHubFont.semibold(12))
-            .foregroundStyle(isSelected ? WordCardChrome.partOfSpeechForeground : WordCardChrome.partOfSpeechInactiveForeground)
-            .padding(.horizontal, 12)
-            .padding(.vertical, 7)
-            .background(
-                Capsule(style: .continuous)
-                    .fill(isSelected ? WordCardChrome.partOfSpeechFill : WordCardChrome.partOfSpeechInactiveFill)
-                    .overlay(
-                        Capsule(style: .continuous)
-                            .strokeBorder(
-                                isSelected ? Color.white.opacity(0.35) : WordCardChrome.partOfSpeechInactiveStroke,
-                                lineWidth: isSelected ? 1 : 0.7
-                            )
-                    )
-            )
     }
 }
 

@@ -5,9 +5,9 @@
 
 import Foundation
 
-/// Tracks unique **new** daily-batch words credited from lock-screen widget rotation.
-/// Review words in the daily 10 are rotated but never counted toward Insights "Words glanced".
-/// Uses the same deterministic 30-minute slot grid as `WidgetTimelineBuilder` / `WidgetSlotClock`.
+/// Tracks unique **new** daily-batch words credited toward Insights "Words glanced".
+/// Sources: lock-screen widget rotation (30-minute slots) and completed primary daily quizzes.
+/// Review words in the daily 10 are rotated but never counted.
 enum WidgetGlanceTracker {
     private static let storageKey = "widgetGlanceLedger.v2"
     private static let legacyStorageKey = "widgetGlanceLedger.v1"
@@ -55,39 +55,58 @@ enum WidgetGlanceTracker {
 
     /// Advances the glance ledger through `referenceDate` and returns the cumulative glanced IDs.
     static func sync(referenceDate: Date = Date(), calendar: Calendar = .current) -> Set<String> {
-        guard !shouldSkipGlanceSync() else {
-            return glancedWordIDs()
-        }
-
         var ledger = loadLedger()
         let todayKey = DailyWordBatchService.calendarDayKey(for: referenceDate, calendar: calendar)
 
-        backfillCompletedDays(
-            ledger: &ledger,
-            throughDayKey: todayKey,
-            calendar: calendar
-        )
-
-        guard let wordIDs = wordIDsForDay(todayKey), !wordIDs.isEmpty else {
-            saveLedger(ledger)
-            return ledger.glancedWordIDs
-        }
-
-        let currentSlot = slotIndex(for: referenceDate, calendar: calendar)
-        let startSlot = (ledger.maxSlotProcessedByDay[todayKey] ?? -1) + 1
-        if startSlot <= currentSlot {
-            creditSlots(
+        if !shouldSkipWidgetSlotSync() {
+            backfillCompletedDays(
                 ledger: &ledger,
-                dayKey: todayKey,
-                wordIDs: wordIDs,
-                fromSlot: startSlot,
-                throughSlot: currentSlot
+                throughDayKey: todayKey,
+                calendar: calendar
             )
+
+            if let wordIDs = wordIDsForDay(todayKey), !wordIDs.isEmpty {
+                let currentSlot = slotIndex(for: referenceDate, calendar: calendar)
+                let startSlot = (ledger.maxSlotProcessedByDay[todayKey] ?? -1) + 1
+                if startSlot <= currentSlot {
+                    creditSlots(
+                        ledger: &ledger,
+                        dayKey: todayKey,
+                        wordIDs: wordIDs,
+                        fromSlot: startSlot,
+                        throughSlot: currentSlot
+                    )
+                }
+            }
         }
 
         pruneOldDayKeys(ledger: &ledger, keepingDayKey: todayKey, calendar: calendar)
         saveLedger(ledger)
         return ledger.glancedWordIDs
+    }
+
+    /// Credits today's new daily-batch words after a completed primary quiz.
+    static func creditPrimaryQuizDay(_ dayKey: String) {
+        let newWordIDs = DailyWordBatchService.loadNewWordIDs(forDayKey: dayKey)
+        guard !newWordIDs.isEmpty else { return }
+        _ = creditNewWords(newWordIDs, forDayKey: dayKey)
+    }
+
+    /// Repairs cumulative glances for past primary-quiz days (idempotent).
+    static func backfillFromPrimaryQuizDays(_ dayKeys: Set<String>) {
+        guard !dayKeys.isEmpty else { return }
+        var ledger = loadLedger()
+        var didChange = false
+
+        for dayKey in dayKeys.sorted() {
+            let newWordIDs = DailyWordBatchService.loadNewWordIDs(forDayKey: dayKey)
+            guard !newWordIDs.isEmpty else { continue }
+            didChange = creditNewWords(newWordIDs, forDayKey: dayKey, into: &ledger) || didChange
+        }
+
+        if didChange {
+            saveLedger(ledger)
+        }
     }
 
     static func glancedWordIDs() -> Set<String> {
@@ -118,7 +137,39 @@ enum WidgetGlanceTracker {
 
     // MARK: - Private
 
-    private static func shouldSkipGlanceSync() -> Bool {
+    @discardableResult
+    private static func creditNewWords(
+        _ wordIDs: some Sequence<UUID>,
+        forDayKey dayKey: String
+    ) -> Bool {
+        var ledger = loadLedger()
+        let didChange = creditNewWords(wordIDs, forDayKey: dayKey, into: &ledger)
+        if didChange {
+            saveLedger(ledger)
+        }
+        return didChange
+    }
+
+    @discardableResult
+    private static func creditNewWords(
+        _ wordIDs: some Sequence<UUID>,
+        forDayKey dayKey: String,
+        into ledger: inout Ledger
+    ) -> Bool {
+        var didChange = false
+
+        for wordID in wordIDs {
+            let wordIDString = wordID.uuidString
+            if ledger.glancedWordIDs.insert(wordIDString).inserted {
+                ledger.firstGlancedDayKeyByWordID[wordIDString] = dayKey
+                didChange = true
+            }
+        }
+
+        return didChange
+    }
+
+    private static func shouldSkipWidgetSlotSync() -> Bool {
         guard let defaults = WidgetAppGroup.defaults else { return false }
         let hasPremium = defaults.bool(forKey: WidgetPrefsKeys.hasPremiumAccess)
         let limitReached = defaults.bool(forKey: WidgetPrefsKeys.freemiumDailyLimitReached)
@@ -151,10 +202,13 @@ enum WidgetGlanceTracker {
     }
 
     private static func availableDayKeys(calendar: Calendar) -> [String] {
+        var keys = Set<String>()
         if let payload = loadWidgetSnapshot() {
-            return Array(payload.dailyBatches.keys)
+            keys.formUnion(payload.dailyBatches.keys)
         }
-        return DailyWordBatchService.loadPersistedDayKeys()
+        keys.formUnion(DailyWordBatchService.loadPersistedDayKeys())
+        keys.formUnion(DailyWordBatchService.loadHistoricalDayKeys())
+        return Array(keys)
     }
 
     private static func wordIDsForDay(_ dayKey: String) -> [UUID]? {
@@ -163,7 +217,7 @@ enum WidgetGlanceTracker {
             return visibleWordIDs(from: snapshots.map(\.id))
         }
 
-        let persisted = DailyWordBatchService.loadPersistedWordIDs(forDayKey: dayKey)
+        let persisted = DailyWordBatchService.loadWordIDs(forDayKey: dayKey)
         guard !persisted.isEmpty else { return nil }
         return visibleWordIDs(from: persisted)
     }
@@ -185,7 +239,7 @@ enum WidgetGlanceTracker {
     ) {
         guard fromSlot <= throughSlot, !wordIDs.isEmpty else { return }
 
-        let newWordIDs = DailyWordBatchService.loadPersistedNewWordIDs(forDayKey: dayKey)
+        let newWordIDs = DailyWordBatchService.loadNewWordIDs(forDayKey: dayKey)
 
         for slot in fromSlot ... throughSlot {
             let index = wordIndex(forSlot: slot, wordCount: wordIDs.count)
@@ -227,7 +281,7 @@ enum WidgetGlanceTracker {
     private static func loadLedger() -> Ledger {
         if let data = UserDefaults.standard.data(forKey: storageKey),
            let ledger = try? JSONDecoder().decode(Ledger.self, from: data) {
-            return normalizedLedger(ledger)
+            return ledger
         }
 
         if let data = UserDefaults.standard.data(forKey: legacyStorageKey),
@@ -239,26 +293,13 @@ enum WidgetGlanceTracker {
     }
 
     private static func migrateFromLegacy(_ legacy: LegacyLedger) -> Ledger {
-        let validNewIDs = Set(DailyWordBatchService.allPersistedNewWordIDs().map(\.uuidString))
         let ledger = Ledger(
-            glancedWordIDs: legacy.glancedWordIDs.intersection(validNewIDs),
+            glancedWordIDs: legacy.glancedWordIDs,
             maxSlotProcessedByDay: legacy.maxSlotProcessedByDay
         )
         saveLedger(ledger)
         UserDefaults.standard.removeObject(forKey: legacyStorageKey)
         return ledger
-    }
-
-    private static func normalizedLedger(_ ledger: Ledger) -> Ledger {
-        let validNewIDs = Set(DailyWordBatchService.allPersistedNewWordIDs().map(\.uuidString))
-        var updated = ledger
-        let pruned = updated.glancedWordIDs.intersection(validNewIDs)
-        guard pruned != updated.glancedWordIDs else { return updated }
-
-        updated.glancedWordIDs = pruned
-        updated.firstGlancedDayKeyByWordID = updated.firstGlancedDayKeyByWordID.filter { pruned.contains($0.key) }
-        saveLedger(updated)
-        return updated
     }
 
     private static func saveLedger(_ ledger: Ledger) {

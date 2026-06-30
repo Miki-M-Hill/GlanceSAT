@@ -111,11 +111,14 @@ enum WeeklyRecallQuizPersistence {
         return snapshot
     }
 
-    static func save(_ snapshot: PersistedWeeklyRecall) {
+    static func save(_ snapshot: PersistedWeeklyRecall, flushToDisk: Bool = false) {
         var updated = snapshot
         updated.savedAt = Date()
         guard let data = try? JSONEncoder().encode(updated) else { return }
         UserDefaults.standard.set(data, forKey: weeklyRecallPersistenceKey)
+        if flushToDisk {
+            UserDefaults.standard.synchronize()
+        }
     }
 
     static func clear() {

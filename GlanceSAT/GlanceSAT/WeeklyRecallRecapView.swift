@@ -94,7 +94,7 @@ struct WeeklyRecallRecapContent: View {
     private func wordsGlancedTile(side: CGFloat) -> some View {
         recapTile {
             VStack(spacing: 0) {
-                tileTitle("Words Glanced")
+                tileTitle("Words Reviewed")
 
                 Spacer(minLength: compact ? 8 : 12)
 

@@ -15,8 +15,11 @@ struct SettingsView: View {
     @EnvironmentObject private var paywallPresenter: PaywallPresenter
 
     @AppStorage("satExamDateSeconds") private var satExamDateSeconds: Double = 0
+    @AppStorage("dailyQuizReminderHour") private var dailyQuizReminderHour = 19
+    @AppStorage("dailyQuizReminderMinute") private var dailyQuizReminderMinute = 0
 
     @State private var showSATDateSheet = false
+    @State private var showDailyQuizReminderSheet = false
     @State private var inAppWebPage: PresentableWebURL?
 
     private var resolvedSATDate: Date {
@@ -33,6 +36,17 @@ struct SettingsView: View {
         let f = DateFormatter()
         f.dateStyle = .long
         return f.string(from: resolvedSATDate)
+    }
+
+    private var dailyQuizReminderSubtitle: String {
+        var components = Calendar.current.dateComponents([.year, .month, .day], from: Date())
+        components.hour = dailyQuizReminderHour
+        components.minute = dailyQuizReminderMinute
+        components.second = 0
+        let date = Calendar.current.date(from: components) ?? Date()
+        let formatter = DateFormatter()
+        formatter.timeStyle = .short
+        return formatter.string(from: date)
     }
 
     private var lockScreenWidgetAlignmentSubtitle: String {
@@ -58,6 +72,14 @@ struct SettingsView: View {
                         rowDivider
                         settingsButton(icon: "calendar", title: "SAT Date", subtitle: satDateSubtitle) {
                             showSATDateSheet = true
+                        }
+                        rowDivider
+                        settingsButton(
+                            icon: "bell.fill",
+                            title: "Daily Quiz Reminder",
+                            subtitle: dailyQuizReminderSubtitle
+                        ) {
+                            showDailyQuizReminderSheet = true
                         }
                         rowDivider
                         NavigationLink {
@@ -161,6 +183,9 @@ struct SettingsView: View {
         }
         .sheet(isPresented: $showSATDateSheet) {
             SATDatePickerSheet()
+        }
+        .sheet(isPresented: $showDailyQuizReminderSheet) {
+            DailyQuizReminderSheet()
         }
         .sheet(item: $inAppWebPage) { page in
             SafariSheet(url: page.url)

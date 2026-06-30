@@ -36,8 +36,11 @@ actor WordBatchReconcilerActor {
         var newWordIDsByDay = persisted?.dailyNewWordIDs ?? [:]
         let requiredKeys = DailyWordBatchService.rollingQueueDayKeys(for: referenceDate, calendar: calendar)
         let hadPastDays = queue.keys.contains { $0 < todayKey && !(queue[$0]?.isEmpty ?? true) }
-        DailyWordBatchService.archiveStaleRollingQueueEntries(queue: &queue, todayKey: todayKey)
-        newWordIDsByDay = newWordIDsByDay.filter { $0.key >= todayKey }
+        DailyWordBatchService.archiveStaleRollingQueueEntries(
+            queue: &queue,
+            newWordIDsByDay: &newWordIDsByDay,
+            todayKey: todayKey
+        )
 
         let cap = selectionCap
         let hadCommittedTodayBatch = !(queue[todayKey]?.isEmpty ?? true)
